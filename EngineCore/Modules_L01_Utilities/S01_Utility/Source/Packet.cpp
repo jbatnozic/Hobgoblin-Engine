@@ -31,6 +31,10 @@ std::int64_t Packet::_write(NeverNull<const void*> aData, PZInteger aByteCount, 
 }
 
 std::int64_t Packet::_seek(std::int64_t aPosition) {
+    if (_readErrorLevel < 0) {
+        return _readErrorLevel;
+    }
+
     if (_buffer.size() == 0) {
         return 0;
     }
@@ -43,6 +47,10 @@ std::int64_t Packet::_seek(std::int64_t aPosition) {
 }
 
 std::int64_t Packet::_seekRelative(std::int64_t aOffset) {
+    if (_readErrorLevel < 0) {
+        return _readErrorLevel;
+    }
+
     if (_buffer.size() == 0) {
         return 0;
     }
@@ -73,14 +81,14 @@ std::int64_t Packet::_read(NeverNull<void*> aDestination, PZInteger aByteCount, 
     } else if (aAllowPartal && rem > 0) {
         std::memcpy(aDestination, &(_buffer[_readPos]), rem);
         _readPos += rem;
-        return (int)rem;
+        return (std::int64_t)rem;
     } else {
         return 0;
     }
 }
 
-void* Packet::_readInPlace(PZInteger aByteCount) {
-    void* result = readInPlaceNoThrow(aByteCount);
+const void* Packet::_readInPlace(PZInteger aByteCount) {
+    const void* result = readInPlaceNoThrow(aByteCount);
     if (!SELF) {
         HG_THROW_TRACED(
             StreamReadError,
@@ -92,7 +100,7 @@ void* Packet::_readInPlace(PZInteger aByteCount) {
     return result;
 }
 
-std::int64_t Packet::_readInPlaceNoThrow(PZInteger aByteCount, void** aResult) {
+std::int64_t Packet::_readInPlaceNoThrow(PZInteger aByteCount, const void** aResult) {
     if (_readErrorLevel < 0) {
         *aResult = nullptr;
         return _readErrorLevel;

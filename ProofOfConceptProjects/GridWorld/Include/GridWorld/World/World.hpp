@@ -47,6 +47,10 @@ public:
 
     ~World() override;
 
+    void setBinder(Binder* aBinder) {
+        _binder = aBinder;
+    }
+
     // TODO: Cell height (z)
 
     void update();
@@ -266,13 +270,18 @@ private:
 
     WorldConfigExt _config;
 
-    // ===== Chunk/Cell Storage =====
+    // ===== Subcomponents =====
 
-    std::unique_ptr<detail::ChunkDiskIoHandlerInterface> _chunkDiskIoHandler;
+    std::unique_ptr<detail::ChunkDiskIoHandlerInterface> _internalChunkDiskIoHandler;
+    detail::ChunkDiskIoHandlerInterface* _chunkDiskIoHandler;
 
-    std::unique_ptr<detail::ChunkSpoolerInterface> _chunkSpooler;
+    std::unique_ptr<detail::ChunkSpoolerInterface> _internalChunkSpooler;
+    hg::NeverNull<detail::ChunkSpoolerInterface*> _chunkSpooler;
 
     detail::ChunkStorageHandler _chunkStorage;
+
+    void _connectSubcomponents();
+    void _disconnectSubcomponents();
 
     // ===== Edit Permissions =====
 
@@ -289,6 +298,12 @@ private:
 
     void onChunkLoaded(ChunkId aChunkId, const Chunk* aChunk) override;
     void onChunkUnloaded(ChunkId aChunkId) override;
+    std::unique_ptr<ChunkExtensionInterface> createChunkExtension() override {
+        if (!_binder) {
+            return nullptr;
+        }
+        return _binder->createChunkExtension();
+    }
 
     // ===== Editing cells =====
 

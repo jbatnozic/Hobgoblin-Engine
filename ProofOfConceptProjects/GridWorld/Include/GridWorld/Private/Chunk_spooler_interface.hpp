@@ -9,11 +9,16 @@
 namespace gridworld {
 namespace detail {
 
+// Forward declare
+class ChunkDiskIoHandlerInterface;
+
 //! Interface for a class handling loading an unloading of chunks asynchronously.
 class ChunkSpoolerInterface {
 public:
-    //! Virtual desctructor.
+    //! Virtual destructor.
     virtual ~ChunkSpoolerInterface() = default;
+
+    virtual void setDiskIoHandler(ChunkDiskIoHandlerInterface* aDiskIoHandler) = 0;
 
     virtual void pause() = 0;
 

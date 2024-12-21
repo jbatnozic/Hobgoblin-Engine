@@ -15,6 +15,8 @@ namespace test {
 
 class FakeDiskIoHandler : public detail::ChunkDiskIoHandlerInterface{
 public:
+    void setBinder(Binder*) override {}
+
     std::optional<Chunk> loadChunkFromRuntimeCache(ChunkId aChunkId) override {
         std::this_thread::sleep_for(std::chrono::milliseconds{50});
 

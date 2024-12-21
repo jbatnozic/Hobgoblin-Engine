@@ -6,6 +6,7 @@
 #include <Hobgoblin/Logging.hpp>
 
 #include <algorithm>
+#include <chrono>
 
 // TODO: SetThreadName
 
@@ -16,6 +17,24 @@ namespace {
 constexpr auto LOG_ID = "Griddy";
 
 std::optional<Chunk> LoadChunk(ChunkId aChunkId, ChunkDiskIoHandlerInterface& aDiskIoHandler) {
+    class ScopedTimer {
+    public:
+        ScopedTimer()
+            : _start{std::chrono::steady_clock::now()}
+        {
+
+        }
+
+        ~ScopedTimer() {
+            const auto end = std::chrono::steady_clock::now();
+            const auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - _start);
+            HG_LOG_INFO(LOG_ID, "Chunk loading took {}ms.", us.count() / 1000.0);
+        }
+
+    private:
+        std::chrono::steady_clock::time_point _start;
+    } timer;
+
     auto rtChunk = aDiskIoHandler.loadChunkFromRuntimeCache(aChunkId);
     if (rtChunk.has_value()) {
         HG_LOG_DEBUG(LOG_ID, "Chunk {}, {} loaded from runtime cache.", aChunkId.x, aChunkId.y);
@@ -124,11 +143,14 @@ private:
 #define HOLDS_LOAD_REQUEST(_variant_)   std::holds_alternative<LoadRequest>(_variant_)
 #define HOLDS_UNLOAD_REQUEST(_variant_) std::holds_alternative<UnloadRequest>(_variant_)
 
-DefaultChunkSpooler::DefaultChunkSpooler(ChunkDiskIoHandlerInterface& aDiskIoHandler)
-    : _diskIoHandler{&aDiskIoHandler}
-    , _worker{&DefaultChunkSpooler::_workerBody, this} {
+DefaultChunkSpooler::DefaultChunkSpooler()
+    : _worker{&DefaultChunkSpooler::_workerBody, this} {
     // SetThreadName(_worker, "chunkspool");
     HG_LOG_INFO(LOG_ID, "Spooler started.");
+}
+
+void DefaultChunkSpooler::setDiskIoHandler(ChunkDiskIoHandlerInterface* aDiskIoHandler) {
+    _diskIoHandler = aDiskIoHandler;
 }
 
 DefaultChunkSpooler::~DefaultChunkSpooler() {
@@ -264,6 +286,7 @@ void DefaultChunkSpooler::_workerBody() {
         /* WORK */
         auto& requestVariant = cb.request;
         HG_ASSERT(!std::holds_alternative<std::monostate>(requestVariant));
+        HG_ASSERT(_diskIoHandler != nullptr);
 
         if (HOLDS_LOAD_REQUEST(requestVariant)) {
             const auto& loadRequest = std::get<LoadRequest>(requestVariant);
@@ -424,7 +447,7 @@ std::optional<hg::PZInteger> DefaultChunkSpooler::_boostLoadRequestPriority(Chun
 
         auto& loadRequest = std::get<LoadRequest>(request);
         if (loadRequest.priority <= aNewPriority) {
-            return{};
+            return {};
         }
         std::swap(loadRequest.priority, aNewPriority);
         return {aNewPriority};

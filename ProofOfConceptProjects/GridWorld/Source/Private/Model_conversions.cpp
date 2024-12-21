@@ -4,14 +4,18 @@
 #include <GridWorld/Model/Chunk.hpp>
 #include <GridWorld/Private/Model_conversions.hpp>
 
+#include <Hobgoblin/Common.hpp>
 #include <Hobgoblin/HGExcept.hpp>
 #include <Hobgoblin/Logging.hpp>
 #include <Hobgoblin/Utility/Base64.hpp>
+#include <Hobgoblin/Utility/Packet.hpp>
+#include <Hobgoblin/Utility/Stream.hpp>
 
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
 
+#include <chrono>
 #include <optional>
 #include <string>
 #include <type_traits>
@@ -24,12 +28,11 @@ namespace json = rapidjson;
 namespace {
 constexpr auto LOG_ID = "Griddy";
 
-#define ENSURE_JSON_CONTAINS(_value_, _member_name_, _member_type_)                    \
-    do {                                                                                      \
-        if (!(_value_).HasMember(_member_name_) ||                                         \
-            !(_value_)[_member_name_].Is##_member_type_()) {                               \
-            HG_THROW_TRACED(JsonParseError, 0, "No array member '{}' found.", _member_name_); \
-        }                                                                                     \
+#define ENSURE_JSON_CONTAINS(_value_, _member_name_, _member_type_)                                 \
+    do {                                                                                            \
+        if (!(_value_).HasMember(_member_name_) || !(_value_)[_member_name_].Is##_member_type_()) { \
+            HG_THROW_TRACED(JsonParseError, 0, "No array member '{}' found.", _member_name_);       \
+        }                                                                                           \
     } while (false)
 
 template <class taIntegral>
@@ -44,13 +47,13 @@ taIntegral GetIntMember(const json::Value& aJsonValue, const char* aMemberName) 
 using ExtensionKind = std::optional<ChunkExtensionInterface::SerializationMethod>;
 
 std::string ExtensionKindToString(const ExtensionKind& aExtensionKind) {
-    if (!aExtensionKind.has_value()) {
+    if (!aExtensionKind.has_value() || *aExtensionKind == ExtensionKind::value_type::NONE) {
         return "empty";
     }
 
     switch (*aExtensionKind) {
-    case ExtensionKind::value_type::BINARY:
-        return "binary";
+    case ExtensionKind::value_type::BINARY_STREAM:
+        return "binary_stream";
         break;
 
     default:
@@ -61,38 +64,40 @@ std::string ExtensionKindToString(const ExtensionKind& aExtensionKind) {
 ExtensionKind StringToExtensionKind(const std::string& aString) {
     /*--*/ if (aString == "empty") {
         return std::nullopt;
-    } else if (aString == "binary") {
-        return {ExtensionKind::value_type::BINARY};
+    } else if (aString == "binary_stream") {
+        return {ExtensionKind::value_type::BINARY_STREAM};
     } else {
         HG_THROW_TRACED(JsonParseError, 0, "Unsupported string: '{}'.", aString);
     }
 }
 
+#define ELVIS(_lhs_, _rhs_) ((_lhs_) ? (_lhs_) : (_rhs_))
+
 void Base64Encode(
     /*  in */ const ChunkExtensionInterface&               aChunkExtension,
     /*  in */ ChunkExtensionInterface::SerializationMethod aPreferredSerializationMethod,
     /* out */ std::string&                                 aBase64EncodeBuffer,
-    /*  in */ std::vector<std::uint8_t>*                   aSerializationBuffer = nullptr)
+    /*  in */ hg::util::Packet*                            aReusableSerializationPacket = nullptr)
 //
 {
-    std::vector<std::uint8_t>  defaultSerBuf;
-    std::vector<std::uint8_t>* serBuf = aSerializationBuffer ? aSerializationBuffer : &defaultSerBuf;
+    hg::util::Packet  defaultSerPkt;
+    hg::util::Packet* serPkt = ELVIS(aReusableSerializationPacket, &defaultSerPkt);
 
-    serBuf->clear();
+    serPkt->clear();
     aBase64EncodeBuffer.clear();
 
     switch (aPreferredSerializationMethod) {
-    case ChunkExtensionInterface::SerializationMethod::BINARY:
+    case ChunkExtensionInterface::SerializationMethod::BINARY_STREAM:
         {
-            aChunkExtension.serializeToBinary(*serBuf);
+            aChunkExtension.serialize(*serPkt);
 
             const auto encodeSizePrediction =
-                hg::util::GetRecommendedOutputBufferSizeForBase64Encode(hg::stopz(serBuf->size()));
+                hg::util::GetRecommendedOutputBufferSizeForBase64Encode(serPkt->getDataSize());
 
             aBase64EncodeBuffer.resize(hg::pztos(encodeSizePrediction));
 
-            const auto encodeSizeActual = hg::util::Base64Encode(serBuf->data(),
-                                                                 hg::stopz(serBuf->size()),
+            const auto encodeSizeActual = hg::util::Base64Encode(serPkt->getData(),
+                                                                 serPkt->getDataSize(),
                                                                  aBase64EncodeBuffer.data(),
                                                                  hg::stopz(aBase64EncodeBuffer.size()));
 
@@ -107,39 +112,40 @@ void Base64Encode(
 }
 
 void Base64Decode(
-    /* out */ const ChunkExtensionInterface&               aChunkExtension,
-    /*  in */ ChunkExtensionInterface::SerializationMethod aPreferredSerializationMethod)
+    /* out */ ChunkExtensionInterface&                     aChunkExtension,
+    /*  in */ ChunkExtensionInterface::SerializationMethod aPreferredSerializationMethod,
+    /*  in */ const char*                                  aBase64EncodedString,
+    /*  in */ hg::PZInteger                                aBase64EncodedStringLength,
+    /*  in */ std::vector<std::uint8_t>*                   aReusableDeserializationBuffer = nullptr)
 //
 {
-    //std::vector<std::uint8_t>  defaultSerBuf;
-    //std::vector<std::uint8_t>* serBuf = aSerializationBuffer ? aSerializationBuffer : &defaultSerBuf;
+    std::vector<std::uint8_t>  defaultDesBuf;
+    std::vector<std::uint8_t>* desBuf = ELVIS(aReusableDeserializationBuffer, &defaultDesBuf);
 
-    //serBuf->clear();
-    //aBase64EncodeBuffer.clear();
+    switch (aPreferredSerializationMethod) {
+    case ChunkExtensionInterface::SerializationMethod::BINARY_STREAM:
+        {
+            const auto decodeSizePrediction =
+                hg::util::GetRecommendedOutputBufferSizeForBase64Encode(aBase64EncodedStringLength);
 
-    //switch (aPreferredSerializationMethod) {
-    //case ChunkExtensionInterface::SerializationMethod::BINARY:
-    //    {
-    //        aChunkExtension.serializeToBinary(*serBuf);
+            desBuf->clear();
+            desBuf->resize(hg::pztos(decodeSizePrediction));
 
-    //        const auto encodeSizePrediction =
-    //            hg::util::GetRecommendedOutputBufferSizeForBase64Encode(hg::stopz(serBuf->size()));
+            const auto decodeSizeActual = hg::util::Base64Encode(aBase64EncodedString,
+                                                                 aBase64EncodedStringLength,
+                                                                 desBuf->data(),
+                                                                 hg::stopz(desBuf->size()));
 
-    //        aBase64EncodeBuffer.resize(hg::pztos(encodeSizePrediction));
+            hg::util::ViewStream vstream{desBuf->data(), decodeSizeActual};
 
-    //        const auto encodeSizeActual = hg::util::Base64Encode(serBuf->data(),
-    //                                                             hg::stopz(serBuf->size()),
-    //                                                             aBase64EncodeBuffer.data(),
-    //                                                             hg::stopz(aBase64EncodeBuffer.size()));
+            aChunkExtension.deserialize(vstream);
+        }
+        break;
 
-    //        aBase64EncodeBuffer.resize(hg::pztos(encodeSizeActual));
-    //    }
-    //    break;
-
-    //default:
-    //    HG_UNREACHABLE("Invalid value for ChunkExtensionInterface::SerializationMethod ({}).",
-    //                   (int)aPreferredSerializationMethod);
-    //}
+    default:
+        HG_UNREACHABLE("Invalid value for ChunkExtensionInterface::SerializationMethod ({}).",
+                       (int)aPreferredSerializationMethod);
+    }
 }
 } // namespace
 
@@ -246,22 +252,23 @@ json::Document ChunkToJson(const Chunk& aChunk) {
         const auto kind   = ExtensionKindToString(method);
 
         json::Value vKind;
-        vKind.SetString(kind.c_str(), kind.size());
+        vKind.SetString(kind, allocator);
         doc.AddMember("extension_kind", vKind.Move(), allocator);
 
-        std::vector<std::uint8_t> serializationBuffer; // TODO: make reusable buffer
-        std::string encodeBuffer; // TODO: make reusable buffer
-        Base64Encode(*extension, method, encodeBuffer, &serializationBuffer);
+        if (method != ChunkExtensionInterface::SerializationMethod::NONE) {
+            hg::util::Packet serializationPacket; // TODO: make reusable buffer
+            std::string      encodeBuffer;        // TODO: make reusable buffer
+            Base64Encode(*extension, method, encodeBuffer, &serializationPacket);
 
-        json::Value vExt;
-        vExt.SetString(encodeBuffer.c_str(), encodeBuffer.size());
-        doc.AddMember("extension_data", vExt.Move(), allocator);
-            
+            json::Value vExt;
+            vExt.SetString(encodeBuffer, allocator);
+            doc.AddMember("extension_data", vExt.Move(), allocator);
+        }
     } else {
         const auto kind = ExtensionKindToString(std::nullopt);
 
         json::Value vKind;
-        vKind.SetString(kind.c_str(), kind.size());
+        vKind.SetString(kind, allocator);
         doc.AddMember("extension_kind", vKind.Move(), allocator);
     }
 
@@ -310,7 +317,13 @@ Chunk JsonToChunk(const json::Document&        aJsonDocument,
             const auto* encodedExtString    = value.GetString();
             const auto  encodedExtStringLen = value.GetStringLength();
 
-            Base64Decode(*extension, *kind /*, encodedExtString, encodedExtStringLen*/);
+            std::vector<std::uint8_t> deserializationBuffer; // TODO: make reusable buffer
+
+            Base64Decode(*extension,
+                         *kind,
+                         encodedExtString,
+                         encodedExtStringLen,
+                         &deserializationBuffer);
         } else {
             HG_LOG_WARN(
                 LOG_ID,
@@ -324,20 +337,36 @@ Chunk JsonToChunk(const json::Document&        aJsonDocument,
 }
 
 std::string ChunkToJsonString(const Chunk& aChunk) {
+#if HG_BUILD_TYPE == HG_DEBUG
+#define JsonWriter json::PrettyWriter
+#else
+#define JsonWriter json::Writer
+#endif
+
     const auto doc = ChunkToJson(aChunk);
 
-    json::StringBuffer               stringbuf;
-    json::Writer<json::StringBuffer> writer(stringbuf);
+    json::StringBuffer             stringbuf;
+    JsonWriter<json::StringBuffer> writer(stringbuf);
     doc.Accept(writer);
 
     return stringbuf.GetString();
+
+#undef JsonWriter
 }
 
 Chunk JsonStringToChunk(std::string aJsonString, const ChunkExtensionFactory& aChunkExtensionFactory) {
+    const auto start = std::chrono::steady_clock::now();
+
     json::Document doc;
     doc.ParseInsitu(aJsonString.data());
 
-    return JsonToChunk(doc, aChunkExtensionFactory);
+    auto result = JsonToChunk(doc, aChunkExtensionFactory);
+
+    const auto end = std::chrono::steady_clock::now();
+    const auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    HG_LOG_INFO(LOG_ID, "JsonStringToChunk took {}ms.", us.count() / 1000.0);
+
+    return result;
 }
 
 /*

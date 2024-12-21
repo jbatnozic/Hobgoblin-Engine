@@ -175,8 +175,12 @@ private:
 class Fixture {
 public:
     gridworld::test::FakeDiskIoHandler     _fakeDiskIoHandler;
-    gridworld::detail::DefaultChunkSpooler _chunkSpooler{_fakeDiskIoHandler};
+    gridworld::detail::DefaultChunkSpooler _chunkSpooler;
     FakeWorld                              _fakeWorld{32, 32, _chunkSpooler};
+
+    Fixture() {
+        _chunkSpooler.setDiskIoHandler(&_fakeDiskIoHandler);
+    }
 };
 } // namespace
 

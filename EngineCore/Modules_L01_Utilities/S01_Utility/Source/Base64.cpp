@@ -27,7 +27,7 @@ std::string SimpleBase64Encode(const void* aBytes, PZInteger aByteCount) {
 }
 
 PZInteger GetRecommendedOutputBufferSizeForBase64Encode(PZInteger aInputBufferByteCount) {
-    return ((aInputBufferByteCount * 4 + 2) / 3);
+    return ((aInputBufferByteCount * 4 + 8) / 3);
 }
 
 PZInteger Base64Encode(const void* aInputBuffer,
@@ -50,11 +50,13 @@ PZInteger Base64Encode(const void* aInputBuffer,
                   &outlen,
                   0);
 
+    HG_ASSERT(stopz(outlen) <= aOutputBufferByteCount);
+
     return stopz(outlen);
 }
 
 PZInteger GetRecommendedOutputBufferSizeForBase64Decode(PZInteger aInputBufferByteCount) {
-    return ((aInputBufferByteCount * 3 + 3) / 4);
+    return ((aInputBufferByteCount * 3 + 11) / 4);
 }
 
 PZInteger Base64Decode(const void* aInputBuffer,
@@ -76,6 +78,8 @@ PZInteger Base64Decode(const void* aInputBuffer,
                   static_cast<char*>(aOutputBuffer),
                   &outlen,
                   0);
+
+    HG_ASSERT(stopz(outlen) <= aOutputBufferByteCount);
 
     return stopz(outlen);
 }

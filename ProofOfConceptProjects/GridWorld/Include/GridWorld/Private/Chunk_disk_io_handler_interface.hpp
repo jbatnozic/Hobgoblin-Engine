@@ -6,11 +6,17 @@
 #include <optional>
 
 namespace gridworld {
+
+// Forward declare
+class Binder;
+
 namespace detail {
 
 class ChunkDiskIoHandlerInterface {
 public:
     virtual ~ChunkDiskIoHandlerInterface() = default;
+
+    virtual void setBinder(Binder* aBinder) = 0;
 
     virtual std::optional<Chunk> loadChunkFromRuntimeCache(ChunkId aChunkId) = 0;
 

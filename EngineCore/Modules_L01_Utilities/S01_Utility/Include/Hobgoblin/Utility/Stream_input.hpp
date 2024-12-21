@@ -95,7 +95,7 @@ public:
     //! 
     //! Returns a pointer to a buffer of size N containing the next N bytes to be
     //! extracted from the stream, where N is equal to `aByteCount`. These bytes
-    //! can then be modified, copied, read directly or otherwise used. Any subsequent
+    //! can then be copied, read directly or otherwise used. Any subsequent
     //! operation on the stream will invalidate the returned pointer, so you should
     //! process the data immediately. In any case, this function will advance the
     //! stream's internal reading position by `aByteCount`.
@@ -108,7 +108,7 @@ public:
     //! \throws StreamReadError if stream has less than `aByteCount` bytes left
     //!         to extract. If this exception is thrown, the stream's read error
     //!         flag will also be set.
-    HG_NODISCARD void* readInPlace(PZInteger aByteCount);
+    HG_NODISCARD const void* readInPlace(PZInteger aByteCount);
 
     //! \brief Extracts raw data from the packet; does not throw on failure.
     //!
@@ -118,7 +118,7 @@ public:
     //! 
     //! Returns a pointer to a buffer of size N containing the next N bytes to be
     //! extracted from the stream, where N is equal to `aByteCount`. These bytes
-    //! can then be modified, copied, read directly or otherwise used. Any subsequent
+    //! can then be copied, read directly or otherwise used. Any subsequent
     //! operation on the stream will invalidate the returned pointer, so you should
     //! process the data immediately. In any case, this function will advance the
     //! stream's internal reading position by `aByteCount`.
@@ -129,7 +129,7 @@ public:
     //!          or if the concrete stream implementation does not support this method,
     //!          or if the Packet has less than `aByteCount` bytes left to extract
     //!          (in this case the stream's read error flag will also be set.).
-    HG_NODISCARD void* readInPlaceNoThrow(PZInteger aByteCount);
+    HG_NODISCARD const void* readInPlaceNoThrow(PZInteger aByteCount);
 
     //! Extracts an object of type `T` from the stream (assuming it has the proper `operator>>`
     //! defined.
@@ -312,9 +312,9 @@ private:
     //! Implementation for `read`.
     virtual std::int64_t _read(NeverNull<void*> aDestination, PZInteger aByteCount, bool aAllowPartal) = 0;
     //! Implementation for `readInPlace`.
-    virtual void* _readInPlace(PZInteger aByteCount) = 0;
+    virtual const void* _readInPlace(PZInteger aByteCount) = 0;
     //! Implementation for `readInPlaceNoThrow`.
-    virtual std::int64_t _readInPlaceNoThrow(PZInteger aByteCount, void** aResult) = 0;
+    virtual std::int64_t _readInPlaceNoThrow(PZInteger aByteCount, const void** aResult) = 0;
     //! Implementation for `setReadError`.
     virtual void _setReadError() = 0;
     //! Implementation for `_setNotGood`.
@@ -361,7 +361,7 @@ inline std::int64_t InputStream::read(NeverNull<void*> aDestination, PZInteger a
     return result;
 }
 
-inline void* InputStream::readInPlace(PZInteger aByteCount) {
+inline const void* InputStream::readInPlace(PZInteger aByteCount) {
     try {
         return _readInPlace(aByteCount);
     }
@@ -371,8 +371,8 @@ inline void* InputStream::readInPlace(PZInteger aByteCount) {
     }
 }
 
-inline void* InputStream::readInPlaceNoThrow(PZInteger aByteCount) {
-    void* result;
+inline const void* InputStream::readInPlaceNoThrow(PZInteger aByteCount) {
+    const void* result;
     const auto code = _readInPlaceNoThrow(aByteCount, &result);
     _setErrorIfNeeded(code);
     return result;

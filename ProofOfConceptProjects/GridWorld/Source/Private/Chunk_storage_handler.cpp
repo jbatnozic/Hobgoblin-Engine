@@ -14,17 +14,19 @@ namespace detail {
 
 static constexpr auto LOG_ID = "Griddy";
 
-ChunkStorageHandler::ChunkStorageHandler(ChunkSpoolerInterface& aChunkSpooler,
-                                         const WorldConfig&     aConfig)
+ChunkStorageHandler::ChunkStorageHandler(const WorldConfig& aConfig)
     : _chunks{aConfig.chunkCountX, aConfig.chunkCountY}
-    , _chunkSpooler{aChunkSpooler}
     , _chunkWidth{aConfig.cellsPerChunkX}
     , _chunkHeight{aConfig.cellsPerChunkY}
     , _freeChunkLimit{aConfig.maxLoadedNonessentialCells} {}
 
 ///////////////////////////////////////////////////////////////////////////
-// BINDER                                                              //
+// DEPENDENCIES                                                          //
 ///////////////////////////////////////////////////////////////////////////
+
+void ChunkStorageHandler::setChunkSpooler(ChunkSpoolerInterface* aChunkSpooler) {
+    _chunkSpooler = aChunkSpooler;
+}
 
 void ChunkStorageHandler::setBinder(Binder* aBinder) {
     _binder = aBinder;
@@ -49,8 +51,8 @@ void ChunkStorageHandler::update() {
     for (; iter != _chunkControlBlocks.end(); iter = std::next(iter)) {
         auto& cb = iter->second;
         if (cb.requestHandle != nullptr && cb.requestHandle->isFinished()) {
-            const auto id = iter->first;
-            auto chunk = cb.requestHandle->takeChunk();
+            const auto id    = iter->first;
+            auto       chunk = cb.requestHandle->takeChunk();
             if (chunk.has_value()) {
                 _onChunkLoaded(id, std::move(*chunk), iter);
             } else {
@@ -67,12 +69,14 @@ void ChunkStorageHandler::update() {
 }
 
 void ChunkStorageHandler::prune() {
+    HG_ASSERT(_chunkSpooler != nullptr);
+
     while (_freeChunks.size() > hg::pztos(_freeChunkLimit)) {
         const auto iter = _freeChunks.begin();
         const auto id   = iter->first;
-        
+
         auto& chunk = _chunks[static_cast<hg::PZInteger>(id.y)][static_cast<hg::PZInteger>(id.x)];
-        _chunkSpooler.unloadChunk(id, std::move(chunk));
+        _chunkSpooler->unloadChunk(id, std::move(chunk));
         chunk.makeEmpty();
 
         _freeChunks.erase(iter);
@@ -105,7 +109,8 @@ void ChunkStorageHandler::_loadChunkImmediately(ChunkId aChunkId) {
         requestHandle = iter->second.requestHandle;
         (void)requestHandle->trySwapPriority(MOST_URGENT_PRIORITY);
     } else {
-        auto handles  = _chunkSpooler.loadChunks({
+        HG_ASSERT(_chunkSpooler != nullptr);
+        auto handles  = _chunkSpooler->loadChunks({
             ChunkSpoolerInterface::LoadRequest{id, MOST_URGENT_PRIORITY}
         });
         requestHandle = std::move(handles.at(0));
@@ -242,7 +247,8 @@ void ChunkStorageHandler::_updateChunkUsage(
 
     HG_HARD_ASSERT(cbs.size() == requests.size());
     if (!requests.empty()) {
-        auto handles = _chunkSpooler.loadChunks(requests);
+        HG_ASSERT(_chunkSpooler != nullptr);
+        auto handles = _chunkSpooler->loadChunks(requests);
         HG_ASSERT(handles.size() == cbs.size());
         for (std::size_t i = 0; i < handles.size(); i += 1) {
             cbs[i]->requestHandle = std::move(handles[i]);

@@ -1,6 +1,7 @@
 project("GridWorld.ManualTest")
 
 add_executable(${PROJECT_NAME}
+    "Default_disk_io_test.cpp"
     "GridWorld_manual_test.cpp"
     "Lighting_test.cpp"
     "Openness_test.cpp"

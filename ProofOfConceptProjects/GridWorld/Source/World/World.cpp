@@ -1,6 +1,8 @@
 
 #include <GridWorld/World/World.hpp>
 #include <GridWorld/Private/Chunk_disk_io_handler_interface.hpp>
+#include <GridWorld/Private/Chunk_disk_io_handler_default.hpp>
+#include <GridWorld/Private/Chunk_spooler_interface.hpp>
 #include <GridWorld/Private/Chunk_spooler_default.hpp>
 
 #include <Hobgoblin/HGExcept.hpp>
@@ -12,17 +14,40 @@
 
 namespace gridworld {
 
-// World::World(const WorldConfig& aConfig) {}
+namespace {
+std::unique_ptr<detail::ChunkDiskIoHandlerInterface> CreateDiskIoHandler(const WorldConfig& aConfig) {
+    return std::make_unique<detail::DefaultChunkDiskIoHandler>(aConfig);
+}
+
+std::unique_ptr<detail::ChunkSpoolerInterface> CreateChunkSpooler(const WorldConfig& aConfig) {
+    (void)aConfig;
+    return std::make_unique<detail::DefaultChunkSpooler>();
+}
+} // namespace
+
+World::World(const WorldConfig& aConfig)
+    : _config{WorldConfig::validate(aConfig)}
+    , _internalChunkDiskIoHandler{CreateDiskIoHandler(aConfig)}
+    , _chunkDiskIoHandler{_internalChunkDiskIoHandler.get()}
+    , _internalChunkSpooler{CreateChunkSpooler(aConfig)}
+    , _chunkSpooler{_internalChunkSpooler.get()}
+    , _chunkStorage{aConfig}
+//
+{
+    _connectSubcomponents();
+}
 
 World::World(const WorldConfig&                                  aConfig,
              hg::NeverNull<detail::ChunkDiskIoHandlerInterface*> aChunkDiskIoHandler)
     : _config{WorldConfig::validate(aConfig)}
-    , _chunkDiskIoHandler{nullptr}
-    , _chunkSpooler{std::make_unique<detail::DefaultChunkSpooler>(*aChunkDiskIoHandler)}
-    , _chunkStorage{*_chunkSpooler, aConfig}
+    , _internalChunkDiskIoHandler{nullptr}
+    , _chunkDiskIoHandler{aChunkDiskIoHandler}
+    , _internalChunkSpooler{CreateChunkSpooler(aConfig)}
+    , _chunkSpooler{_internalChunkSpooler.get()}
+    , _chunkStorage{aConfig}
 //
 {
-    _chunkStorage.setBinder(this);
+    _connectSubcomponents();
 }
 
 #ifdef FUTURE
@@ -34,7 +59,7 @@ World::World(const WorldConfig& aConfig, hg::NeverNull<detail::ChunkSpoolerInter
 #endif
 
 World::~World() {
-    _chunkStorage.setBinder(nullptr);
+    _disconnectSubcomponents();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -477,6 +502,20 @@ void World::Editor::setWallAtUnchecked(hg::PZInteger                         aX,
 ///////////////////////////////////////////////////////////////////////////
 // PRIVATE METHODS                                                       //
 ///////////////////////////////////////////////////////////////////////////
+
+void  World::_connectSubcomponents() {
+    _chunkDiskIoHandler->setBinder(this);
+    _chunkSpooler->setDiskIoHandler(_chunkDiskIoHandler);
+    _chunkStorage.setBinder(this);
+    _chunkStorage.setChunkSpooler(_chunkSpooler);
+}
+
+void  World::_disconnectSubcomponents() {
+    _chunkStorage.setChunkSpooler(nullptr);
+    _chunkStorage.setBinder(nullptr);
+    _chunkSpooler->setDiskIoHandler(nullptr);
+    _chunkDiskIoHandler->setBinder(nullptr);
+}
 
 void World::onChunkLoaded(ChunkId aChunkId, const Chunk* aChunk) {
     const hg::PZInteger top  = aChunkId.y * _config.cellsPerChunkY;

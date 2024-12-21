@@ -24,7 +24,7 @@ protected:
                 .cellsPerChunkX             = 8,
                 .cellsPerChunkY             = 8,
                 .cellResolution             = 32.f,
-                .maxCellOpenness            = 4,
+                .maxCellOpenness            = 5,
                 .maxLoadedNonessentialCells = 1};
     }
 };

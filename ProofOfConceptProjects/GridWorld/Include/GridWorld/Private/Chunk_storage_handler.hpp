@@ -48,13 +48,14 @@ private:
     using Self = ChunkStorageHandler;
 
 public:
-    ChunkStorageHandler(ChunkSpoolerInterface& aChunkSpooler,
-                        const WorldConfig& aConfig);
+    ChunkStorageHandler(const WorldConfig& aConfig);
 
     ///////////////////////////////////////////////////////////////////////////
-    // BINDER                                                                //
+    // DEPENDENCIES                                                          //
     ///////////////////////////////////////////////////////////////////////////
     
+    void setChunkSpooler(ChunkSpoolerInterface* aChunkSpooler);
+
     void setBinder(Binder* aBinder);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -218,7 +219,7 @@ private:
 
     // ===== Members
 
-    ChunkSpoolerInterface& _chunkSpooler;
+    ChunkSpoolerInterface* _chunkSpooler = nullptr;
 
     hg::PZInteger _chunkWidth;
     hg::PZInteger _chunkHeight;

@@ -52,6 +52,12 @@ PUBLIC
     "rapidjson"
 )
 
+# TODO: Chunk conversions to and from json strings could be even faster if std::string is not used
+target_compile_definitions(${PROJECT_NAME}
+PRIVATE
+    "RAPIDJSON_HAS_STDSTRING=1"
+)
+
 target_include_directories(${PROJECT_NAME} PUBLIC "Include/")
 
 add_subdirectory("Test")

@@ -22,8 +22,10 @@ class RequestHandleImpl;
 
 class DefaultChunkSpooler final : public ChunkSpoolerInterface {
 public:
-    DefaultChunkSpooler(ChunkDiskIoHandlerInterface& aDiskIoHandler);
+    DefaultChunkSpooler();
     ~DefaultChunkSpooler() override;
+
+    void setDiskIoHandler(ChunkDiskIoHandlerInterface* aDiskIoHandler) override;
 
     void pause() override;
     void unpause() override;
@@ -39,7 +41,7 @@ public:
 private:
     friend class RequestHandleImpl;
 
-    hg::NeverNull<ChunkDiskIoHandlerInterface*> _diskIoHandler;
+    ChunkDiskIoHandlerInterface* _diskIoHandler;
 
     using Mutex = std::mutex;
     mutable Mutex _mutex;

@@ -4,7 +4,7 @@
 #ifndef UHOBGOBLIN_UTIL_PACKET_HPP
 #define UHOBGOBLIN_UTIL_PACKET_HPP
 
-#include <Hobgoblin/Utility/Streams.hpp>
+#include <Hobgoblin/Utility/Stream.hpp>
 
 #include <Hobgoblin/Math/Core.hpp>
 
@@ -151,9 +151,9 @@ private:
 
     std::int64_t _read(NeverNull<void*> aDestination, PZInteger aByteCount, bool aAllowPartal) override;
 
-    void* _readInPlace(PZInteger aByteCount) override;
+    const void* _readInPlace(PZInteger aByteCount) override;
 
-    std::int64_t _readInPlaceNoThrow(PZInteger aByteCount, void** aResult) override;
+    std::int64_t _readInPlaceNoThrow(PZInteger aByteCount, const void** aResult) override;
 
     // ===== State Checking =====
 
