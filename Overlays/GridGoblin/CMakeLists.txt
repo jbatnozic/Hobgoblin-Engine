@@ -15,7 +15,7 @@ add_library(${PROJECT_NAME}
     "Source/Private/Chunk_disk_io_handler_default.cpp"
     "Source/Private/Chunk_spooler_default.cpp"
     "Source/Private/Chunk_storage_handler.cpp"
-    "Source/Private/Light_model_ext.cpp"
+    "Source/Private/Light_ext.cpp"
     "Source/Private/Model_conversions.cpp"
 
     # Rendering

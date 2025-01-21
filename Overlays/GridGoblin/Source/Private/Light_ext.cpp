@@ -39,7 +39,7 @@ void LightExt::ExtensionData::render(hg::gr::Canvas&             aCanvas,
 
     _renderTexture->clear(light->getColor());
     _renderTexture->setView(hg::gr::View{*light->getCenter(), size});
-    _renderTexture->getView().setViewport({0.f, 0.f, 1.f, 1.f});
+    //_renderTexture->getView().setViewport({0.f, 0.f, 1.f, 1.f});
 
     _visCalc.calc(light->getCenter(), size, light->getCenter());
     _visCalc.render(*_renderTexture);
@@ -54,8 +54,7 @@ void LightExt::ExtensionData::render(hg::gr::Canvas&             aCanvas,
     aCanvas.draw(spr, aRenderStates);
 }
 
-const LightExt* LightExt::ExtensionData::getLightAddress(const ExtensionData* aExtensionDataAddress) //
-{
+const LightExt* LightExt::ExtensionData::getLightAddress(const ExtensionData* aExtensionDataAddress) {
     static constexpr auto EXTENSION_OFFSET = offsetof(LightExt, mutableExtensionData);
 
     const char* extensionRawAddress = reinterpret_cast<const char*>(aExtensionDataAddress);

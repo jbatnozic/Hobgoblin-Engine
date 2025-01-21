@@ -8,7 +8,7 @@
 namespace jbatnozic {
 namespace gridgoblin {
 namespace opengl {
-static constexpr auto LOG_ID = "gridworld";
+static constexpr auto LOG_ID = "GridGoblin";
 
 void DualPBO_Init(DualPBONames& aPboNames, std::size_t aRamBufferSize) {
     OpenGLErrorContext ectx;
@@ -48,7 +48,7 @@ void DualPBO_StartTransfer(const DualPBONames& aPboNames,
     GLCALL(ectx, glBindTexture(GL_TEXTURE_2D, aTextureName));
 
     // Starts the asychronous transfer of texture pixel data into the PBO.
-    // This transfer will happen whenever is suitable for the GPU, as to now
+    // This transfer will happen whenever is suitable for the GPU, as to not
     // stall the graphics pipeline.
     // clang-format off
     GLCALL(ectx, glGetTexImage(/* target */      GL_TEXTURE_2D,

@@ -2,6 +2,7 @@
 // See https://github.com/jbatnozic/Hobgoblin?tab=readme-ov-file#licence
 
 #include <GridGoblin/Rendering/Dimetric_renderer.hpp>
+#include <GridGoblin/Rendering/Dimetric_transform.hpp>
 #include <GridGoblin/Rendering/Drawing_order.hpp>
 #include <GridGoblin/Spatial/Position_conversions.hpp>
 
@@ -455,7 +456,8 @@ void DimetricRenderer::LightingProviderToRenderedObjectAdapter::render(
     PositionInView  aPosInView) const //
 {
     if (_lightingRenderer != nullptr) {
-        _lightingRenderer->render(aCanvas);
+        const hg::gr::RenderStates states{nullptr, nullptr, DIMETRIC_TRANSFORM, hg::gr::BLEND_MULTIPLY};
+        _lightingRenderer->render(aCanvas, states);
     }
 }
 

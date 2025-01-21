@@ -44,9 +44,9 @@ public:
     void startPrepareToRender(const hg::gr::View&       aView,
                               const OverdrawAmounts&    aOverdrawAmounts,
                               PositionInWorld           aPointOfView,
-                              std::int32_t              aRenderFlags,
-                              const VisibilityProvider* aVisProv,
-                              const LightingRenderer*   aLightingRenderer = nullptr) override;
+                              std::int32_t              aRenderFlags        = 0,
+                              const VisibilityProvider* aVisibilityProvider = nullptr,
+                              const LightingRenderer*   aLightingRenderer   = nullptr) override;
 
     void addObject(const RenderedObject& aObject) override;
 

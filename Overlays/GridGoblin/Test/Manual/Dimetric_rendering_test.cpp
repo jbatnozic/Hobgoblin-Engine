@@ -107,6 +107,7 @@ void RunDimetricRenderingTestImpl() {
     GLenum err = glewInit();
     if (err != GLEW_OK) {
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+        return;
     }
 
     VisibilityCalculator visCalc{world};
@@ -115,7 +116,8 @@ void RunDimetricRenderingTestImpl() {
     // detail::LightExt light{{0.f, 0.f}, 128.f, hg::gr::COLOR_WHITE, {512, 512}, world, 0};
     LightingRenderer lightRenderer{
         world,
-        {1024, 1024}
+        {1024, 1024},
+        LightingRenderer::Purpose::DIMETRIC_RENDERING
     };
 
     const auto lightId = world.createDynamicLight({0.f, 0.f}, 128.f, hg::gr::COLOR_WHITE, {512, 512});
@@ -182,7 +184,9 @@ void RunDimetricRenderingTestImpl() {
 
         const auto t1 = std::chrono::steady_clock::now();
 
-        lightRenderer.start(window.getView(0));
+        lightRenderer.prepareToRender(
+            dimetric::ToPositionInWorld(PositionInView{window.getView(0).getCenter()}),
+            window.getView(0).getSize());
 
         if (!hg::in::CheckPressedVK(hg::in::VK_SPACE)) {
             renderer.startPrepareToRender(window.getView(0),
