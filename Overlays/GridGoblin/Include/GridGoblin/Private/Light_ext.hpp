@@ -29,15 +29,15 @@ namespace detail {
 
 namespace hg = jbatnozic::hobgoblin;
 
-class LightModelExt : public LightModel {
+class LightExt : public Light {
 public:
-    LightModelExt(PositionInWorld     aCenter,
-                  float               aRadius,
-                  hg::gr::Color       aColor,
-                  hg::math::Vector2pz aTextureSize,
-                  const World&        aWorld,
-                  LightId             aLightId)
-        : LightModel{aCenter, aRadius, aColor}
+    LightExt(PositionInWorld     aCenter,
+             float               aRadius,
+             hg::gr::Color       aColor,
+             hg::math::Vector2pz aTextureSize,
+             const World&        aWorld,
+             LightId             aLightId)
+        : Light{aCenter, aRadius, aColor}
         , mutableExtensionData{aTextureSize, aWorld, aLightId} {}
 
     class ExtensionData {
@@ -46,9 +46,9 @@ public:
 
         LightId getId() const;
 
-        void render(hg::gr::Canvas& aCanvas, const hg::gr::RenderStates& = {}) const;
+        void render(hg::gr::Canvas& aCanvas, const hg::gr::RenderStates& aRenderStates = {}) const;
 
-        static const LightModelExt* getLightAddress(const ExtensionData* aExtensionDataAddress);
+        static const LightExt* getLightAddress(const ExtensionData* aExtensionDataAddress);
 
     private:
         const World& _world;

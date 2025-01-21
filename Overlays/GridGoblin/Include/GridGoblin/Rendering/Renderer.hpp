@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <GridGoblin/Rendering/Rendered_object.hpp>
 #include <GridGoblin/Rendering/Lighting_renderer.hpp> // TODO: temp.
+#include <GridGoblin/Rendering/Rendered_object.hpp>
 #include <GridGoblin/Rendering/Visibility_provider.hpp>
 #include <GridGoblin/Spatial/Position_in_view.hpp>
 #include <GridGoblin/Spatial/Position_in_world.hpp>

@@ -1,7 +1,7 @@
 // Copyright 2024 Jovan Batnozic. Released under MS-PL licence in Serbia.
 // See https://github.com/jbatnozic/Hobgoblin?tab=readme-ov-file#licence
 
-#include <GridGoblin/Private/Light_model_ext.hpp>
+#include <GridGoblin/Private/Light_ext.hpp>
 
 namespace jbatnozic {
 namespace gridgoblin {
@@ -16,9 +16,9 @@ const VisibilityCalculatorConfig& GetVisCalcConfig() {
 }
 } // namespace
 
-LightModelExt::ExtensionData::ExtensionData(hg::math::Vector2pz aTextureSize,
-                                            const World&        aWorld,
-                                            LightId             aLightId)
+LightExt::ExtensionData::ExtensionData(hg::math::Vector2pz aTextureSize,
+                                       const World&        aWorld,
+                                       LightId             aLightId)
     : _world{aWorld}
     , _visCalc{_world, GetVisCalcConfig()}
     , _id{aLightId} //
@@ -27,12 +27,12 @@ LightModelExt::ExtensionData::ExtensionData(hg::math::Vector2pz aTextureSize,
     _renderTexture->create(aTextureSize);
 }
 
-LightId LightModelExt::ExtensionData::getId() const {
+LightId LightExt::ExtensionData::getId() const {
     return _id;
 }
 
-void LightModelExt::ExtensionData::render(hg::gr::Canvas&             aCanvas,
-                                          const hg::gr::RenderStates& aRenderStates) const {
+void LightExt::ExtensionData::render(hg::gr::Canvas&             aCanvas,
+                                     const hg::gr::RenderStates& aRenderStates) const {
     const auto* light = getLightAddress(this);
 
     const auto size = hg::math::Vector2f{light->getRadius() * 2.f, light->getRadius() * 2.f};
@@ -54,15 +54,14 @@ void LightModelExt::ExtensionData::render(hg::gr::Canvas&             aCanvas,
     aCanvas.draw(spr, aRenderStates);
 }
 
-const LightModelExt* LightModelExt::ExtensionData::getLightAddress(
-    const ExtensionData* aExtensionDataAddress) //
+const LightExt* LightExt::ExtensionData::getLightAddress(const ExtensionData* aExtensionDataAddress) //
 {
-    static constexpr auto EXTENSION_OFFSET = offsetof(LightModelExt, mutableExtensionData);
+    static constexpr auto EXTENSION_OFFSET = offsetof(LightExt, mutableExtensionData);
 
     const char* extensionRawAddress = reinterpret_cast<const char*>(aExtensionDataAddress);
     const char* lightRawAddress     = extensionRawAddress - EXTENSION_OFFSET;
 
-    return reinterpret_cast<const LightModelExt*>(lightRawAddress);
+    return reinterpret_cast<const LightExt*>(lightRawAddress);
 }
 
 } // namespace detail

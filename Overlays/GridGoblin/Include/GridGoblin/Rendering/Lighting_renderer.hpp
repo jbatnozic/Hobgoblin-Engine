@@ -34,8 +34,8 @@ private:
     const World& _world;
 
     PositionInWorld _viewCenter;
-    float _drawScaleX;
-    float _drawScaleY;
+    float           _drawScaleX;
+    float           _drawScaleY;
 
     std::unique_ptr<hg::gr::RenderTexture> _renderTexture;
 };

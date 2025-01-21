@@ -22,7 +22,7 @@
 #include <GridGoblin/World/World_config.hpp>
 
 #include <GridGoblin/Private/Chunk_storage_handler.hpp>
-#include <GridGoblin/Private/Light_model_ext.hpp>
+#include <GridGoblin/Private/Light_ext.hpp>
 
 #include <memory>
 #include <optional>
@@ -328,7 +328,7 @@ public:
     // LIGHTING                                                              //
     ///////////////////////////////////////////////////////////////////////////
 
-    using LightIterator = std::vector<detail::LightModelExt>::const_iterator; // TEMPORARY
+    using LightIterator = std::vector<detail::LightExt>::const_iterator; // TEMPORARY
 
     LightId createDynamicLight(PositionInWorld     aCenter,
                                float               aRadius,
@@ -342,7 +342,7 @@ public:
         return id;
     }
 
-    LightModel* getLight(LightId aLightId);
+    Light* getLight(LightId aLightId);
 
     LightIterator dynamicLightsBegin() const;
     LightIterator dynamicLightsEnd() const;
@@ -445,8 +445,8 @@ private:
 
     LightId _lightIdCounter = 0;
 
-    std::vector<detail::LightModelExt> _dynamicLights;
-    std::vector<detail::LightModelExt> _inactiveLights;
+    std::vector<detail::LightExt> _dynamicLights;
+    std::vector<detail::LightExt> _inactiveLights;
 };
 
 ///////////////////////////////////////////////////////////////////////////

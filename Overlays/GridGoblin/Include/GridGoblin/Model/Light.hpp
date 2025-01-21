@@ -13,10 +13,12 @@ namespace gridgoblin {
 
 namespace hg = jbatnozic::hobgoblin;
 
-class LightModel {
+class Light {
 public:
-    LightModel(PositionInWorld aCenter, float aRadius, hg::gr::Color aColor)
-        : _center{aCenter}, _radius{aRadius}, _color{aColor} {}
+    Light(PositionInWorld aCenter, float aRadius, hg::gr::Color aColor)
+        : _center{aCenter}
+        , _radius{aRadius}
+        , _color{aColor} {}
 
     PositionInWorld getCenter() const;
     void            setCenter(PositionInWorld aNewCenter);
@@ -34,29 +36,29 @@ private:
     bool            _isDirty = true;
 };
 
-inline PositionInWorld LightModel::getCenter() const {
+inline PositionInWorld Light::getCenter() const {
     return _center;
 }
 
-inline void LightModel::setCenter(PositionInWorld aNewCenter) {
+inline void Light::setCenter(PositionInWorld aNewCenter) {
     _center  = aNewCenter;
     _isDirty = true;
 }
 
-inline float LightModel::getRadius() const {
+inline float Light::getRadius() const {
     return _radius;
 }
 
-inline void LightModel::setRadius(float aNewRadius) {
+inline void Light::setRadius(float aNewRadius) {
     _radius  = aNewRadius;
     _isDirty = true;
 }
 
-inline hg::gr::Color LightModel::getColor() const {
+inline hg::gr::Color Light::getColor() const {
     return _color;
 }
 
-inline void LightModel::setColor(hg::gr::Color aNewColor) {
+inline void Light::setColor(hg::gr::Color aNewColor) {
     _color = aNewColor;
     // _isDirty  = true;
 }

@@ -5,8 +5,8 @@
 #include <GridGoblin/World/World.hpp>
 
 #include <Hobgoblin/Common.hpp>
-#include <Hobgoblin/Logging.hpp>
 #include <Hobgoblin/Graphics.hpp>
+#include <Hobgoblin/Logging.hpp>
 
 #include <array>
 #include <cmath>

@@ -452,7 +452,7 @@ ActiveArea World::createActiveArea() {
 // MARK: LIGHTING                                                        //
 ///////////////////////////////////////////////////////////////////////////
 
-LightModel* World::getLight(LightId aLightId) {
+Light* World::getLight(LightId aLightId) {
     for (auto& light : _dynamicLights) {
         const auto& ext = GetExtensionData(light);
         if (ext.getId() == aLightId) {

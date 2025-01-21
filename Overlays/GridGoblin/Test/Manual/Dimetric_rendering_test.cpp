@@ -2,7 +2,7 @@
 // See https://github.com/jbatnozic/Hobgoblin?tab=readme-ov-file#licence
 
 #include <GridGoblin/GridGoblin.hpp>
-#include <GridGoblin/Private/Light_model_ext.hpp>
+#include <GridGoblin/Private/Light_ext.hpp>
 
 #include "../../GridGoblin/Source/Detail_access.hpp"
 
@@ -112,8 +112,11 @@ void RunDimetricRenderingTestImpl() {
     VisibilityCalculator visCalc{world};
     DimetricRenderer     renderer{world, loader};
 
-    //detail::LightModelExt light{{0.f, 0.f}, 128.f, hg::gr::COLOR_WHITE, {512, 512}, world, 0};
-    LightingRenderer lightRenderer{world, {1024, 1024}};
+    // detail::LightExt light{{0.f, 0.f}, 128.f, hg::gr::COLOR_WHITE, {512, 512}, world, 0};
+    LightingRenderer lightRenderer{
+        world,
+        {1024, 1024}
+    };
 
     const auto lightId = world.createDynamicLight({0.f, 0.f}, 128.f, hg::gr::COLOR_WHITE, {512, 512});
 
@@ -153,7 +156,7 @@ void RunDimetricRenderingTestImpl() {
         const auto cursorInWorld =
             dimetric::ToPositionInWorld(PositionInView{window.mapPixelToCoords(mouseWindowPos)});
 
-        //light.setCenter(cursorInWorld);
+        // light.setCenter(cursorInWorld);
         world.getLight(lightId)->setCenter(cursorInWorld);
 
         // Edit the world
@@ -202,7 +205,7 @@ void RunDimetricRenderingTestImpl() {
         }
         renderer.endPrepareToRender();
         renderer.render(window);
-        //GetExtensionData(light).render(window);
+        // GetExtensionData(light).render(window);
         const auto t2 = std::chrono::steady_clock::now();
         // std::cout << "Time to render: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
         // t1).count() / 1000.0 << "ms "

@@ -442,8 +442,8 @@ DimetricRenderer::LightingProviderToRenderedObjectAdapter::LightingProviderToRen
 
 void DimetricRenderer::LightingProviderToRenderedObjectAdapter::reset(
     const hg::gr::View&     aView,
-    const OverdrawAmounts&  aOverdrawAmounts, // TODO: not needed
-    PositionInWorld         aPointOfView, // TODO: not needed
+    const OverdrawAmounts&  aOverdrawAmounts,  // TODO: not needed
+    PositionInWorld         aPointOfView,      // TODO: not needed
     const LightingRenderer* aLightingRenderer) //
 {
     _spatialInfo.setCenter(dimetric::ToPositionInWorld(PositionInView{aView.getCenter()}));
