@@ -45,13 +45,14 @@ public:
                               const OverdrawAmounts&    aOverdrawAmounts,
                               PositionInWorld           aPointOfView,
                               std::int32_t              aRenderFlags,
-                              const VisibilityProvider* aVisProv) override;
+                              const VisibilityProvider* aVisProv,
+                              const LightingRenderer*   aLightingRenderer = nullptr) override;
 
     void addObject(const RenderedObject& aObject) override;
 
     void endPrepareToRender() override;
 
-    void render(hg::gr::Canvas& aCanvas) override;
+    void render(hg::gr::Canvas& aCanvas) const override;
 
 private:
     // ===== Dependencies =====
@@ -111,6 +112,25 @@ private:
 
     std::vector<CellToRenderedObjectAdapter> _cellAdapters;
 
+    // ===== Lighting adapter =====
+
+    class LightingProviderToRenderedObjectAdapter : public RenderedObject {
+    public:
+        LightingProviderToRenderedObjectAdapter();
+
+        void reset(const hg::gr::View&     aView,
+                   const OverdrawAmounts&  aOverdrawAmounts,
+                   PositionInWorld         aPointOfView,
+                   const LightingRenderer* aLightingRenderer);
+
+        void render(hg::gr::Canvas& aCanvas, PositionInView aPosInView) const override;
+
+    private:
+        const LightingRenderer* _lightingRenderer = nullptr;
+    };
+
+    LightingProviderToRenderedObjectAdapter _lightingAdapter;
+
     // ===== Rendered objects =====
 
     std::vector<const RenderedObject*> _objectsToRender;
@@ -130,7 +150,9 @@ private:
                                           PositionInView            aCellPosInView,
                                           const VisibilityProvider& aVisProv);
 
-    void _prepareCells(std::int32_t aRenderFlags, const VisibilityProvider* aVisProv);
+    void _prepareCells(std::int32_t              aRenderFlags,
+                       const VisibilityProvider* aVisProv,
+                       const LightingRenderer*   aLightingRenderer);
 
     std::uint16_t _updateFlagsOfCellRendererMask(const CellModel& aCell);
     std::uint16_t _updateFadeValueOfCellRendererMask(const CellInfo&            aCellInfo,

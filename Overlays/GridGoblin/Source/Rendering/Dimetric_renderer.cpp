@@ -78,7 +78,8 @@ void DimetricRenderer::startPrepareToRender(const hg::gr::View&       aView,
                                             const OverdrawAmounts&    aOverdrawAmounts,
                                             PositionInWorld           aPointOfView,
                                             std::int32_t              aRenderFlags,
-                                            const VisibilityProvider* aVisProv) {
+                                            const VisibilityProvider* aVisProv,
+                                            const LightingRenderer*   aLightingRenderer) {
     HG_VALIDATE_ARGUMENT(!!(aRenderFlags & REDUCE_WALLS_BASED_ON_VISIBILITY) == !!aVisProv);
 
     _viewData.center   = PositionInView{aView.getCenter()};
@@ -94,7 +95,10 @@ void DimetricRenderer::startPrepareToRender(const hg::gr::View&       aView,
     _objectsToRender.clear();
     _cellAdapters.clear();
 
-    _prepareCells(aRenderFlags, aVisProv);
+    _lightingAdapter.reset(aView, aOverdrawAmounts, aPointOfView, aLightingRenderer);
+    _objectsToRender.push_back(&_lightingAdapter);
+
+    _prepareCells(aRenderFlags, aVisProv, aLightingRenderer);
 
     _renderCycleCounter += 1;
 }
@@ -131,7 +135,7 @@ void DimetricRenderer::endPrepareToRender() {
               });
 }
 
-void DimetricRenderer::render(hg::gr::Canvas& aCanvas) {
+void DimetricRenderer::render(hg::gr::Canvas& aCanvas) const {
     for (const auto& object : _objectsToRender) {
         const auto& spatialInfo = object->getSpatialInfo();
         object->render(aCanvas, dimetric::ToPositionInView(spatialInfo.getCenter()));
@@ -218,7 +222,10 @@ void DimetricRenderer::_reduceCellsBelowIfCellIsVisible(hg::math::Vector2pz     
     } // end_for
 }
 
-void DimetricRenderer::_prepareCells(std::int32_t aRenderFlags, const VisibilityProvider* aVisProv) {
+void DimetricRenderer::_prepareCells(std::int32_t              aRenderFlags,
+                                     const VisibilityProvider* aVisProv,
+                                     const LightingRenderer*   aLightingRenderer) //
+{
     const auto cr = _world.getCellResolution();
 
     _diagonalTraverse(
@@ -424,6 +431,31 @@ void DimetricRenderer::CellToRenderedObjectAdapter::render(hg::gr::Canvas& aCanv
 
     default:
         break;
+    }
+}
+
+// MARK: Lighting adapter impl
+
+DimetricRenderer::LightingProviderToRenderedObjectAdapter::LightingProviderToRenderedObjectAdapter() {
+    _spatialInfo.setLayer(Layer::LIGHTING);
+}
+
+void DimetricRenderer::LightingProviderToRenderedObjectAdapter::reset(
+    const hg::gr::View&     aView,
+    const OverdrawAmounts&  aOverdrawAmounts, // TODO: not needed
+    PositionInWorld         aPointOfView, // TODO: not needed
+    const LightingRenderer* aLightingRenderer) //
+{
+    _spatialInfo.setCenter(dimetric::ToPositionInWorld(PositionInView{aView.getCenter()}));
+    _lightingRenderer = aLightingRenderer;
+}
+
+void DimetricRenderer::LightingProviderToRenderedObjectAdapter::render(
+    hg::gr::Canvas& aCanvas,
+    PositionInView  aPosInView) const //
+{
+    if (_lightingRenderer != nullptr) {
+        _lightingRenderer->render(aCanvas);
     }
 }
 

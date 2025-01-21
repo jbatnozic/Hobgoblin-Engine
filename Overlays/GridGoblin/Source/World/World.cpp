@@ -78,7 +78,7 @@ void World::detachBinder(hg::NeverNull<Binder*> aBinder) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// TEMPLATES                                                             //
+// MARK: TEMPLATES                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
 template <bool taAllowedToLoadAdjacent>
@@ -232,7 +232,7 @@ hg::PZInteger World::_calcOpennessAt(hg::PZInteger aX, hg::PZInteger aY) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// asdasd                                                                //
+// MARK: asdasd                                                          //
 ///////////////////////////////////////////////////////////////////////////
 
 void World::update() {
@@ -244,7 +244,7 @@ void World::prune() {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// CONVERSIONS                                                           //
+// MARK: CONVERSIONS                                                     //
 ///////////////////////////////////////////////////////////////////////////
 
 hg::math::Vector2pz World::posToCell(float aX, float aY) const {
@@ -290,7 +290,7 @@ ChunkId World::cellToChunkIdUnchecked(hg::math::Vector2pz aCell) const {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// LOCKING                                                               //
+// MARK: LOCKING                                                         //
 ///////////////////////////////////////////////////////////////////////////
 
 World::EditPermission::~EditPermission() {
@@ -302,7 +302,7 @@ std::unique_ptr<World::EditPermission> World::getPermissionToEdit() {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// CELL GETTERS                                                          //
+// MARK: CELL GETTERS                                                    //
 ///////////////////////////////////////////////////////////////////////////
 
 float World::getCellResolution() const {
@@ -367,7 +367,7 @@ const CellModel& World::getCellAtUnchecked(const EditPermission& /*aPerm*/,
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// CHUNKS                                                                //
+// MARK: CHUNKS                                                          //
 ///////////////////////////////////////////////////////////////////////////
 
 hg::PZInteger World::getChunkCountX() const {
@@ -441,7 +441,7 @@ const Chunk& World::getChunkAtIdUnchecked(const EditPermission& /*aPerm*/, Chunk
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// ACTIVE AREAS                                                          //
+// MARK: ACTIVE AREAS                                                    //
 ///////////////////////////////////////////////////////////////////////////
 
 ActiveArea World::createActiveArea() {
@@ -449,7 +449,37 @@ ActiveArea World::createActiveArea() {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// PRIVATE METHODS                                                       //
+// MARK: LIGHTING                                                        //
+///////////////////////////////////////////////////////////////////////////
+
+LightModel* World::getLight(LightId aLightId) {
+    for (auto& light : _dynamicLights) {
+        const auto& ext = GetExtensionData(light);
+        if (ext.getId() == aLightId) {
+            return &light;
+        }
+    }
+    return nullptr;
+}
+
+World::LightIterator World::dynamicLightsBegin() const {
+    return _dynamicLights.begin();
+}
+
+World::LightIterator World::dynamicLightsEnd() const {
+    return _dynamicLights.end();
+}
+
+World::LightIterator World::inactiveLightsBegin() const {
+    return _inactiveLights.begin();
+}
+
+World::LightIterator World::inactiveLightsEnd() const {
+    return _dynamicLights.end();
+}
+
+///////////////////////////////////////////////////////////////////////////
+// MARK: PRIVATE METHODS                                                 //
 ///////////////////////////////////////////////////////////////////////////
 
 // ===== Listeners =====

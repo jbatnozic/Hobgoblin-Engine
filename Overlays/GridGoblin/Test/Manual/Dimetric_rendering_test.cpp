@@ -2,6 +2,9 @@
 // See https://github.com/jbatnozic/Hobgoblin?tab=readme-ov-file#licence
 
 #include <GridGoblin/GridGoblin.hpp>
+#include <GridGoblin/Private/Light_model_ext.hpp>
+
+#include "../../GridGoblin/Source/Detail_access.hpp"
 
 #include <Hobgoblin/Graphics.hpp>
 #include <Hobgoblin/Input.hpp>
@@ -109,6 +112,11 @@ void RunDimetricRenderingTestImpl() {
     VisibilityCalculator visCalc{world};
     DimetricRenderer     renderer{world, loader};
 
+    //detail::LightModelExt light{{0.f, 0.f}, 128.f, hg::gr::COLOR_WHITE, {512, 512}, world, 0};
+    LightingRenderer lightRenderer{world, {1024, 1024}};
+
+    const auto lightId = world.createDynamicLight({0.f, 0.f}, 128.f, hg::gr::COLOR_WHITE, {512, 512});
+
     hg::util::Stopwatch swatch;
 
     while (window.isOpen()) {
@@ -145,6 +153,9 @@ void RunDimetricRenderingTestImpl() {
         const auto cursorInWorld =
             dimetric::ToPositionInWorld(PositionInView{window.mapPixelToCoords(mouseWindowPos)});
 
+        //light.setCenter(cursorInWorld);
+        world.getLight(lightId)->setCenter(cursorInWorld);
+
         // Edit the world
         {
             const auto xx = static_cast<int>(cursorInWorld->x / world.getCellResolution());
@@ -168,12 +179,15 @@ void RunDimetricRenderingTestImpl() {
 
         const auto t1 = std::chrono::steady_clock::now();
 
+        lightRenderer.start(window.getView(0));
+
         if (!hg::in::CheckPressedVK(hg::in::VK_SPACE)) {
             renderer.startPrepareToRender(window.getView(0),
                                           {.top = 32.f, .bottom = 256.f, .left = 32.f, .right = 32.f},
                                           cursorInWorld,
                                           DimetricRenderer::REDUCE_WALLS_BASED_ON_POSITION,
-                                          nullptr);
+                                          nullptr,
+                                          &lightRenderer);
         } else {
             visCalc.calc(dimetric::ToPositionInWorld(PositionInView{window.getView(0).getCenter()}),
                          window.getView(0).getSize(),
@@ -183,10 +197,12 @@ void RunDimetricRenderingTestImpl() {
                                           cursorInWorld,
                                           DimetricRenderer::REDUCE_WALLS_BASED_ON_POSITION |
                                               DimetricRenderer::REDUCE_WALLS_BASED_ON_VISIBILITY,
-                                          &visCalc);
+                                          &visCalc,
+                                          &lightRenderer);
         }
         renderer.endPrepareToRender();
         renderer.render(window);
+        //GetExtensionData(light).render(window);
         const auto t2 = std::chrono::steady_clock::now();
         // std::cout << "Time to render: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
         // t1).count() / 1000.0 << "ms "

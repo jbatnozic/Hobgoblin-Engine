@@ -10,7 +10,6 @@ namespace gridgoblin {
 
 namespace hg = ::jbatnozic::hobgoblin;
 
-// TODO: rename -> PositionInWorld
 class PositionInWorld {
 public:
     PositionInWorld()                                  = default;
