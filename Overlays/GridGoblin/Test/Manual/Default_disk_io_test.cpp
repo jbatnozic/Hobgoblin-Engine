@@ -192,6 +192,16 @@ private:
         static constexpr auto* SERIALIZATION_STRING = "<<< test serialized extension >>>";
     };
 
+    void onCellsEdited(const std::vector<CellEditInfo>& aCellEditInfos) override {
+        for (const auto& info : aCellEditInfos) {
+            HG_LOG_INFO(LOG_ID,
+                        "Cell at ({},{}) edited; what = {}",
+                        info.cellId.x,
+                        info.cellId.y,
+                        (int)info.what);
+        }
+    }
+
     std::unique_ptr<ChunkExtensionInterface> createChunkExtension() override {
         return std::make_unique<DummyChunkExtension>();
     }
@@ -201,7 +211,7 @@ void RunDefaultDiskIoTest() {
     Fixture fixture;
 
     hg::gr::RenderWindow window;
-    window.create(hg::win::VideoMode{1024, 1024}, "OpennessTest");
+    window.create(hg::win::VideoMode{1024, 1024}, "DefaultDiskIOTest");
     window.setViewCount(1);
     window.getView(0).setCenter({512, 512});
     window.getView(0).setSize({1024, 1024});

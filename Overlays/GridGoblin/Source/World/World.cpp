@@ -558,6 +558,8 @@ void World::_startEdit() {
     _editMinY = -1;
     _editMaxX = -1;
     _editMaxY = -1;
+
+    _cellEditInfos.clear();
 }
 
 void World::_endEdit() {
@@ -576,6 +578,10 @@ void World::_endEdit() {
         for (hg::PZInteger x = startX; x <= endX; x += 1) {
             _refreshCellAtUnchecked(x, y);
         }
+    }
+
+    for (const auto& [binder, priority] : _binders) {
+        binder->onCellsEdited(_cellEditInfos);
     }
 }
 
@@ -646,6 +652,10 @@ void World::_setFloorAtUnchecked(hg::PZInteger                          aX,
     } else {
         cell.resetFloor();
     }
+    _cellEditInfos.push_back({
+        {aX, aY},
+        Binder::CellEditInfo::FLOOR
+    });
 }
 
 void World::_setFloorAtUnchecked(hg::math::Vector2pz                    aCell,
@@ -698,6 +708,11 @@ SWAP_WALL:
     } else {
         cell.resetWall();
     }
+
+    _cellEditInfos.push_back({
+        {aX, aY},
+        Binder::CellEditInfo::WALL
+    });
 }
 
 void World::_setWallAtUnchecked(hg::math::Vector2pz                   aCell,

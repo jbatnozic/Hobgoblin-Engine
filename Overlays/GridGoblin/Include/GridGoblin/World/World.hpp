@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <optional>
+#include <vector>
 
 namespace jbatnozic {
 namespace gridgoblin {
@@ -366,6 +367,8 @@ private:
     std::unique_ptr<ChunkExtensionInterface> createChunkExtension() override;
 
     // ===== Editing cells =====
+
+    std::vector<Binder::CellEditInfo> _cellEditInfos;
 
     int _editMinX = -1;
     int _editMinY = -1;
