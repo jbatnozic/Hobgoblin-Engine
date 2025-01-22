@@ -10,6 +10,7 @@
 #include <Hobgoblin/Graphics/Render_texture.hpp>
 #include <Hobgoblin/Graphics/Sprite_loader.hpp>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <optional>
