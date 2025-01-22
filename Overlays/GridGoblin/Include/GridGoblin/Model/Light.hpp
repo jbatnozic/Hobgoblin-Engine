@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <GridGoblin/Model/Sprites.hpp>
 #include <GridGoblin/Spatial/Position_in_world.hpp>
 
 #include <Hobgoblin/Graphics/Color.hpp>
@@ -15,9 +16,10 @@ namespace hg = jbatnozic::hobgoblin;
 
 class Light {
 public:
-    Light(PositionInWorld aCenter, float aRadius, hg::gr::Color aColor)
+    Light(PositionInWorld aCenter, float aRadius, hg::gr::Color aColor, SpriteId aSpriteId)
         : _center{aCenter}
         , _radius{aRadius}
+        , _spriteId{aSpriteId}
         , _color{aColor} {}
 
     PositionInWorld getCenter() const;
@@ -29,9 +31,14 @@ public:
     hg::gr::Color getColor() const;
     void          setColor(hg::gr::Color aNewColor);
 
+    SpriteId getSpriteId() const {
+        return _spriteId;
+    }
+
 private:
     PositionInWorld _center;
     float           _radius;
+    SpriteId        _spriteId;
     hg::gr::Color   _color;
     bool            _isDirty = true;
 };

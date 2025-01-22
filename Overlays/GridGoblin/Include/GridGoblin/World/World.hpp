@@ -333,11 +333,12 @@ public:
     LightId createDynamicLight(PositionInWorld     aCenter,
                                float               aRadius,
                                hg::gr::Color       aColor,
+                               SpriteId            aSpriteId,
                                hg::math::Vector2pz aTextureSize) {
         const auto id = _lightIdCounter;
         _lightIdCounter += 1;
 
-        _dynamicLights.emplace_back(aCenter, aRadius, aColor, aTextureSize, *this, id);
+        _dynamicLights.emplace_back(aCenter, aRadius, aColor, aSpriteId, aTextureSize, *this, id);
 
         return id;
     }

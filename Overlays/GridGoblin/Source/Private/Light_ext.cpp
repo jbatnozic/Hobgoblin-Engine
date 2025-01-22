@@ -32,14 +32,21 @@ LightId LightExt::ExtensionData::getId() const {
 }
 
 void LightExt::ExtensionData::render(hg::gr::Canvas&             aCanvas,
+                                     const hg::gr::SpriteLoader& aSpriteLoader,
                                      const hg::gr::RenderStates& aRenderStates) const {
     const auto* light = getLightAddress(this);
 
     const auto size = hg::math::Vector2f{light->getRadius() * 2.f, light->getRadius() * 2.f};
 
-    _renderTexture->clear(light->getColor());
+    _renderTexture->clear(hg::gr::COLOR_BLACK);
     _renderTexture->setView(hg::gr::View{*light->getCenter(), size});
-    //_renderTexture->getView().setViewport({0.f, 0.f, 1.f, 1.f});
+    {
+        auto sprite = aSpriteLoader.getBlueprint(light->getSpriteId()).spr();
+        sprite.setColor(light->getColor());
+        sprite.setPosition(*light->getCenter());
+        sprite.setScale(size.x / sprite.getLocalBounds().w, size.y / sprite.getLocalBounds().h);
+        _renderTexture->draw(sprite);
+    }
 
     _visCalc.calc(light->getCenter(), size, light->getCenter());
     _visCalc.render(*_renderTexture);

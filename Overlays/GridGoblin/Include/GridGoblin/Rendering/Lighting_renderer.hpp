@@ -8,6 +8,7 @@
 #include <Hobgoblin/Graphics/Canvas.hpp>
 #include <Hobgoblin/Graphics/Color.hpp>
 #include <Hobgoblin/Graphics/Render_texture.hpp>
+#include <Hobgoblin/Graphics/Sprite_loader.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -29,9 +30,10 @@ public:
         DIMETRIC_RENDERING
     };
 
-    LightingRenderer(const World&        aWorld,
-                     hg::math::Vector2pz aTextureSize,
-                     Purpose             aPurpose = Purpose::NORMAL_RENDERING);
+    LightingRenderer(const World&                aWorld,
+                     const hg::gr::SpriteLoader& aSpriteLoader,
+                     hg::math::Vector2pz         aTextureSize,
+                     Purpose                     aPurpose = Purpose::NORMAL_RENDERING);
 
     ~LightingRenderer();
 
@@ -43,6 +45,7 @@ public:
 
 private:
     const World& _world;
+    const hg::gr::SpriteLoader& _spriteLoader;
 
     std::unique_ptr<hg::gr::RenderTexture> _renderTexture;
 

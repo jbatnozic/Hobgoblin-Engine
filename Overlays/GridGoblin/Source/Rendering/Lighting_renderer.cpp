@@ -18,22 +18,25 @@ namespace gridgoblin {
 namespace {
 void RenderLightsToRenderTexture(World::LightIterator   aStartIter,
                                  World::LightIterator   aEndIter,
-                                 hg::gr::RenderTexture& aRenderTexture) {
+                                 hg::gr::RenderTexture& aRenderTexture,
+                                 const hg::gr::SpriteLoader& aSpriteLoader) {
     for (; aStartIter != aEndIter; ++aStartIter) {
         const auto& light = *aStartIter;
         auto&       ext   = GetMutableExtensionData(light);
 
-        ext.render(aRenderTexture, hg::gr::BLEND_ADD);
+        ext.render(aRenderTexture, aSpriteLoader, hg::gr::BLEND_ADD);
     }
 }
 } // namespace
 
 using namespace opengl;
 
-LightingRenderer::LightingRenderer(const World&        aWorld,
-                                   hg::math::Vector2pz aTextureSize,
-                                   Purpose             aPurpose)
+LightingRenderer::LightingRenderer(const World&                aWorld,
+                                   const hg::gr::SpriteLoader& aSpriteLoader,
+                                   hg::math::Vector2pz         aTextureSize,
+                                   Purpose                     aPurpose)
     : _world{aWorld}
+    , _spriteLoader{aSpriteLoader}
     , _renderTexture{std::make_unique<hg::gr::RenderTexture>()}
     , _purpose{aPurpose} //
 {
@@ -45,7 +48,7 @@ LightingRenderer::LightingRenderer(const World&        aWorld,
     _renderTexture->create(aTextureSize);
     _textureSize = aTextureSize;
 
-    _textureRamBuffer.resize(static_cast<std::size_t>(aTextureSize.x * aTextureSize.y));
+    _textureRamBuffer.resize(static_cast<std::size_t>(aTextureSize.x * aTextureSize.y) * 4u);
     std::memset(_textureRamBuffer.data(), 0x00, _textureRamBuffer.size());
 
     DualPBO_Init(_pboNames, _textureRamBuffer.size());
@@ -85,7 +88,10 @@ void LightingRenderer::prepareToRender(PositionInWorld aViewCenter, hg::math::Ve
     view.setCenter(*_viewCenter);
     view.setSize({squareSize, squareSize});
 
-    RenderLightsToRenderTexture(_world.dynamicLightsBegin(), _world.dynamicLightsEnd(), *_renderTexture);
+    RenderLightsToRenderTexture(_world.dynamicLightsBegin(),
+                                _world.dynamicLightsEnd(),
+                                *_renderTexture,
+                                _spriteLoader);
     // TODO: render static lights
     // TODO: render simple lights
 

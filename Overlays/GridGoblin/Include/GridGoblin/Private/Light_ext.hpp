@@ -34,10 +34,11 @@ public:
     LightExt(PositionInWorld     aCenter,
              float               aRadius,
              hg::gr::Color       aColor,
+             SpriteId            aSpriteId,
              hg::math::Vector2pz aTextureSize,
              const World&        aWorld,
              LightId             aLightId)
-        : Light{aCenter, aRadius, aColor}
+        : Light{aCenter, aRadius, aColor, aSpriteId}
         , mutableExtensionData{aTextureSize, aWorld, aLightId} {}
 
     class ExtensionData {
@@ -46,7 +47,9 @@ public:
 
         LightId getId() const;
 
-        void render(hg::gr::Canvas& aCanvas, const hg::gr::RenderStates& aRenderStates = {}) const;
+        void render(hg::gr::Canvas&             aCanvas,
+                    const hg::gr::SpriteLoader& aSpriteLoader,
+                    const hg::gr::RenderStates& aRenderStates = {}) const;
 
         static const LightExt* getLightAddress(const ExtensionData* aExtensionDataAddress);
 

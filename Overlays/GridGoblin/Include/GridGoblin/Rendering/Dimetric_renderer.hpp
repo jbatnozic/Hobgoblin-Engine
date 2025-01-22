@@ -96,7 +96,8 @@ private:
         CellToRenderedObjectAdapter(DimetricRenderer&  aRenderer,
                                     const CellModel&   aCell,
                                     const SpatialInfo& aSpatialInfo,
-                                    std::uint16_t      aRendererMask);
+                                    std::uint16_t      aRendererMask,
+                                    hg::gr::Color      aColor);
 
         void render(hg::gr::Canvas& aCanvas, PositionInView aPosInView) const override;
 
@@ -105,7 +106,7 @@ private:
         const CellModel&  _cell;
 
         std::uint16_t _rendererMask;
-        // TODO: Render parameters: color etc.
+        hg::gr::Color _color;
     };
 
     friend class CellToRenderedObjectAdapter;
@@ -158,6 +159,11 @@ private:
     std::uint16_t _updateFadeValueOfCellRendererMask(const CellInfo&            aCellInfo,
                                                      const detail::DrawingData& aDrawingData,
                                                      std::int32_t               aRenderFlags);
+
+    hg::gr::Color _getColorForWall(const CellInfo&         aCellInfo,
+                                   std::uint16_t           aCellFlags,
+                                   std::uint16_t           aRendererMask,
+                                   const LightingRenderer* aLightingRenderer) const;
 };
 
 } // namespace gridgoblin
