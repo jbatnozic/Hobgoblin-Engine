@@ -412,6 +412,12 @@ void VisibilityCalculator::_castRay(hg::PZInteger aRayIndex) {
         const auto  coords = _world.posToCellUnchecked(point);
         const auto* cell   = _world.getCellAtUnchecked(coords);
 
+        if (HG_UNLIKELY_CONDITION(cell == nullptr)) {
+            HG_UNLIKELY_BRANCH;
+            _rays[aRayIndex] = _rayRadius + (t + 1) * incrementDistance;
+            break;
+        }
+
         const auto openness = cell->getOpenness();
 
         if (openness < 3 && prevOpenness < 3 && coords.x != prevCoords.x && coords.y != prevCoords.y) {
@@ -427,7 +433,7 @@ void VisibilityCalculator::_castRay(hg::PZInteger aRayIndex) {
         prevCoords   = coords;
         prevOpenness = openness;
 
-        if (cell == nullptr || cell->isWallInitialized()) {
+        if (cell->isWallInitialized()) {
             _rays[aRayIndex] = _rayRadius + (t + 1) * incrementDistance;
             return;
         }

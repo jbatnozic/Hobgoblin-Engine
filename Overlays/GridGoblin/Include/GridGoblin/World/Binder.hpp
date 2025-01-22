@@ -10,10 +10,15 @@
 
 #include <GridGoblin/Private/Chunk_storage_handler.hpp>
 
+#include <Hobgoblin/Math/Vector.hpp>
+
 #include <memory>
+#include <vector>
 
 namespace jbatnozic {
 namespace gridgoblin {
+
+namespace gh = ::jbatnozic::hobgoblin;
 
 //! This class contains a number of callbacks which can be overriden to 'bind'
 //! a GridGoblin World to its enclosing application and help them interoperate better.
@@ -59,6 +64,24 @@ public:
     //! TODO(description)
     //! [called when World::prune]
     virtual void onChunkUnloaded(ChunkId aChunkId) {}
+
+    struct CellEditInfo {
+        hg::math::Vector2pz cellId; //! Identifies a cell by its X and Y position in the World grid.
+
+        enum EditIdentifiers {
+            UNKNOWN = 0x00,
+            FLOOR   = 0x01,
+            WALL    = 0x02,
+        };
+
+        int what = UNKNOWN; //! Identifies what in the cell was edited.
+    };
+
+    //! Called after a `World::edit(...)` call returns. Elements in the provided vector indicate the
+    //! cells that were changed during the edit.
+    //! \note some cells may be represented multiple times in the vector, if they were edited multiple
+    //!       times during the same call to edit().
+    virtual void onCellsEdited(const std::vector<CellEditInfo>& aCellEditInfos) {}
 
     //! TODO(description)
     virtual std::unique_ptr<ChunkExtensionInterface> createChunkExtension() {

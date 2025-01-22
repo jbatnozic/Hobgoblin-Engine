@@ -74,13 +74,14 @@ void RunDimetricRenderingTestImpl() {
                        .cellsPerChunkY              = 8,
                        .cellResolution              = 32.f,
                        .maxCellOpenness             = 3,
-                       .maxLoadedNonessentialChunks = 1};
+                       .maxLoadedNonessentialChunks = 64};
 
     World world{config};
 
     // Generate world:
     {
         auto perm = world.getPermissionToEdit();
+        world.toggleGeneratorMode(*perm, true);
         world.edit(*perm, [&world](World::Editor& aEditor) {
             for (int y = 0; y < world.getCellCountY(); y += 1) {
                 for (int x = 0; x < world.getCellCountX(); x += 1) {
@@ -92,6 +93,7 @@ void RunDimetricRenderingTestImpl() {
                 }
             }
         });
+        world.toggleGeneratorMode(*perm, false);
     }
 
     hg::gr::RenderWindow window{
