@@ -2,6 +2,7 @@
 // See https://github.com/jbatnozic/Hobgoblin?tab=readme-ov-file#licence
 
 #include <GridGoblin/Rendering/Dimetric_renderer.hpp>
+#include <GridGoblin/Rendering/Dimetric_transform.hpp>
 #include <GridGoblin/Rendering/Drawing_order.hpp>
 #include <GridGoblin/Spatial/Position_conversions.hpp>
 
@@ -14,6 +15,22 @@
 
 namespace jbatnozic {
 namespace gridgoblin {
+
+namespace {
+hg::gr::Color Blend(hg::gr::Color aCol1, hg::gr::Color aCol2) {
+    return hg::gr::Color{static_cast<std::uint8_t>((aCol1.r + aCol2.r) / 2),
+                         static_cast<std::uint8_t>((aCol1.g + aCol2.g) / 2),
+                         static_cast<std::uint8_t>((aCol1.b + aCol2.b) / 2),
+                         255};
+}
+
+hg::gr::Color ColorMax(hg::gr::Color aCol1, hg::gr::Color aCol2) {
+    return hg::gr::Color{std::max(aCol1.r, aCol2.r),
+                         std::max(aCol1.g, aCol2.g),
+                         std::max(aCol1.b, aCol2.b),
+                         255};
+}
+} // namespace
 
 // MARK: Cell renderer mask bits
 
@@ -78,7 +95,8 @@ void DimetricRenderer::startPrepareToRender(const hg::gr::View&       aView,
                                             const OverdrawAmounts&    aOverdrawAmounts,
                                             PositionInWorld           aPointOfView,
                                             std::int32_t              aRenderFlags,
-                                            const VisibilityProvider* aVisProv) {
+                                            const VisibilityProvider* aVisProv,
+                                            const LightingRenderer*   aLightingRenderer) {
     HG_VALIDATE_ARGUMENT(!!(aRenderFlags & REDUCE_WALLS_BASED_ON_VISIBILITY) == !!aVisProv);
 
     _viewData.center   = PositionInView{aView.getCenter()};
@@ -94,7 +112,10 @@ void DimetricRenderer::startPrepareToRender(const hg::gr::View&       aView,
     _objectsToRender.clear();
     _cellAdapters.clear();
 
-    _prepareCells(aRenderFlags, aVisProv);
+    _lightingAdapter.reset(aView, aOverdrawAmounts, aPointOfView, aLightingRenderer);
+    _objectsToRender.push_back(&_lightingAdapter);
+
+    _prepareCells(aRenderFlags, aVisProv, aLightingRenderer);
 
     _renderCycleCounter += 1;
 }
@@ -131,7 +152,7 @@ void DimetricRenderer::endPrepareToRender() {
               });
 }
 
-void DimetricRenderer::render(hg::gr::Canvas& aCanvas) {
+void DimetricRenderer::render(hg::gr::Canvas& aCanvas) const {
     for (const auto& object : _objectsToRender) {
         const auto& spatialInfo = object->getSpatialInfo();
         object->render(aCanvas, dimetric::ToPositionInView(spatialInfo.getCenter()));
@@ -218,13 +239,17 @@ void DimetricRenderer::_reduceCellsBelowIfCellIsVisible(hg::math::Vector2pz     
     } // end_for
 }
 
-void DimetricRenderer::_prepareCells(std::int32_t aRenderFlags, const VisibilityProvider* aVisProv) {
+void DimetricRenderer::_prepareCells(std::int32_t              aRenderFlags,
+                                     const VisibilityProvider* aVisProv,
+                                     const LightingRenderer*   aLightingRenderer) //
+{
     const auto cr = _world.getCellResolution();
 
     _diagonalTraverse(
         _world,
         _viewData,
-        [this, cr, aRenderFlags, aVisProv](const CellInfo& aCellInfo, PositionInView aPosInView) {
+        [this, cr, aRenderFlags, aVisProv, aLightingRenderer](const CellInfo& aCellInfo,
+                                                              PositionInView  aPosInView) {
             if (aCellInfo.cell == nullptr) {
                 return;
             }
@@ -258,7 +283,8 @@ void DimetricRenderer::_prepareCells(std::int32_t aRenderFlags, const Visibility
                     SpatialInfo::fromTopLeftAndSize({aCellInfo.gridX * cr, aCellInfo.gridY * cr},
                                                     {cr, cr},
                                                     Layer::WALL),
-                    mask);
+                    mask,
+                    _getColorForWall(aCellInfo, flags, mask, aLightingRenderer));
             } else if (flags & CellModel::FLOOR_INITIALIZED) {
                 _cellAdapters.emplace_back(
                     *this,
@@ -266,7 +292,8 @@ void DimetricRenderer::_prepareCells(std::int32_t aRenderFlags, const Visibility
                     SpatialInfo::fromTopLeftAndSize({aCellInfo.gridX * cr, aCellInfo.gridY * cr},
                                                     {cr, cr},
                                                     Layer::FLOOR),
-                    mask);
+                    mask,
+                    hg::gr::COLOR_WHITE);
             }
         });
 
@@ -361,17 +388,81 @@ std::uint16_t DimetricRenderer::_updateFadeValueOfCellRendererMask(
     return mask;
 }
 
+hg::gr::Color DimetricRenderer::_getColorForWall(const CellInfo&         aCellInfo,
+                                                 std::uint16_t           aCellFlags,
+                                                 std::uint16_t           aRendererMask,
+                                                 const LightingRenderer* aLightingRenderer) const {
+    if (aLightingRenderer == nullptr) {
+        return hg::gr::COLOR_WHITE;
+    }
+
+    const bool northOpen = !(aCellFlags & CellModel::TOP_EDGE_OBSTRUCTED);
+    const bool westOpen  = !(aCellFlags & CellModel::LEFT_EDGE_OBSTRUCTED);
+    const bool eastOpen  = !(aCellFlags & CellModel::RIGHT_EDGE_OBSTRUCTED);
+    const bool southOpen = !(aCellFlags & CellModel::BOTTOM_EDGE_OBSTRUCTED);
+
+    const auto cr = _world.getCellResolution();
+
+    // clang-format off
+    #define OFFSET    2.f
+    #define POS_NORTH (PositionInWorld{(aCellInfo.gridX + 0.5f) * cr,           aCellInfo.gridY         * cr - OFFSET})
+    #define POS_WEST  (PositionInWorld{ aCellInfo.gridX         * cr - OFFSET, (aCellInfo.gridY + 0.5f) * cr})
+    #define POS_EAST  (PositionInWorld{(aCellInfo.gridX + 1.f)  * cr + OFFSET, (aCellInfo.gridY + 0.5f) * cr})
+    #define POS_SOUTH (PositionInWorld{(aCellInfo.gridX + 0.5f) * cr,          (aCellInfo.gridY + 1.f)  * cr + OFFSET})
+    // clang-format on
+
+    using hg::gr::COLOR_BLACK;
+
+    if ((aRendererMask & RM_SHOULD_REDUCE) == 0) {
+        if (westOpen && southOpen) {
+            const auto col1 = aLightingRenderer->getColorAt(POS_WEST).value_or(COLOR_BLACK);
+            const auto col2 = aLightingRenderer->getColorAt(POS_SOUTH).value_or(COLOR_BLACK);
+            return ColorMax(col1, col2);
+        } else if (westOpen) {
+            return aLightingRenderer->getColorAt(POS_WEST).value_or(COLOR_BLACK);
+        } else if (southOpen) {
+            return aLightingRenderer->getColorAt(POS_SOUTH).value_or(COLOR_BLACK);
+        }
+        return COLOR_BLACK;
+    } else {
+        hg::gr::Color color = COLOR_BLACK;
+        if (northOpen) {
+            color = ColorMax(color, aLightingRenderer->getColorAt(POS_NORTH).value_or(COLOR_BLACK));
+        }
+        if (westOpen) {
+            color = ColorMax(color, aLightingRenderer->getColorAt(POS_WEST).value_or(COLOR_BLACK));
+        }
+        if (eastOpen) {
+            color = ColorMax(color, aLightingRenderer->getColorAt(POS_EAST).value_or(COLOR_BLACK));
+        }
+        if (southOpen) {
+            color = ColorMax(color, aLightingRenderer->getColorAt(POS_SOUTH).value_or(COLOR_BLACK));
+        }
+        return color;
+    }
+
+    // clang-format off
+    #undef POS_SOUTH
+    #undef POS_EAST
+    #undef POS_WEST
+    #undef POS_NORTH
+    #undef OFFSET
+    // clang-format on
+}
+
 // MARK: Cell adapter impl
 
 DimetricRenderer::CellToRenderedObjectAdapter::CellToRenderedObjectAdapter(
     DimetricRenderer&  aRenderer,
     const CellModel&   aCell,
     const SpatialInfo& aSpatialInfo,
-    std::uint16_t      aRendererMask)
+    std::uint16_t      aRendererMask,
+    hg::gr::Color      aColor)
     : RenderedObject{aSpatialInfo}
     , _renderer{aRenderer}
     , _cell{aCell}
-    , _rendererMask{aRendererMask} {}
+    , _rendererMask{aRendererMask}
+    , _color{aColor} {}
 
 void DimetricRenderer::CellToRenderedObjectAdapter::render(hg::gr::Canvas& aCanvas,
                                                            PositionInView  aScreenPosition) const {
@@ -408,7 +499,7 @@ void DimetricRenderer::CellToRenderedObjectAdapter::render(hg::gr::Canvas& aCanv
                 auto& reducedSprite = _renderer._getSprite(_cell.getWall().spriteId_reduced);
 
                 reducedSprite.setPosition(*aScreenPosition);
-                reducedSprite.setColor(hg::gr::COLOR_WHITE);
+                reducedSprite.setColor(_color);
                 aCanvas.draw(reducedSprite);
             }
 
@@ -416,7 +507,7 @@ void DimetricRenderer::CellToRenderedObjectAdapter::render(hg::gr::Canvas& aCanv
                 auto& fullSprite = _renderer._getSprite(_cell.getWall().spriteId);
 
                 fullSprite.setPosition(*aScreenPosition);
-                fullSprite.setColor(hg::gr::COLOR_WHITE.withAlpha(opacity));
+                fullSprite.setColor(_color.withAlpha(opacity));
                 aCanvas.draw(fullSprite);
             }
         }
@@ -424,6 +515,32 @@ void DimetricRenderer::CellToRenderedObjectAdapter::render(hg::gr::Canvas& aCanv
 
     default:
         break;
+    }
+}
+
+// MARK: Lighting adapter impl
+
+DimetricRenderer::LightingProviderToRenderedObjectAdapter::LightingProviderToRenderedObjectAdapter() {
+    _spatialInfo.setLayer(Layer::LIGHTING);
+}
+
+void DimetricRenderer::LightingProviderToRenderedObjectAdapter::reset(
+    const hg::gr::View&     aView,
+    const OverdrawAmounts&  aOverdrawAmounts,  // TODO: not needed
+    PositionInWorld         aPointOfView,      // TODO: not needed
+    const LightingRenderer* aLightingRenderer) //
+{
+    _spatialInfo.setCenter(dimetric::ToPositionInWorld(PositionInView{aView.getCenter()}));
+    _lightingRenderer = aLightingRenderer;
+}
+
+void DimetricRenderer::LightingProviderToRenderedObjectAdapter::render(
+    hg::gr::Canvas& aCanvas,
+    PositionInView  aPosInView) const //
+{
+    if (_lightingRenderer != nullptr) {
+        const hg::gr::RenderStates states{nullptr, nullptr, DIMETRIC_TRANSFORM, hg::gr::BLEND_MULTIPLY};
+        _lightingRenderer->render(aCanvas, states);
     }
 }
 

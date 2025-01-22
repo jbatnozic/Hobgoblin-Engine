@@ -15,11 +15,14 @@ add_library(${PROJECT_NAME}
     "Source/Private/Chunk_disk_io_handler_default.cpp"
     "Source/Private/Chunk_spooler_default.cpp"
     "Source/Private/Chunk_storage_handler.cpp"
+    "Source/Private/Light_ext.cpp"
     "Source/Private/Model_conversions.cpp"
 
     # Rendering
     "Source/Rendering/Dimetric_renderer.cpp"
+    "Source/Rendering/Dimetric_transform.cpp"
     "Source/Rendering/Drawing_order.cpp"
+    "Source/Rendering/Lighting_renderer.cpp"
     "Source/Rendering/Top_down_los_renderer.cpp"
     "Source/Rendering/OpenGL_helpers.cpp"
     "Source/Rendering/Visibility_calculator.cpp"

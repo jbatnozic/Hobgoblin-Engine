@@ -5,10 +5,11 @@
 
 #include <GridGoblin/Rendering/Visibility_provider.hpp>
 #include <GridGoblin/Spatial/Position_in_world.hpp>
-#include <GridGoblin/World/World.hpp>
 
+#include <Hobgoblin/Graphics/Canvas.hpp>
 #include <Hobgoblin/Math.hpp>
 
+#include <limits>
 #include <vector>
 
 namespace jbatnozic {
@@ -17,10 +18,12 @@ namespace gridgoblin {
 namespace hg = jbatnozic::hobgoblin;
 
 struct VisibilityCalculatorConfig {
+    static constexpr hg::PZInteger NO_RAYCASTING = std::numeric_limits<hg::PZInteger>::max();
+
     //! Minimal number of rings around point of view that have to be resolved in high detail
     //! before the calculator can fall back to lower detail mode (ray casting).
     //!
-    //! \note set this to 0 to force resolving everything in high detail.
+    //! \note set this to `NO_RAYCASTING` to force resolving everything in high detail.
     hg::PZInteger minRingsBeforeRaycasting = 15;
 
     //! Minimal number of triangles that has to be resolved before the calculator can fall
@@ -34,6 +37,9 @@ struct VisibilityCalculatorConfig {
     //! TODO(description)
     hg::PZInteger rayPointsPerCell = 6;
 };
+
+// Forward-declare
+class World;
 
 //! Implements the `VisibilityProvider` using math/geometry formulas fully calculated on the CPU.
 class VisibilityCalculator : public VisibilityProvider {
@@ -58,7 +64,7 @@ public:
 
     std::optional<bool> testVisibilityAt(PositionInWorld aPos) const override;
 
-    // TODO: render()
+    void render(hg::gr::Canvas& aCanvas) const;
 
 private:
     // ===== Dependencies =====

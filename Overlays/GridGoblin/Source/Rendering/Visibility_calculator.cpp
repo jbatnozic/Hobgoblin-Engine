@@ -2,8 +2,10 @@
 // See https://github.com/jbatnozic/Hobgoblin?tab=readme-ov-file#licence
 
 #include <GridGoblin/Rendering/Visibility_calculator.hpp>
+#include <GridGoblin/World/World.hpp>
 
 #include <Hobgoblin/Common.hpp>
+#include <Hobgoblin/Graphics.hpp>
 #include <Hobgoblin/Logging.hpp>
 
 #include <array>
@@ -90,13 +92,6 @@ VisibilityCalculator::VisibilityCalculator(const World&                      aWo
     _rays.resize(hg::pztos(_rayCount));
 }
 
-std::optional<bool> VisibilityCalculator::testVisibilityAt(PositionInWorld aPos) const {
-    if (_viewBbox.overlaps(*aPos)) {
-        return _isPointVisible(aPos, DETERMINE_FLAGS_LAZILY);
-    }
-    return std::nullopt;
-}
-
 void VisibilityCalculator::calc(PositionInWorld aViewCenter,
                                 Vector2f        aViewSize,
                                 PositionInWorld aLineOfSightOrigin) {
@@ -116,7 +111,7 @@ void VisibilityCalculator::calc(PositionInWorld aViewCenter,
         _stats.highDetailRingCount = currentRingIndex;
         currentRingIndex += 1;
 
-        if ((_minRingsBeforeRaycasting != 0 && currentRingIndex > _minRingsBeforeRaycasting) &&
+        if (currentRingIndex > _minRingsBeforeRaycasting &&
             _triangles.size() >= hg::pztos(_minTrianglesBeforeRaycasting)) //
         {
             _processRays();
@@ -132,6 +127,29 @@ void VisibilityCalculator::calc(PositionInWorld aViewCenter,
 
 auto VisibilityCalculator::getStats() const -> const CalculationStats& {
     return _stats;
+}
+
+std::optional<bool> VisibilityCalculator::testVisibilityAt(PositionInWorld aPos) const {
+    if (_viewBbox.overlaps(*aPos)) {
+        return _isPointVisible(aPos, DETERMINE_FLAGS_LAZILY);
+    }
+    return std::nullopt;
+}
+
+void VisibilityCalculator::render(hg::gr::Canvas& aCanvas) const {
+    HG_HARD_ASSERT(_rayCheckingEnabled == false);
+
+    hg::gr::VertexArray va;
+    va.primitiveType = hg::gr::PrimitiveType::TRIANGLES;
+    va.vertices.reserve(_triangles.size() * 3u);
+
+    for (const auto& triangle : _triangles) {
+        va.vertices.push_back(hg::gr::Vertex{triangle.a, hg::gr::COLOR_BLACK});
+        va.vertices.push_back(hg::gr::Vertex{triangle.b, hg::gr::COLOR_BLACK});
+        va.vertices.push_back(hg::gr::Vertex{triangle.c, hg::gr::COLOR_BLACK});
+    }
+
+    aCanvas.draw(va);
 }
 
 // MARK: Private
@@ -329,7 +347,9 @@ void VisibilityCalculator::_processCell(Vector2pz aCell, hg::PZInteger aRingInde
         _triangles.push_back({vertices[i], vertices[i + 1], ray1End, edgesOfInterest});
         _triangles.push_back({ray1End, vertices[i + 1], ray2End, edgesOfInterest});
 
-        _setRaysFromTriangles(a1, a2);
+        if (_rayCount != 0) {
+            _setRaysFromTriangles(a1, a2);
+        }
     }
 }
 
@@ -426,7 +446,7 @@ bool VisibilityCalculator::_isPointVisible(PositionInWorld aPosInWorld, std::uin
         Vector2f   diff = {aPosInWorld->x - _lineOfSightOrigin.x, aPosInWorld->y - _lineOfSightOrigin.y};
         const auto angle = AngleF::fromVector(diff.x, diff.y);
         const int  idx   = hg::ToPz(std::round(_rayCount * (angle / AngleF::fullCircle())));
-        if (dist > _rays[idx]) {
+        if (dist > _rays[idx % _rayCount]) {
             return false;
         }
     }

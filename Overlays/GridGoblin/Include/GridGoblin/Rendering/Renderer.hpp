@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <GridGoblin/Rendering/Lighting_renderer.hpp> // TODO: temp.
 #include <GridGoblin/Rendering/Rendered_object.hpp>
 #include <GridGoblin/Rendering/Visibility_provider.hpp>
 #include <GridGoblin/Spatial/Position_in_view.hpp>
@@ -33,14 +34,15 @@ public:
     virtual void startPrepareToRender(const hg::gr::View&       aView,
                                       const OverdrawAmounts&    aOverdrawAmounts,
                                       PositionInWorld           aPointOfView,
-                                      std::int32_t              aRenderFlags,
-                                      const VisibilityProvider* aVisProv) = 0;
+                                      std::int32_t              aRenderFlags        = 0,
+                                      const VisibilityProvider* aVisibilityProvider = nullptr,
+                                      const LightingRenderer*   aLightingRenderer   = nullptr) = 0;
 
     virtual void addObject(const RenderedObject& aObject) = 0;
 
     virtual void endPrepareToRender() = 0;
 
-    virtual void render(hg::gr::Canvas& aCanvas) = 0;
+    virtual void render(hg::gr::Canvas& aCanvas) const = 0;
 };
 
 } // namespace gridgoblin

@@ -13,6 +13,8 @@
 #include <GridGoblin/Model/Cell_model.hpp>
 #include <GridGoblin/Model/Chunk.hpp>
 #include <GridGoblin/Model/Chunk_id.hpp>
+#include <GridGoblin/Model/Light.hpp>
+#include <GridGoblin/Model/Light_id.hpp>
 #include <GridGoblin/Model/Sprites.hpp>
 
 #include <GridGoblin/World/Active_area.hpp>
@@ -20,6 +22,7 @@
 #include <GridGoblin/World/World_config.hpp>
 
 #include <GridGoblin/Private/Chunk_storage_handler.hpp>
+#include <GridGoblin/Private/Light_ext.hpp>
 
 #include <memory>
 #include <optional>
@@ -342,6 +345,33 @@ public:
 
     ActiveArea createActiveArea();
 
+    ///////////////////////////////////////////////////////////////////////////
+    // LIGHTING                                                              //
+    ///////////////////////////////////////////////////////////////////////////
+
+    using LightIterator = std::vector<detail::LightExt>::const_iterator; // TEMPORARY
+
+    LightId createDynamicLight(PositionInWorld     aCenter,
+                               float               aRadius,
+                               hg::gr::Color       aColor,
+                               SpriteId            aSpriteId,
+                               hg::math::Vector2pz aTextureSize) {
+        const auto id = _lightIdCounter;
+        _lightIdCounter += 1;
+
+        _dynamicLights.emplace_back(aCenter, aRadius, aColor, aSpriteId, aTextureSize, *this, id);
+
+        return id;
+    }
+
+    Light* getLight(LightId aLightId);
+
+    LightIterator dynamicLightsBegin() const;
+    LightIterator dynamicLightsEnd() const;
+
+    LightIterator inactiveLightsBegin() const;
+    LightIterator inactiveLightsEnd() const;
+
 private:
     // ===== Listeners =====
 
@@ -437,6 +467,13 @@ private:
                              const std::optional<CellModel::Wall>& aWallOpt);
 
     void _setWallAtUnchecked(hg::math::Vector2pz aCell, const std::optional<CellModel::Wall>& aWallOpt);
+
+    // ===== Lights =====
+
+    LightId _lightIdCounter = 0;
+
+    std::vector<detail::LightExt> _dynamicLights;
+    std::vector<detail::LightExt> _inactiveLights;
 };
 
 ///////////////////////////////////////////////////////////////////////////

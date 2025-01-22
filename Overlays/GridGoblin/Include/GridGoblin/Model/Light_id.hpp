@@ -8,14 +8,7 @@
 namespace jbatnozic {
 namespace gridgoblin {
 
-//! Objects with lower layer values are drawn before those with higher values.
-enum class Layer : std::int8_t {
-    FLOOR,
-    FLOOR_DECORATION,
-    LIGHTING,
-    WALL,
-    OBJECT = WALL
-};
+using LightId = std::uint64_t;
 
 } // namespace gridgoblin
 } // namespace jbatnozic

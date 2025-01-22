@@ -44,14 +44,15 @@ public:
     void startPrepareToRender(const hg::gr::View&       aView,
                               const OverdrawAmounts&    aOverdrawAmounts,
                               PositionInWorld           aPointOfView,
-                              std::int32_t              aRenderFlags,
-                              const VisibilityProvider* aVisProv) override;
+                              std::int32_t              aRenderFlags        = 0,
+                              const VisibilityProvider* aVisibilityProvider = nullptr,
+                              const LightingRenderer*   aLightingRenderer   = nullptr) override;
 
     void addObject(const RenderedObject& aObject) override;
 
     void endPrepareToRender() override;
 
-    void render(hg::gr::Canvas& aCanvas) override;
+    void render(hg::gr::Canvas& aCanvas) const override;
 
 private:
     // ===== Dependencies =====
@@ -95,7 +96,8 @@ private:
         CellToRenderedObjectAdapter(DimetricRenderer&  aRenderer,
                                     const CellModel&   aCell,
                                     const SpatialInfo& aSpatialInfo,
-                                    std::uint16_t      aRendererMask);
+                                    std::uint16_t      aRendererMask,
+                                    hg::gr::Color      aColor);
 
         void render(hg::gr::Canvas& aCanvas, PositionInView aPosInView) const override;
 
@@ -104,12 +106,31 @@ private:
         const CellModel&  _cell;
 
         std::uint16_t _rendererMask;
-        // TODO: Render parameters: color etc.
+        hg::gr::Color _color;
     };
 
     friend class CellToRenderedObjectAdapter;
 
     std::vector<CellToRenderedObjectAdapter> _cellAdapters;
+
+    // ===== Lighting adapter =====
+
+    class LightingProviderToRenderedObjectAdapter : public RenderedObject {
+    public:
+        LightingProviderToRenderedObjectAdapter();
+
+        void reset(const hg::gr::View&     aView,
+                   const OverdrawAmounts&  aOverdrawAmounts,
+                   PositionInWorld         aPointOfView,
+                   const LightingRenderer* aLightingRenderer);
+
+        void render(hg::gr::Canvas& aCanvas, PositionInView aPosInView) const override;
+
+    private:
+        const LightingRenderer* _lightingRenderer = nullptr;
+    };
+
+    LightingProviderToRenderedObjectAdapter _lightingAdapter;
 
     // ===== Rendered objects =====
 
@@ -130,12 +151,19 @@ private:
                                           PositionInView            aCellPosInView,
                                           const VisibilityProvider& aVisProv);
 
-    void _prepareCells(std::int32_t aRenderFlags, const VisibilityProvider* aVisProv);
+    void _prepareCells(std::int32_t              aRenderFlags,
+                       const VisibilityProvider* aVisProv,
+                       const LightingRenderer*   aLightingRenderer);
 
     std::uint16_t _updateFlagsOfCellRendererMask(const CellModel& aCell);
     std::uint16_t _updateFadeValueOfCellRendererMask(const CellInfo&            aCellInfo,
                                                      const detail::DrawingData& aDrawingData,
                                                      std::int32_t               aRenderFlags);
+
+    hg::gr::Color _getColorForWall(const CellInfo&         aCellInfo,
+                                   std::uint16_t           aCellFlags,
+                                   std::uint16_t           aRendererMask,
+                                   const LightingRenderer* aLightingRenderer) const;
 };
 
 } // namespace gridgoblin

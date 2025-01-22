@@ -1,8 +1,8 @@
 // Copyright 2024 Jovan Batnozic. Released under MS-PL licence in Serbia.
 // See https://github.com/jbatnozic/Hobgoblin?tab=readme-ov-file#licence
 
-#include <GridGoblin/Model/Cell_model.hpp>
-#include <GridGoblin/World/World.hpp>
+#include <GridGoblin/Private/Cell_model_ext.hpp>
+#include <GridGoblin/Private/Light_ext.hpp>
 
 namespace jbatnozic {
 namespace gridgoblin {
@@ -15,6 +15,16 @@ inline const detail::CellModelExt::ExtensionData& GetExtensionData(const CellMod
 
 inline detail::CellModelExt::ExtensionData& GetMutableExtensionData(const CellModel& aCell) {
     return static_cast<const detail::CellModelExt&>(aCell).mutableExtensionData;
+}
+
+// Lights
+
+inline const detail::LightExt::ExtensionData& GetExtensionData(const Light& aLight) {
+    return static_cast<const detail::LightExt&>(aLight).mutableExtensionData;
+}
+
+inline detail::LightExt::ExtensionData& GetMutableExtensionData(const Light& aLight) {
+    return static_cast<const detail::LightExt&>(aLight).mutableExtensionData;
 }
 
 } // namespace gridgoblin

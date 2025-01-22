@@ -2,6 +2,9 @@
 // See https://github.com/jbatnozic/Hobgoblin?tab=readme-ov-file#licence
 
 #include <GridGoblin/GridGoblin.hpp>
+#include <GridGoblin/Private/Light_ext.hpp>
+
+#include "../../GridGoblin/Source/Detail_access.hpp"
 
 #include <Hobgoblin/Graphics.hpp>
 #include <Hobgoblin/Input.hpp>
@@ -12,9 +15,7 @@
 
 #include <GL/glew.h>
 
-#include <array>
 #include <chrono>
-#include <iostream>
 
 #include <Hobgoblin/Logging.hpp>
 
@@ -106,10 +107,21 @@ void RunDimetricRenderingTestImpl() {
     GLenum err = glewInit();
     if (err != GLEW_OK) {
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+        return;
     }
 
     VisibilityCalculator visCalc{world};
     DimetricRenderer     renderer{world, loader};
+
+    LightingRenderer lightRenderer{
+        world,
+        loader,
+        {2048, 2048},
+        LightingRenderer::Purpose::DIMETRIC_RENDERING
+    };
+
+    const auto lightId =
+        world.createDynamicLight({0.f, 0.f}, 512.f, hg::gr::COLOR_WHITE, SPR_LIGHT, {512, 512});
 
     hg::util::Stopwatch swatch;
 
@@ -147,6 +159,8 @@ void RunDimetricRenderingTestImpl() {
         const auto cursorInWorld =
             dimetric::ToPositionInWorld(PositionInView{window.mapPixelToCoords(mouseWindowPos)});
 
+        world.getLight(lightId)->setCenter(cursorInWorld);
+
         // Edit the world
         {
             const auto xx = static_cast<int>(cursorInWorld->x / world.getCellResolution());
@@ -170,12 +184,17 @@ void RunDimetricRenderingTestImpl() {
 
         const auto t1 = std::chrono::steady_clock::now();
 
+        lightRenderer.prepareToRender(
+            dimetric::ToPositionInWorld(PositionInView{window.getView(0).getCenter()}),
+            window.getView(0).getSize());
+
         if (!hg::in::CheckPressedVK(hg::in::VK_SPACE)) {
             renderer.startPrepareToRender(window.getView(0),
                                           {.top = 32.f, .bottom = 256.f, .left = 32.f, .right = 32.f},
                                           cursorInWorld,
                                           DimetricRenderer::REDUCE_WALLS_BASED_ON_POSITION,
-                                          nullptr);
+                                          nullptr,
+                                          &lightRenderer);
         } else {
             visCalc.calc(dimetric::ToPositionInWorld(PositionInView{window.getView(0).getCenter()}),
                          window.getView(0).getSize(),
@@ -185,7 +204,8 @@ void RunDimetricRenderingTestImpl() {
                                           cursorInWorld,
                                           DimetricRenderer::REDUCE_WALLS_BASED_ON_POSITION |
                                               DimetricRenderer::REDUCE_WALLS_BASED_ON_VISIBILITY,
-                                          &visCalc);
+                                          &visCalc,
+                                          &lightRenderer);
         }
         renderer.endPrepareToRender();
         renderer.render(window);
