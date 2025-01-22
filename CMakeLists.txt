@@ -20,6 +20,8 @@ if(MSVC)
 
     # It is also possible (but not recommended) to silence this warning from all sources.
     # add_compile_options("/wd4996")
+
+    add_compile_options("/Zc:preprocessor")
 endif()
 
 # ===== IMPORT CUSTOM FUNCTIONS =====

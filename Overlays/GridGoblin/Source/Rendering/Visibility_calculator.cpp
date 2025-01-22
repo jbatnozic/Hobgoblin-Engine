@@ -440,7 +440,7 @@ bool VisibilityCalculator::_isPointVisible(PositionInWorld aPosInWorld, std::uin
         Vector2f   diff = {aPosInWorld->x - _lineOfSightOrigin.x, aPosInWorld->y - _lineOfSightOrigin.y};
         const auto angle = AngleF::fromVector(diff.x, diff.y);
         const int  idx   = hg::ToPz(std::round(_rayCount * (angle / AngleF::fullCircle())));
-        if (dist > _rays[idx]) {
+        if (dist > _rays[idx % _rayCount]) {
             return false;
         }
     }
