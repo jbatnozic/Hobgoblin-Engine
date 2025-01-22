@@ -1,0 +1,78 @@
+<rml>
+    <head>
+        <link type="text/css" href="host_menu.rcss"/>
+        <title>Window</title>
+        <style>
+            body
+            {
+                width: 800dp;
+                height: 700dp;
+
+                margin: auto;
+            }
+        </style>
+    </head>
+    <body class="window">
+
+        <div id="title-bar">
+            <handle move_target="#document">
+                <span id="title">Host Game</span>
+            </handle>
+        </div>
+
+        <!-- WINDOW INTERIOR -->
+        <div id="window-interior-holder" data-model="hostmenu-model">
+
+            <div data-if="testMode == true" style="padding-left: 40dp; padding-top: 40dp;">
+                <p style="color: red;">!!!!! TESTING MODE !!!!!</p>
+            </div>
+
+            <div data-if="zeroTierStatus == 1" class="window-contents">
+                <span>Please wait for Virtual LAN to come online...</span>
+            </div>
+
+            <div data-if="zeroTierStatus == 2" class="window-contents">
+                <span>Virtual LAN could not be created :(</span>
+            </div>
+
+            <div data-if="zeroTierStatus == 3" class="window-contents">
+                <span>
+                    Virtual LAN has been created successfully. <br />
+                    Your IP address is "{{localIpAddress}}". <br />
+                    Please send it to your friends before clicking "START".
+                </span>
+            </div>
+
+            <!-- FORM -->
+            <form data-if="zeroTierStatus == 0 || zeroTierStatus == 3" 
+                  id="host-form" onsubmit="submit_form" data-event-change="">
+                <div class="window-contents">
+                    <p>
+                        <p>What is my name? Is it maybe...</p><br/>
+                        <input class="text-box" id="playerName"  type="text" name="playerName"  value="Bulk-Squat-Thrust" /><br/>
+                        <br/><p>Number of Players:</p><br/>
+                        <input class="text-box" id="playerCount" type="text" name="playerCount" value="4" /><br/>
+                        <br/><p>Server Port:</p><br/>
+                        <input class="text-box" id="serverPort"  type="text" name="serverPort"  value="8888" /><br/>
+                    </p>
+                    <br/>
+                    
+                    <input type="submit" name="button" value="accept">
+                        <span class="button" style="color: blue;">
+                            [START]
+                        </span>
+                    </input>
+                </div>
+		    </form>
+
+            <br/>
+            <div style="padding-left: 40dp;">
+                <span data-event-click="Back" class="button" style="color: red;">
+                    [BACK]
+                </span>
+            </div>
+
+        </div>
+
+    </body>
+</rml>

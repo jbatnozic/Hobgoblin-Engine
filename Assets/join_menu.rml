@@ -1,0 +1,76 @@
+<rml>
+    <head>
+        <link type="text/css" href="join_menu.rcss"/>
+        <title>Window</title>
+        <style>
+            body
+            {
+                width: 800dp;
+                height: 700dp;
+
+                margin: auto;
+            }
+        </style>
+    </head>
+    <body class="window">
+
+        <div id="title-bar">
+            <handle move_target="#document">
+                <span id="title">Join Game</span>
+            </handle>
+        </div>
+
+        <!-- WINDOW INTERIOR -->
+        <div id="window-interior-holder" data-model="joinmenu-model">
+
+            <div data-if="testMode == true" style="padding-left: 40dp; padding-top: 40dp;">
+                <p style="color: red;">!!!!! TESTING MODE !!!!!</p>
+            </div>
+
+            <div data-if="zeroTierStatus == 1" class="window-contents">
+                <span>Please wait for Virtual LAN to come online...</span>
+            </div>
+
+            <div data-if="zeroTierStatus == 2" class="window-contents">
+                <span>Virtual LAN could not be created :(</span>
+            </div>
+
+            <div data-if="zeroTierStatus == 3" class="window-contents">
+                <span>Virtual LAN has been created successfully :D</span>
+            </div>
+
+            <!-- FORM -->
+            <form data-if="zeroTierStatus == 0 || zeroTierStatus == 3"
+                  id="join-form" onsubmit="submit_form" data-event-change="">
+                <div class="window-contents">
+                    <p>
+                        <p>What is my name? Is it maybe...</p><br/>
+                        <input class="text-box" id="playerName" type="text" name="playerName" value="Bulk-Squat-Thrust" /><br/>
+                        <br/><p>Server IP Address:</p><br/>
+                        <input class="text-box" id="serverIp"   type="text" name="serverIp"   value="localhost" /><br/>
+                        <br/><p>Server Port:</p><br/>
+                        <input class="text-box" id="serverPort" type="text" name="serverPort" value="8888" /><br/>
+                        <br/><p>Local Port:</p><br/>
+                        <input class="text-box" id="localPort"  type="text" name="localPort"  value="auto" /><br/>
+                    </p>
+                    <br/>
+                    <!--p data-if="graphics == 'bad'">Are you sure about this? Bad graphics are just plain <em>bad.</em></p-->
+                    <input type="submit" name="button" value="accept">
+                        <span class="button" style="color: blue;">
+                            [CONNECT]
+                        </span>
+                    </input>
+                </div>
+		    </form>
+
+            <br/>
+            <div style="padding-left: 40dp;">
+                <span data-event-click="Back" class="button" style="color: red;">
+                    [BACK]
+                </span>
+            </div>
+
+        </div>
+
+    </body>
+</rml>

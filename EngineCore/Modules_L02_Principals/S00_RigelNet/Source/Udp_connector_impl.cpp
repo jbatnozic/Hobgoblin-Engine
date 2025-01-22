@@ -602,7 +602,6 @@ void RN_UdpConnectorImpl::_receivedAck(std::uint32_t ordinal, bool strong) {
         _remoteInfo.timeoutStopwatch.restart();
 
         _newMeanLatency += result.timeToAck;
-
         if (_newLatencySampleSize == 0) {
             _newOptimisticLatency  = result.timeToAck;
             _newPessimisticLatency = result.timeToAck;

@@ -232,6 +232,12 @@ Rml::Context& DefaultWindowManager::getGUIContext() {
     return *(*_rmlUiContextDriver);
 }
 
+void DefaultWindowManager::resetGUIContext() {
+    HG_HARD_ASSERT(!_headless && "Method not available in Headless mode.");
+    _rmlUiContextDriver.reset();
+    _rmlUiContextDriver.emplace("DefaultWindowManager::RmlContext", *_window);
+}
+
 ///////////////////////////////////////////////////////////////////////////
 // KEYBOARD & MOUSE INPUT                                                //
 ///////////////////////////////////////////////////////////////////////////

@@ -132,11 +132,11 @@ void GameContext::attachChildContext(std::unique_ptr<GameContext> aChildContext)
 }
 
 std::unique_ptr<GameContext> GameContext::detachChildContext() {
-    if (hasChildContext() && isChildContextJoinable()) {
-        HG_THROW_TRACED(hg::TracedLogicError,
-                        0,
-                        "Cannot detach a running child context - stop and join it first.");
-    }
+     if (hasChildContext() && isChildContextJoinable()) {
+         HG_THROW_TRACED(hg::TracedLogicError,
+                         0,
+                         "Cannot detach a running child context - stop and join it first.");
+     }
 
     return std::move(_childContext);
 }

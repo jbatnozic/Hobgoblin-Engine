@@ -1,0 +1,77 @@
+<rml>
+    <head>
+        <link type="text/css" href="lobby.rcss"/>
+        <title>Window</title>
+        <style>
+            body
+            {
+                width: 800dp;
+                height: 600dp;
+
+                margin: auto;
+            }
+        </style>
+    </head>
+    <body class="window">
+        <div id="title-bar">
+            <handle move_target="#document">
+                <span id="title">Lobby</span>
+            </handle>
+        </div>
+
+        <!-- WINDOW INTERIOR -->
+        <div id="window-interior-holder">
+
+            <!-- STATUS -->
+            <div id="status" data-model="lobby-model" class="window-contents">
+                Your name is: {{localName}}
+                <br/>
+                <span data-if="isAuthorized">You have been authorized by the Host to control the lobby and the game.</span>
+            </div>
+
+            <!-- PLAYER TABLE -->
+            <div id="player-table-holder" class="window-contents">
+                <table data-model="lobby-model">
+                    <colgroup>
+                        <col span="5"/>
+                    </colgroup>
+                    <colgroup>
+                        <col style="text-align: center;"/>
+                        <col/>
+                        <col/>
+                    </colgroup>
+                    <tbody data-for="player, i : players">
+                        <tr data-if="i > 0">
+                            <td colspan="8">SLOT {{i}}</td>
+                        </tr>
+                        <tr data-if="i > 0 && !player.showPending">
+                            <td colspan="5">{{player.lockedIn.name}}</td>
+                            <td class="button" data-event-click="MoveUp(i)">Move /\</td>
+                            <td class="button" data-event-click="MoveDown(i)">Move \/</td>
+                            <td class="button" data-event-click="Kick(i)">Kick</td>
+                        </tr>
+                        <tr data-if="i > 0 && player.showPending">
+                            <td colspan="5">{{player.lockedIn.name}} &lt;= {{player.pending.name}}</td>
+                            <td class="button" data-event-click="MoveUp(i)">Move /\</td>
+                            <td class="button" data-event-click="MoveDown(i)">Move \/</td>
+                            <td class="button" data-event-click="Kick(i)">Kick</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- OPTIONS (BELOW) -->
+
+            <div data-if="isAuthorized" data-model="lobby-model" class="window-contents">
+                <span data-event-click="LockIn" class="button" style="color: blue;">
+                    [LOCK IN]
+                </span>
+                <span data-event-click="Start" class="button" style="color: green;">
+                    [START]
+                </span>
+            </div>
+
+        </div>
+
+    </body>
+</rml>
