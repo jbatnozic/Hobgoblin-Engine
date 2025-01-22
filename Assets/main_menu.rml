@@ -1,0 +1,75 @@
+<rml>
+    <head>
+        <link type="text/css" href="main_menu.rcss"/>
+        <title>Window</title>
+        <style>
+            body
+            {
+                width: 800dp;
+                height: 700dp;
+
+                margin: auto;
+            }
+        </style>
+    </head>
+    <body class="window">
+
+        <div id="title-bar">
+            <handle move_target="#document">
+                <span id="title">Main Menu</span>
+            </handle>
+        </div>
+
+        <!-- WINDOW INTERIOR -->
+        <div id="window-interior-holder" data-model="mainmenu-model">
+
+            <div data-if="testMode == true" style="padding-left: 40dp; padding-top: 40dp;">
+                <p style="color: red;">!!!!! TESTING MODE !!!!!</p>
+            </div>
+
+            <br/>
+            <div style="padding-left: 40dp; padding-top: 340dp;">
+                <span data-event-click="Solo" class="button" style="color: blue;">
+                    [PLAY SOLO]
+                </span>
+            </div>
+
+            <br/>
+            <div style="padding-left: 40dp;">
+                <span data-event-click="Host" class="button" style="color: blue;">
+                    [HOST LAN GAME]
+                </span>
+            </div>
+
+            <br/>
+            <div style="padding-left: 40dp;">
+                <span data-event-click="HostWithZeroTier" class="button" style="color: blue;">
+                    [HOST GLOBAL GAME]
+                </span>
+            </div>
+
+            <br/>
+            <div style="padding-left: 40dp;">
+                <span data-event-click="Join" class="button" style="color: blue;">
+                    [JOIN LAN GAME]
+                </span>
+            </div>
+
+            <br/>
+            <div style="padding-left: 40dp;">
+                <span data-event-click="JoinWithZeroTier" class="button" style="color: blue;">
+                    [JOIN GLOBAL GAME]
+                </span>
+            </div>
+
+            <br/>
+            <div style="padding-left: 40dp;">
+                <span data-event-click="Exit" class="button" style="color: red;">
+                    [EXIT GAME]
+                </span>
+            </div>
+
+        </div>
+
+    </body>
+</rml>

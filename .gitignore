@@ -49,3 +49,4 @@
 **/.DS_Store
 **/CMakeUserPresets.json
 **/CMakeLists.txt.user
+**/ztNodeIdentity

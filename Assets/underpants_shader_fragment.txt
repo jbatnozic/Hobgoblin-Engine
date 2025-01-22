@@ -1,0 +1,19 @@
+uniform sampler2D texture;
+
+uniform vec4 playerColor;
+
+void main() {
+    // lookup the pixel in the texture
+    vec4 pixel  = texture2D(texture, gl_TexCoord[0].xy);
+
+    //if (vec3(pixel) == vec3(51, 46, 139)) {
+
+    if (abs(pixel.x - ( 51.0 / 255.0)) < 0.05 &&
+        abs(pixel.y - ( 46.0 / 255.0)) < 0.05 &&
+        abs(pixel.z - (139.0 / 255.0)) < 0.05)
+    {
+        gl_FragColor = gl_Color * playerColor;
+    } else {
+        gl_FragColor = gl_Color * pixel;
+    }
+}
