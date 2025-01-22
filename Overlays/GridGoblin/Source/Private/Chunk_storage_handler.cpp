@@ -68,7 +68,11 @@ void ChunkStorageHandler::update() {
 void ChunkStorageHandler::prune() {
     HG_ASSERT(_chunkSpooler != nullptr);
 
-    while (_freeChunks.size() > hg::pztos(_freeChunkLimit)) {
+    if (_freeChunks.size() <= hg::pztos(_freeChunkLimit)) {
+        return;
+    }
+
+    do {
         const auto iter = _freeChunks.begin();
         const auto id   = iter->first;
 
@@ -79,7 +83,7 @@ void ChunkStorageHandler::prune() {
         _chunksInGridCount -= 1;
 
         _freeChunks.erase(iter);
-    }
+    } while (_freeChunks.size() > hg::pztos(_freeChunkLimit));
 
     HG_HARD_ASSERT(hg::pztos(_chunksInGridCount) <= _chunkControlBlocks.size() + _freeChunks.size());
 }

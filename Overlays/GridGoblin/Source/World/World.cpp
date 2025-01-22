@@ -367,6 +367,38 @@ const CellModel& World::getCellAtUnchecked(const EditPermission& /*aPerm*/,
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// CELL UPDATERS                                                         //
+///////////////////////////////////////////////////////////////////////////
+
+void World::toggleGeneratorMode(const EditPermission&, bool aGeneratorMode) {
+    if (aGeneratorMode) {
+        HG_VALIDATE_PRECONDITION(_isInGeneratorMode == false);
+        _isInGeneratorMode = true;
+    } else {
+        HG_VALIDATE_PRECONDITION(_isInGeneratorMode == true);
+        _isInGeneratorMode = false;
+
+        // When generator mode is toggled off, refresh all cells in currently loaded chunks
+        auto       iter = availableChunksBegin();
+        const auto end  = availableChunksEnd();
+        for (; iter != end; ++iter) {
+            const auto& chunkId = *iter;
+
+            const hg::PZInteger startX = chunkId.x * _config.cellsPerChunkX;
+            const hg::PZInteger startY = chunkId.y * _config.cellsPerChunkY;
+            const hg::PZInteger endX   = startX + _config.cellsPerChunkX - 1;
+            const hg::PZInteger endY   = startY + _config.cellsPerChunkY - 1;
+
+            for (hg::PZInteger y = startY; y <= endY; y += 1) {
+                for (hg::PZInteger x = startX; x <= endX; x += 1) {
+                    _refreshCellAtUnchecked(x, y);
+                }
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////
 // CHUNKS                                                                //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -554,6 +586,10 @@ std::unique_ptr<ChunkExtensionInterface> World::createChunkExtension() {
 // ===== Editing cells =====
 
 void World::_startEdit() {
+    HG_VALIDATE_PRECONDITION(_isInEditMode == false);
+
+    _isInEditMode = true;
+
     _editMinX = -1;
     _editMinY = -1;
     _editMaxX = -1;
@@ -563,26 +599,28 @@ void World::_startEdit() {
 }
 
 void World::_endEdit() {
-    if (_editMinX == -1 || _editMinY == -1 || _editMaxX == -1 || _editMaxY == -1) {
-        return;
-    }
+    if (!_isInGeneratorMode) {
+        if (_editMinX != -1 && _editMinY != -1 && _editMaxX != -1 && _editMaxY != -1) {
+            const auto maxOffset = static_cast<hg::PZInteger>(_config.maxCellOpenness / 2);
 
-    const auto maxOffset = static_cast<hg::PZInteger>(_config.maxCellOpenness / 2);
+            const auto startX = std::max<hg::PZInteger>(0, _editMinX - maxOffset);
+            const auto startY = std::max<hg::PZInteger>(0, _editMinY - maxOffset);
+            const auto endX   = std::min<hg::PZInteger>(_config.cellCountX - 1, _editMaxX + maxOffset);
+            const auto endY   = std::min<hg::PZInteger>(_config.cellCountY - 1, _editMaxY + maxOffset);
 
-    const auto startX = std::max<hg::PZInteger>(0, _editMinX - maxOffset);
-    const auto startY = std::max<hg::PZInteger>(0, _editMinY - maxOffset);
-    const auto endX   = std::min<hg::PZInteger>(_config.cellCountX - 1, _editMaxX + maxOffset);
-    const auto endY   = std::min<hg::PZInteger>(_config.cellCountY - 1, _editMaxY + maxOffset);
-
-    for (hg::PZInteger y = startY; y <= endY; y += 1) {
-        for (hg::PZInteger x = startX; x <= endX; x += 1) {
-            _refreshCellAtUnchecked(x, y);
+            for (hg::PZInteger y = startY; y <= endY; y += 1) {
+                for (hg::PZInteger x = startX; x <= endX; x += 1) {
+                    _refreshCellAtUnchecked(x, y);
+                }
+            }
         }
     }
 
     for (const auto& [binder, priority] : _binders) {
         binder->onCellsEdited(_cellEditInfos);
     }
+
+    _isInEditMode = false;
 }
 
 namespace {
@@ -652,10 +690,13 @@ void World::_setFloorAtUnchecked(hg::PZInteger                          aX,
     } else {
         cell.resetFloor();
     }
-    _cellEditInfos.push_back({
-        {aX, aY},
-        Binder::CellEditInfo::FLOOR
-    });
+
+    // clang-format off
+    _cellEditInfos.push_back({{aX, aY},Binder::CellEditInfo::FLOOR});
+    if (_isInGeneratorMode) {
+        prune();
+    }
+    // clang-format on
 }
 
 void World::_setFloorAtUnchecked(hg::math::Vector2pz                    aCell,
@@ -709,10 +750,12 @@ SWAP_WALL:
         cell.resetWall();
     }
 
-    _cellEditInfos.push_back({
-        {aX, aY},
-        Binder::CellEditInfo::WALL
-    });
+    // clang-format off
+    _cellEditInfos.push_back({{aX, aY},Binder::CellEditInfo::WALL});
+    if (_isInGeneratorMode) {
+        prune();
+    }
+    // clang-format on
 }
 
 void World::_setWallAtUnchecked(hg::math::Vector2pz                   aCell,

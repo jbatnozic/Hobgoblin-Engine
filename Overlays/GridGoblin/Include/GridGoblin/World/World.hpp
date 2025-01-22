@@ -177,6 +177,21 @@ public:
     // CELL UPDATERS                                                         //
     ///////////////////////////////////////////////////////////////////////////
 
+    //! Generator mode is intended for very long world edits which are expected to touch more chunks
+    //! that what is allowed to be loaded at a time (`WorldConfig::maxLoadedNonessentialChunks`), such
+    //! as procedural terrain generation - hence the name.
+    //!
+    //! While generator mode is on, the World instance is allowed to unload chunks *during* editing in
+    //! order to respect this limit, AND cells won't be refreshed after editing (meaning that their
+    //! openness values will likely be wrong; rendering will also not work properly).
+    //!
+    //! Once generator mode is toggled off, all cells in all remaining currently loaded chunks will
+    //! be refreshed.
+    //!
+    //! \note nothing can make the World instance unload chunks which are in one or more Active Areas,
+    //!        and this also holds even while generator mode is toggled on.
+    void toggleGeneratorMode(const EditPermission&, bool aGeneratorMode);
+
     class Editor {
     public:
         // Floor
@@ -221,7 +236,12 @@ public:
     void edit(const EditPermission&, taCallable&& aCallable) {
         _startEdit();
         Editor editor{*this};
-        aCallable(editor);
+        try {
+            aCallable(editor);
+        } catch (...) {
+            _endEdit();
+            throw;
+        }
         _endEdit();
     }
 
@@ -374,6 +394,9 @@ private:
     int _editMinY = -1;
     int _editMaxX = -1;
     int _editMaxY = -1;
+
+    bool _isInEditMode      = false;
+    bool _isInGeneratorMode = false;
 
     void _startEdit();
     void _endEdit();
