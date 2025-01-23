@@ -112,7 +112,7 @@ void DimetricRenderer::startPrepareToRender(const hg::gr::View&       aView,
     _objectsToRender.clear();
     _cellAdapters.clear();
 
-    _lightingAdapter.reset(aView, aOverdrawAmounts, aPointOfView, aLightingRenderer);
+    _lightingAdapter.reset(aView, aLightingRenderer);
     _objectsToRender.push_back(&_lightingAdapter);
 
     _prepareCells(aRenderFlags, aVisProv, aLightingRenderer);
@@ -121,7 +121,7 @@ void DimetricRenderer::startPrepareToRender(const hg::gr::View&       aView,
 }
 
 void DimetricRenderer::addObject(const RenderedObject& aObject) {
-    HG_NOT_IMPLEMENTED("TODO");
+    _objectsToRender.push_back(&aObject);
 }
 
 void DimetricRenderer::endPrepareToRender() {
@@ -411,32 +411,32 @@ hg::gr::Color DimetricRenderer::_getColorForWall(const CellInfo&         aCellIn
     #define POS_SOUTH (PositionInWorld{(aCellInfo.gridX + 0.5f) * cr,          (aCellInfo.gridY + 1.f)  * cr + OFFSET})
     // clang-format on
 
-    using hg::gr::COLOR_BLACK;
+    const auto ambient = aLightingRenderer->getAmbientColor();
 
     if ((aRendererMask & RM_SHOULD_REDUCE) == 0) {
         if (westOpen && southOpen) {
-            const auto col1 = aLightingRenderer->getColorAt(POS_WEST).value_or(COLOR_BLACK);
-            const auto col2 = aLightingRenderer->getColorAt(POS_SOUTH).value_or(COLOR_BLACK);
+            const auto col1 = aLightingRenderer->getColorAt(POS_WEST).value_or(ambient);
+            const auto col2 = aLightingRenderer->getColorAt(POS_SOUTH).value_or(ambient);
             return ColorMax(col1, col2);
         } else if (westOpen) {
-            return aLightingRenderer->getColorAt(POS_WEST).value_or(COLOR_BLACK);
+            return aLightingRenderer->getColorAt(POS_WEST).value_or(ambient);
         } else if (southOpen) {
-            return aLightingRenderer->getColorAt(POS_SOUTH).value_or(COLOR_BLACK);
+            return aLightingRenderer->getColorAt(POS_SOUTH).value_or(ambient);
         }
-        return COLOR_BLACK;
+        return ambient;
     } else {
-        hg::gr::Color color = COLOR_BLACK;
+        hg::gr::Color color = ambient;
         if (northOpen) {
-            color = ColorMax(color, aLightingRenderer->getColorAt(POS_NORTH).value_or(COLOR_BLACK));
+            color = ColorMax(color, aLightingRenderer->getColorAt(POS_NORTH).value_or(ambient));
         }
         if (westOpen) {
-            color = ColorMax(color, aLightingRenderer->getColorAt(POS_WEST).value_or(COLOR_BLACK));
+            color = ColorMax(color, aLightingRenderer->getColorAt(POS_WEST).value_or(ambient));
         }
         if (eastOpen) {
-            color = ColorMax(color, aLightingRenderer->getColorAt(POS_EAST).value_or(COLOR_BLACK));
+            color = ColorMax(color, aLightingRenderer->getColorAt(POS_EAST).value_or(ambient));
         }
         if (southOpen) {
-            color = ColorMax(color, aLightingRenderer->getColorAt(POS_SOUTH).value_or(COLOR_BLACK));
+            color = ColorMax(color, aLightingRenderer->getColorAt(POS_SOUTH).value_or(ambient));
         }
         return color;
     }
@@ -526,8 +526,6 @@ DimetricRenderer::LightingProviderToRenderedObjectAdapter::LightingProviderToRen
 
 void DimetricRenderer::LightingProviderToRenderedObjectAdapter::reset(
     const hg::gr::View&     aView,
-    const OverdrawAmounts&  aOverdrawAmounts,  // TODO: not needed
-    PositionInWorld         aPointOfView,      // TODO: not needed
     const LightingRenderer* aLightingRenderer) //
 {
     _spatialInfo.setCenter(dimetric::ToPositionInWorld(PositionInView{aView.getCenter()}));

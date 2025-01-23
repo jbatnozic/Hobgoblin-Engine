@@ -34,6 +34,7 @@ public:
     LightingRenderer(const World&                aWorld,
                      const hg::gr::SpriteLoader& aSpriteLoader,
                      hg::math::Vector2pz         aTextureSize,
+                     hg::gr::Color               aAmbientColor = hg::gr::COLOR_BLACK,
                      Purpose                     aPurpose = Purpose::NORMAL_RENDERING);
 
     ~LightingRenderer();
@@ -43,6 +44,8 @@ public:
     void render(hg::gr::Canvas& aCanvas, const hg::gr::RenderStates& aRenderStates = {}) const;
 
     std::optional<hg::gr::Color> getColorAt(PositionInWorld aPosition) const;
+
+    hg::gr::Color getAmbientColor() const;
 
 private:
     const World& _world;
@@ -55,7 +58,8 @@ private:
     hg::math::Vector2f _textureDrawScale;
     hg::math::Vector2pz _textureSize;
 
-    Purpose _purpose;
+    hg::gr::Color _ambientColor;
+    Purpose       _purpose;
 
     //! Buffer which will hold the contents of _renderTexture in RAM
     //! (in RGBA format), for fast access for purposes of getColorAt().
@@ -69,6 +73,10 @@ private:
     //! - In odd-numbered steps, we start writing to pbo[1] and read from pbo[0].
     unsigned int _stepCounter = -1;
 };
+
+inline hg::gr::Color LightingRenderer::getAmbientColor() const {
+        return _ambientColor;
+    }
 
 } // namespace gridgoblin
 } // namespace jbatnozic

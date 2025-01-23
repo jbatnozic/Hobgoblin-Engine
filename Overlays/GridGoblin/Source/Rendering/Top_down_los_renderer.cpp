@@ -20,7 +20,7 @@ namespace jbatnozic {
 namespace gridgoblin {
 
 namespace {
-constexpr auto LOG_ID = "gridworld";
+constexpr auto LOG_ID = "GridGoblin";
 
 float MultiplierForPurpose(TopDownLineOfSightRenderer::Purpose aPurpose) {
     switch (aPurpose) {

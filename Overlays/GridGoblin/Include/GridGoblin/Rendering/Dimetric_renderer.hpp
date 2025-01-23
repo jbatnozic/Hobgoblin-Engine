@@ -120,8 +120,6 @@ private:
         LightingProviderToRenderedObjectAdapter();
 
         void reset(const hg::gr::View&     aView,
-                   const OverdrawAmounts&  aOverdrawAmounts,
-                   PositionInWorld         aPointOfView,
                    const LightingRenderer* aLightingRenderer);
 
         void render(hg::gr::Canvas& aCanvas, PositionInView aPosInView) const override;

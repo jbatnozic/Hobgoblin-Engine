@@ -117,6 +117,7 @@ void RunDimetricRenderingTestImpl() {
         world,
         loader,
         {2048, 2048},
+        hg::gr::Color{0, 50, 100},
         LightingRenderer::Purpose::DIMETRIC_RENDERING
     };
 

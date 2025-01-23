@@ -34,10 +34,12 @@ using namespace opengl;
 LightingRenderer::LightingRenderer(const World&                aWorld,
                                    const hg::gr::SpriteLoader& aSpriteLoader,
                                    hg::math::Vector2pz         aTextureSize,
+                                   hg::gr::Color               aAmbientColor,
                                    Purpose                     aPurpose)
     : _world{aWorld}
     , _spriteLoader{aSpriteLoader}
     , _renderTexture{std::make_unique<hg::gr::RenderTexture>()}
+    , _ambientColor{aAmbientColor}
     , _purpose{aPurpose} //
 {
     if (_purpose == Purpose::DIMETRIC_RENDERING) {
@@ -82,7 +84,7 @@ void LightingRenderer::prepareToRender(PositionInWorld aViewCenter, hg::math::Ve
     _textureDrawScale = {squareSize / _renderTexture->getSize().x,
                          squareSize / _renderTexture->getSize().y};
 
-    _renderTexture->clear(hg::gr::COLOR_BLACK); // TODO
+    _renderTexture->clear(_ambientColor);
 
     auto& view = _renderTexture->getView();
     view.setCenter(*_viewCenter);

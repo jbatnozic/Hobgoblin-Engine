@@ -41,24 +41,24 @@ void LightExt::ExtensionData::render(hg::gr::Canvas&             aCanvas,
     _renderTexture->clear(hg::gr::COLOR_BLACK);
     _renderTexture->setView(hg::gr::View{*light->getCenter(), size});
     {
-        auto sprite = aSpriteLoader.getBlueprint(light->getSpriteId()).spr();
-        sprite.setColor(light->getColor());
-        sprite.setPosition(*light->getCenter());
-        sprite.setScale(size.x / sprite.getLocalBounds().w, size.y / sprite.getLocalBounds().h);
-        _renderTexture->draw(sprite);
+        auto lightSprite = aSpriteLoader.getBlueprint(light->getSpriteId()).spr();
+        lightSprite.setColor(light->getColor());
+        lightSprite.setPosition(*light->getCenter());
+        lightSprite.setScale(size.x / lightSprite.getLocalBounds().w,
+                             size.y / lightSprite.getLocalBounds().h);
+        _renderTexture->draw(lightSprite);
     }
 
     _visCalc.calc(light->getCenter(), size, light->getCenter());
     _visCalc.render(*_renderTexture);
     _renderTexture->display();
 
-    hg::gr::Sprite spr{&_renderTexture->getTexture()};
-    spr.setOrigin({_renderTexture->getSize().x / 2.f, _renderTexture->getSize().y / 2.f});
-    spr.setScale({size.x / _renderTexture->getSize().x, size.y / _renderTexture->getSize().y});
-    spr.setColor(hg::gr::COLOR_WHITE.withAlpha(125));
+    hg::gr::Sprite rtSprite{&_renderTexture->getTexture()};
+    rtSprite.setOrigin({_renderTexture->getSize().x / 2.f, _renderTexture->getSize().y / 2.f});
+    rtSprite.setScale({size.x / _renderTexture->getSize().x, size.y / _renderTexture->getSize().y});
 
-    spr.setPosition(*light->getCenter());
-    aCanvas.draw(spr, aRenderStates);
+    rtSprite.setPosition(*light->getCenter());
+    aCanvas.draw(rtSprite, aRenderStates);
 }
 
 const LightExt* LightExt::ExtensionData::getLightAddress(const ExtensionData* aExtensionDataAddress) {

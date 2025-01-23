@@ -234,7 +234,6 @@ public:
         World& _world;
     };
 
-    // TODO: how to solve cache overflow in very large edits?
     template <class taCallable>
     void edit(const EditPermission&, taCallable&& aCallable) {
         _startEdit();

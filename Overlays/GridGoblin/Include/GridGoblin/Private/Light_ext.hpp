@@ -51,8 +51,6 @@ public:
                     const hg::gr::SpriteLoader& aSpriteLoader,
                     const hg::gr::RenderStates& aRenderStates = {}) const;
 
-        static const LightExt* getLightAddress(const ExtensionData* aExtensionDataAddress);
-
     private:
         const World& _world;
 
@@ -60,6 +58,8 @@ public:
 
         mutable std::unique_ptr<hg::gr::RenderTexture> _renderTexture;
         mutable VisibilityCalculator                   _visCalc;
+
+        static const LightExt* getLightAddress(const ExtensionData* aExtensionDataAddress);
     };
 
     mutable ExtensionData mutableExtensionData;
