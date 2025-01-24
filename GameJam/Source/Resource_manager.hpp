@@ -7,8 +7,8 @@
 #include "Resource_manager_interface.hpp"
 
 class ResourceManager
-    : public  ResourceManagerInterface
-    , public  spe::NonstateObject {
+    : public ResourceManagerInterface
+    , public spe::NonstateObject {
 public:
     explicit ResourceManager(QAO_RuntimeRef aRuntimeRef, int aExecutionPriority);
 

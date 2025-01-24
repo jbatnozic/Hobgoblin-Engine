@@ -125,7 +125,7 @@ public:
         if (_status == SimpleZeroTier_Status::INITIALIZING) {
             return;
         }
-        
+
         HG_VALIDATE_PRECONDITION(_status == SimpleZeroTier_Status::STOPPED);
 
         _worker = std::thread{[=, this]() {

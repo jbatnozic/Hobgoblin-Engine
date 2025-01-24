@@ -14,9 +14,9 @@ public:
 
     ~LobbyFrontendManagerInterface() override = default;
 
-    virtual void setToHeadlessHostMode() = 0;
+    virtual void setToHeadlessHostMode()                                                 = 0;
     virtual void setToClientMode(const std::string& aName, const std::string& aUniqueId) = 0;
-    virtual Mode getMode() const = 0;
+    virtual Mode getMode() const                                                         = 0;
 
     virtual void setVisible(bool aVisible) = 0;
 

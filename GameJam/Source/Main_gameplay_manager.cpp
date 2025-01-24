@@ -1,7 +1,8 @@
 #include "Main_gameplay_manager.hpp"
 
-#include "Character.hpp"
+// #include "Character.hpp"
 #include "Config.hpp"
+#include "Diver.hpp"
 #include "Environment_manager_interface.hpp"
 #include "Host_menu_manager.hpp"
 #include "Join_menu_manager.hpp"
@@ -116,17 +117,22 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
     varmap.setString(VARMAP_ID_WINNER_NAME, "n/a");
 
     auto& envMgr = ccomp<MEnvironment>();
-    for (hg::PZInteger i = 0; i < aPlayerCount; i += 1) {
-        if (i == 0) {
-            continue; // player 0 is the host, doesn't need a character
-        }
-        auto* obj = QAO_PCreate<CharacterObject>(ctx().getQAORuntime(),
-                                                 ccomp<MNetworking>().getRegistryId(),
-                                                 spe::SYNC_ID_NEW);
-        obj->init(i,
-                  left_offset * single_terrain_size + i * 300.0,
-                  (terrain_size + 5) * single_terrain_size - 300.0);
-    }
+    // for (hg::PZInteger i = 0; i < aPlayerCount; i += 1) {
+    //     if (i == 0) {
+    //         continue; // player 0 is the host, doesn't need a character
+    //     }
+    //     auto* obj = QAO_PCreate<CharacterObject>(ctx().getQAORuntime(),
+    //                                              ccomp<MNetworking>().getRegistryId(),
+    //                                              spe::SYNC_ID_NEW);
+    //     obj->init(i,
+    //               left_offset * single_terrain_size + i * 300.0,
+    //               (terrain_size + 5) * single_terrain_size - 300.0);
+    // }
+
+    auto* obj = QAO_PCreate<Diver>(ctx().getQAORuntime(),
+                                   ccomp<MNetworking>().getRegistryId(),
+                                   spe::SYNC_ID_NEW);
+    obj->init(1, 1000.f, 1000.f);
 }
 
 void MainGameplayManager::_restartGame() {

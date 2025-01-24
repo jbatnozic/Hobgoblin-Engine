@@ -262,7 +262,7 @@ void HostMenuManager::_eventPreUpdate() {
         _impl.reset();
 
         // Start game
-        ctx().attachChildContext(CreateServerContext(*_serverGameParams));  
+        ctx().attachChildContext(CreateServerContext(*_serverGameParams));
         AttachGameplayManagers(ctx(), *_clientGameParams);
         if (_clientGameParams->skipConnect) {
             auto& server = ctx().getChildContext()->getComponent<MNetworking>().getServer();

@@ -214,7 +214,7 @@ std::unique_ptr<spe::GameContext> CreateBasicClientContext() {
         {"LatoLatin-BoldItalic.ttf", false},
     };
     for (const FontFace& face : font_faces) {
-        Rml::LoadFontFace("assets/fonts/" + face.filename, face.fallback_face);
+        Rml::LoadFontFace("Assets/fonts/" + face.filename, face.fallback_face);
     }
 
 #ifndef NDEBUG

@@ -1,6 +1,6 @@
 
-#include <Hobgoblin/Logging.hpp>
 #include <Hobgoblin/HGExcept.hpp>
+#include <Hobgoblin/Logging.hpp>
 
 #include <Hobgoblin/Utility/Randomization.hpp>
 
@@ -16,7 +16,7 @@ int InitializeAndRunPlayer() {
     //     std::chrono::seconds{20}
     // );
 
-    auto ctx = CreateBasicClientContext();
+    auto      ctx    = CreateBasicClientContext();
     const int status = ctx->runFor(-1);
     HG_LOG_INFO(LOG_ID, "Main context stopped with exit code {}.", status);
     // SimpleZeroTierStop();
@@ -71,8 +71,8 @@ int main(int argc, char* argv[]) try {
         if (mode == "server") {
             return InitializeAndRunServer(argc, argv);
         } else {
-           HG_LOG_ERROR(LOG_ID, "Unknown mode provided ({}), exiting.", mode);
-           return EXIT_FAILURE;
+            HG_LOG_ERROR(LOG_ID, "Unknown mode provided ({}), exiting.", mode);
+            return EXIT_FAILURE;
         }
     }
 } catch (const hg::TracedException& ex) {

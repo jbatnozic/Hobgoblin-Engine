@@ -17,8 +17,8 @@ public:
 
     //! \param aPlayerCount number of players in the game, including player 0 (the host)
     virtual void setToHostMode(hg::PZInteger aPlayerCount) = 0;
-    virtual void setToClientMode() = 0;
-    virtual Mode getMode() const = 0;
+    virtual void setToClientMode()                         = 0;
+    virtual Mode getMode() const                           = 0;
 
     virtual void characterReachedTheScales(CharacterObject& aCharacter) = 0;
 

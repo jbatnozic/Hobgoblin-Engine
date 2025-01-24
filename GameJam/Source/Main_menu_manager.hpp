@@ -23,7 +23,7 @@ private:
 
     std::unique_ptr<ServerGameParams> _serverGameParams;
     std::unique_ptr<ClientGameParams> _clientGameParams;
-    bool _timeToDie = false;
+    bool                              _timeToDie = false;
 
     void _eventPreUpdate() override;
     void _eventDrawGUI() override;

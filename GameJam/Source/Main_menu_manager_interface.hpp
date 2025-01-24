@@ -9,4 +9,3 @@ public:
 private:
     SPEMPE_CTXCOMP_TAG("MainMenuManagerInterface");
 };
-

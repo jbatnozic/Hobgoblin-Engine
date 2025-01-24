@@ -27,6 +27,6 @@ private:
     void _eventUpdate1() override;
     void _eventDrawGUI() override;
 
-    void _notifyAllToStart();
+    void        _notifyAllToStart();
     friend void ActivateCommand(LobbyFrontendManager& aMgr, int aCommand, void* aArgs);
 };

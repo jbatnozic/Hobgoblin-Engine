@@ -14,12 +14,10 @@ public:
     using TracedRuntimeError::TracedRuntimeError;
 };
 
-void SimpleZeroTier_Init(
-    const std::string&        aNodeIdentityPath,
-    std::uint16_t             aServicePort,
-    std::uint64_t             aNetworkId,
-    std::chrono::milliseconds aMaxTimeToWait
-);
+void SimpleZeroTier_Init(const std::string&        aNodeIdentityPath,
+                         std::uint16_t             aServicePort,
+                         std::uint64_t             aNetworkId,
+                         std::chrono::milliseconds aMaxTimeToWait);
 
 enum class SimpleZeroTier_Status {
     STOPPED,

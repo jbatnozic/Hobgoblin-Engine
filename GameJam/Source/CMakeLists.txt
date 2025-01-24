@@ -6,6 +6,7 @@ add_executable(${PROJECT_NAME}
     "Character.cpp"
     "Collisions.cpp"
     "Context_factory.cpp"
+    "Diver.cpp"
     "Environment_manager.cpp"
     "Host_menu_manager.cpp"
     "Lobby_frontend_manager.cpp"
@@ -44,6 +45,7 @@ add_executable(${PROJECT_NAME}
      
      # Overlay
      "SPeMPE"
+     "GridGoblin"
 
      # External
      "sfml::sfml"

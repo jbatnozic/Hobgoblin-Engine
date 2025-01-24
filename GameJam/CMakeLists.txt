@@ -1,2 +1,2 @@
-project("HugeQuest")
+project("DjoxTrauma")
 add_subdirectory("Source")
