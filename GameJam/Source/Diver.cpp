@@ -12,10 +12,13 @@
 #include <cmath>
 
 namespace {
-static constexpr cpFloat MASS    = 80.0;
-static constexpr cpFloat WIDTH   = 32.0;
-static constexpr cpFloat HEIGHT  = 64.0;
-static constexpr cpFloat DAMPING = 0.9;
+// Physics parameters for Diver
+static constexpr cpFloat PHYS_MASS             = 80.0;
+static constexpr cpFloat PHYS_WIDTH            = 32.0;
+static constexpr cpFloat PHYS_HEIGHT           = 64.0;
+static constexpr cpFloat PHYS_DAMPING          = 0.9;
+static constexpr cpFloat PHYS_ROTATIONAL_FORCE = 250'000.0;
+static constexpr cpFloat PHYS_PROPULSION_FORCE = 400'000.0;
 
 #define NUM_COLORS 12
 static const hg::gr::Color COLORS[NUM_COLORS] = {hg::gr::COLOR_BLACK,
@@ -38,10 +41,12 @@ Diver::Diver(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSy
                    return _initColDelegate();
                },
                [this]() {
-                   return hg::alvin::Body::createDynamic(80.0, cpMomentForBox(MASS, WIDTH, HEIGHT));
+                   return hg::alvin::Body::createDynamic(
+                       80.0,
+                       cpMomentForBox(PHYS_MASS, PHYS_WIDTH, PHYS_HEIGHT));
                },
                [this]() {
-                   return hg::alvin::Shape::createBox(_unibody.body, WIDTH, HEIGHT);
+                   return hg::alvin::Shape::createBox(_unibody.body, PHYS_WIDTH, PHYS_HEIGHT);
                }} {
     if (isMasterObject()) {
         _getCurrentState().initMirror(); // To get autodiff optimization working
@@ -51,7 +56,7 @@ Diver::Diver(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSy
         cpBodySetVelocityUpdateFunc(
             _unibody,
             [](cpBody* aBody, cpVect aGravity, cpFloat /*aDamping*/, cpFloat aDt) {
-                cpBodyUpdateVelocity(aBody, aGravity, DAMPING, aDt);
+                cpBodyUpdateVelocity(aBody, aGravity, PHYS_DAMPING, aDt);
             });
     } else {
         // _renderer.emplace(ctx(), hg::gr::COLOR_RED);
@@ -143,8 +148,8 @@ void Diver::_eventDraw1() {
     const auto& self = _getCurrentState();
 
     hg::gr::RectangleShape rect;
-    rect.setSize({(float)WIDTH, (float)HEIGHT});
-    rect.setOrigin({(float)WIDTH / 2.f, (float)HEIGHT / 2.f});
+    rect.setSize({(float)PHYS_WIDTH, (float)PHYS_HEIGHT});
+    rect.setOrigin({(float)PHYS_WIDTH / 2.f, (float)PHYS_HEIGHT / 2.f});
     rect.setFillColor(hg::gr::COLOR_TRANSPARENT);
     rect.setOutlineColor(hg::gr::COLOR_YELLOW);
     rect.setOutlineThickness(2.f);
@@ -203,13 +208,11 @@ void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
 
         const auto rotationDiff = currentRotation.shortestDistanceTo(targetRotation);
 
-        const cpFloat rcsStrength = 250'000.0; // TODO
-
         cpVect rotationalForce;
         if (rotationDiff.asRadians() < 0.0) {
-            rotationalForce = cpv(0.0, -rcsStrength);
+            rotationalForce = cpv(0.0, -PHYS_ROTATIONAL_FORCE);
         } else {
-            rotationalForce = cpv(0.0, +rcsStrength);
+            rotationalForce = cpv(0.0, +PHYS_ROTATIONAL_FORCE);
         }
 
         rotationalForce =
@@ -223,9 +226,8 @@ void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
 
     // Propulsion
     if (aLeft || aRight || aUp || aDown) {
-        static constexpr cpFloat PROPULSION_FORCE = 400'000.0;
         const auto   angleRad = cpvtoangle(cpBodyGetRotation(_unibody)) - hg::math::Pi<cpFloat>() / 2;
-        const cpVect force    = cpvmult(cpvforangle(angleRad), PROPULSION_FORCE);
+        const cpVect force    = cpvmult(cpvforangle(angleRad), PHYS_PROPULSION_FORCE);
         cpBodyApplyForceAtWorldPoint(_unibody, force, cpBodyGetPosition(_unibody));
     }
 }
