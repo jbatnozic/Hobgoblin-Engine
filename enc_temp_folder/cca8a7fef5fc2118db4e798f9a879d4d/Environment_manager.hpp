@@ -57,7 +57,7 @@ private:
 
     std::optional<hg::alvin::CollisionDelegate>             _collisionDelegate;
     std::optional<hg::alvin::Body>                          _terrainBody;
-    hg::util::RowMajorGrid<std::vector<std::string>>        _cells;
+    hg::util::RowMajorGrid<CellKind>           _cells;
     std::vector<CellKind>                                   _extraObjects;
     hg::util::RowMajorGrid<std::optional<hg::alvin::Shape>> _shapes;
     std::unordered_map<cpShape*, hg::math::Vector2pz>       _shapeToPosition;

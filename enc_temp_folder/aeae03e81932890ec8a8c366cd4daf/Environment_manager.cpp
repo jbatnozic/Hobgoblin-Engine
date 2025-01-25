@@ -435,9 +435,207 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
 
     loadTerrainText();
     // Cells
+    std::deque<std::deque<CellKind>> _temp_cells;
+    _temp_cells.push_back({});
+    _temp_cells.push_back({});
+    for (int j = 0; j < 4; j++) {
+        _temp_cells[0].push_back(CellKind::SCALE);
+        _temp_cells[1].push_back(CellKind::ROCK_1);
+    }
+    auto rand = []() {
+        return hg::util::GetRandomNumber<std::int32_t>(0, 10000) * 0.0001;
+    };
 
+    for (int i = 1; i < mountain_height; i++) {
+        auto chance1 = [i](bool inc = false) {
+            float ch = ((terrain_1_chance + (inc ? terrain_1_repeat : 0))) *
+                       (((float)(i * i) / (mountain_height * mountain_height)));
 
+            return ch;
+        };
+        auto chance2 = [i](bool inc = false) {
+            float ch = ((terrain_2_chance + (inc ? terrain_2_repeat : 0))) *
+                       (1.f - ((float)(i * i) / (mountain_height * mountain_height)));
 
+            return ch;
+        };
+        auto _num       = rand();
+        int  slope_left = 0;
+        while (slope_chance < _num) {
+            slope_left++;
+            _num = rand();
+        }
+        left_offset += slope_left;
+        _num            = rand();
+        int slope_right = 0;
+        while (slope_chance < _num) {
+            slope_right++;
+            _num = rand();
+        }
+        right_offset += slope_right;
+
+        _temp_cells.push_back({});
+        for (int j = 0; j < _temp_cells[_temp_cells.size() - 2].size(); j++) {
+            CellKind rock = CellKind::ROCK_1;
+            bool     inc  = false;
+            if (j > 0 && _temp_cells[_temp_cells.size() - 2][j] == CellKind::ROCK_2) {
+                inc = true;
+            }
+
+            if (chance1(inc) > rand()) {
+                rock = CellKind::ROCK_2;
+            }
+            inc = false;
+
+            if (j > 0 && _temp_cells[_temp_cells.size() - 2][j] == CellKind::ROCK_3) {
+                inc = true;
+            }
+            if (chance2(inc) > rand()) {
+                rock = CellKind::ROCK_3;
+            }
+            inc = false;
+            _temp_cells[_temp_cells.size() - 1].push_back(rock);
+        }
+
+        for (int j = 0; j < _temp_cells.size(); j++) {
+            for (int l = 0; l < slope_left; l++) {
+                CellKind rock       = CellKind::ROCK_1;
+                CellKind rock_slope = CellKind::ROCK_MT_1;
+                bool     inc        = false;
+                if (j > 0 && (_temp_cells[j - 1][1] == CellKind::ROCK_2)) {
+                    inc = true;
+                    if (chance1(inc) > rand()) {
+                        rock       = CellKind::ROCK_2;
+                        rock_slope = CellKind::ROCK_MT_2;
+                    }
+                    inc = false;
+                }
+
+                if (j > 0 && (_temp_cells[j - 1][1] == CellKind::ROCK_3)) {
+                    inc = true;
+                    if (chance2(inc) > rand()) {
+                        rock       = CellKind::ROCK_3;
+                        rock_slope = CellKind::ROCK_MT_3;
+                        // HG_LOG_FATAL(LOG_ID, "SADA  2");
+                    }
+                    inc = false;
+                }
+
+                if (_temp_cells.size() - 1 >= 0 && j == _temp_cells.size() - 1) {
+                    _temp_cells[j].push_front(rock);
+                } else if (_temp_cells.size() - 2 >= 0 && j == _temp_cells.size() - 2) {
+                    if (l == 0) {
+                        _temp_cells[j].push_front(rock_slope);
+                    } else {
+                        _temp_cells[j].push_front(CellKind::EMPTY);
+                    }
+
+                } else {
+                    _temp_cells[j].push_front(CellKind::EMPTY);
+                }
+            }
+            for (int r = 0; r < slope_right; r++) {
+                CellKind rock       = CellKind::ROCK_1;
+                CellKind rock_slope = CellKind::ROCK_T_1;
+                bool     inc        = false;
+                if (j > 0 && _temp_cells[j - 1][_temp_cells[j - 1].size() - 2] == CellKind::ROCK_2) {
+                    inc = true;
+
+                    if (chance1(inc) > rand()) {
+                        rock       = CellKind::ROCK_2;
+                        rock_slope = CellKind::ROCK_T_2;
+                    }
+                    inc = false;
+                }
+
+                if (j > 0 && _temp_cells[j - 1][_temp_cells[j - 1].size() - 2] == CellKind::ROCK_3) {
+                    inc = true;
+                    if (chance2(inc) > rand()) {
+                        rock       = CellKind::ROCK_3;
+                        rock_slope = CellKind::ROCK_T_3;
+                        // HG_LOG_FATAL(LOG_ID, "SADA  2");
+                    }
+                    inc = false;
+                }
+
+                if (_temp_cells.size() - 1 >= 0 && j == _temp_cells.size() - 1) {
+                    _temp_cells[j].push_back(rock);
+                } else if (_temp_cells.size() - 2 >= 0 && j == _temp_cells.size() - 2) {
+
+                    bool inc = false;
+                    if (j > 0 && _temp_cells[j - 1][_temp_cells[j - 1].size() - 2] == CellKind::ROCK_2) {
+                        inc = true;
+
+                        if (chance1(inc) > rand()) {
+                            rock       = CellKind::ROCK_2;
+                            rock_slope = CellKind::ROCK_T_2;
+                        }
+                        // HG_LOG_FATAL(LOG_ID, "sosilica 5----------------------");
+                        inc = false;
+                    }
+
+                    if (j > 0 && _temp_cells[j - 1][_temp_cells[j - 1].size() - 2] == CellKind::ROCK_3) {
+                        inc = true;
+                        if (chance2(inc) > rand()) {
+                            rock       = CellKind::ROCK_3;
+                            rock_slope = CellKind::ROCK_T_3;
+                            // HG_LOG_FATAL(LOG_ID, "SADA  2");
+                        }
+                        // HG_LOG_FATAL(LOG_ID, "sosilica 2----------------------");
+                        inc = false;
+                    }
+
+                    if (r == 0) {
+                        _temp_cells[j].push_back(rock_slope);
+                    } else {
+                        _temp_cells[j].push_back(CellKind::EMPTY);
+                    }
+
+                } else {
+                    _temp_cells[j].push_back(CellKind::EMPTY);
+                }
+            }
+        }
+    }
+
+    aWidth  = static_cast<hg::PZInteger>(_temp_cells[0].size());
+    aHeight = static_cast<hg::PZInteger>(_temp_cells.size());
+
+    for (int i = 0; i < 5; i += 1) {
+        _temp_cells.push_front({});
+        for (int j = 0; j < aWidth; j += 1) {
+            _temp_cells[0].push_back(CellKind::EMPTY);
+        }
+        aHeight += 1;
+    }
+
+    _cells.reset(aWidth, aHeight);
+    HG_LOG_INFO(LOG_ID, "World grid size set to {}x{}.", _cells.getWidth(), _cells.getHeight());
+
+    for (hg::PZInteger y = 0; y < aHeight; y += 1) {
+        // std::ostringstream oss;
+        for (hg::PZInteger x = 0; x < _temp_cells[y].size(); x += 1) {
+            if (y == aHeight - 1 || y == aHeight - 2) {
+                _cells[y][x] = CellKind::ROCK_1;
+            } else {
+                const auto tempCell = _temp_cells[y][x];
+                if (tempCell == CellKind::SCALE) {
+                    _cells[y][x] = CellKind::SCALE;
+                    if (_scalesGridPosition.x == 0 && _scalesGridPosition.y == 0) {
+                        _scalesGridPosition = {x, y};
+                    }
+                } else {
+                    if (rand() > hole_chance) {
+                        _cells[y][x] = _temp_cells[y][x];
+                    } else {
+                        _cells[y][x] = CellKind::EMPTY;
+                    }
+                }
+            }
+            // oss << (int)_temp_cells[y][x];
+        }
+        // HG_LOG_FATAL(LOG_ID, "{}", oss.str());
+    }
 
     // Collision delegate
     _collisionDelegate.emplace(hg::alvin::CollisionDelegateBuilder{}
@@ -452,7 +650,7 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
     _shapes.reset(_temp_cells[0].size(), _temp_cells.size());
     for (hg::PZInteger y = 0; y < _temp_cells.size(); y += 1) {
         for (hg::PZInteger x = 0; x < _temp_cells[y].size(); x += 1) {
-            if (_cells[y][x].size()>0) {
+            if (_cells[y][x] != CellKind::EMPTY) {
                 auto alvinShape =
                     hg::alvin::Shape{CreateCellPolyShape(*_terrainBody, {x, y}, CellShape::FULL_SQUARE)};
                 {
@@ -683,15 +881,5 @@ void EnvironmentManager::loadTerrainText() {
     }
 
     HG_LOG_FATAL(LOG_ID, oss.str());
-    hg::PZInteger aWidth  = static_cast<hg::PZInteger>(cells[0].size());
-    hg::PZInteger aHeight = static_cast<hg::PZInteger>(cells.size());
-
-    _cells.reset(aWidth, aHeight);
-
-        for (hg::PZInteger y = 0; y < aHeight; y += 1) {
-        // std::ostringstream oss;
-            for (hg::PZInteger x = 0; x < cells[y].size(); x += 1) {
-                _cells[y][x] = cells[y][x];
-        }
-    }
+    
 }
