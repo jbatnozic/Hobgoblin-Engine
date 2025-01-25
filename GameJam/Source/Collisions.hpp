@@ -11,40 +11,16 @@
 #include <optional>
 
 enum EntityCategories {
-    CAT_CHARACTER = 0x01,
-    CAT_DIVER     = 0x01,
-    CAT_TERRAIN   = 0x02,
-    CAT_LOOT      = 0x04,
+    CAT_TERRAIN   = (1 << 0), //!< Terrain blocks
+    CAT_CHARACTER = (1 << 1), //!< Divers, shark
+    CAT_LOOT      = (1 << 2), //!< Pickups
 };
 
 enum EntityIds {
-    EID_CHARACTER,
-    EID_DIVER,
     EID_TERRAIN,
+    EID_DIVER,
+    EID_SHARK,
     EID_LOOT
-};
-
-class CharacterInterface : public hg::alvin::EntityBase {
-public:
-    using EntitySuperclass = hg::alvin::EntityBase;
-
-    static constexpr hg::alvin::EntityTypeId ENTITY_TYPE_ID = EID_CHARACTER;
-
-    static constexpr cpBitmask ENTITY_DEFAULT_CATEGORY = CAT_CHARACTER;
-    static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_CHARACTER | CAT_TERRAIN | CAT_LOOT;
-
-    virtual bool getFling() const = 0;
-    virtual void addProtein()     = 0;
-};
-
-class DiverInterface : public hg::alvin::EntityBase {
-public:
-    using EntitySuperclass = hg::alvin::EntityBase;
-
-    static constexpr hg::alvin::EntityTypeId ENTITY_TYPE_ID = EID_DIVER;
-
-    static constexpr cpBitmask ENTITY_DEFAULT_CATEGORY = CAT_DIVER;
-    static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_DIVER | CAT_TERRAIN | CAT_LOOT;
 };
 
 class TerrainInterface : public hg::alvin::EntityBase {
@@ -54,9 +30,29 @@ public:
     static constexpr hg::alvin::EntityTypeId ENTITY_TYPE_ID = EID_TERRAIN;
 
     static constexpr cpBitmask ENTITY_DEFAULT_CATEGORY = CAT_TERRAIN;
-    static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_CHARACTER;
+    static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_CHARACTER | CAT_LOOT;
 
     virtual std::optional<CellKind> getCellKindOfShape(NeverNull<cpShape*> aShape) const = 0;
+};
+
+class DiverInterface : public hg::alvin::EntityBase {
+public:
+    using EntitySuperclass = hg::alvin::EntityBase;
+
+    static constexpr hg::alvin::EntityTypeId ENTITY_TYPE_ID = EID_DIVER;
+
+    static constexpr cpBitmask ENTITY_DEFAULT_CATEGORY = CAT_CHARACTER;
+    static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_CHARACTER | CAT_TERRAIN | CAT_LOOT;
+};
+
+class SharkInterface : public hg::alvin::EntityBase {
+public:
+    using EntitySuperclass = hg::alvin::EntityBase;
+
+    static constexpr hg::alvin::EntityTypeId ENTITY_TYPE_ID = EID_SHARK;
+
+    static constexpr cpBitmask ENTITY_DEFAULT_CATEGORY = CAT_CHARACTER;
+    static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_CHARACTER | CAT_TERRAIN | CAT_LOOT;
 };
 
 class LootInterface : public hg::alvin::EntityBase {

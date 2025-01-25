@@ -1,4 +1,4 @@
-#include "Diver.hpp"
+#include "Shark.hpp"
 
 #include "Environment_manager.hpp"
 #include "Main_gameplay_manager_interface.hpp"
@@ -9,12 +9,10 @@
 #include "Config.hpp"
 #include "Varmap_ids.hpp"
 #include <Hobgoblin/Math.hpp>
-
 #include <cmath>
-#include <sstream>
 
 namespace {
-// Physics parameters for Diver
+// Physics parameters for Shark
 static constexpr cpFloat PHYS_MASS             = 80.0;
 static constexpr cpFloat PHYS_WIDTH            = 32.0;
 static constexpr cpFloat PHYS_HEIGHT           = 64.0;
@@ -37,8 +35,8 @@ static const hg::gr::Color COLORS[NUM_COLORS] = {hg::gr::COLOR_BLACK,
                                                  hg::gr::COLOR_WHITE};
 } // namespace
 
-Diver::Diver(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSyncId)
-    : SyncObjSuper{aRuntimeRef, SPEMPE_TYPEID_SELF, PRIORITY_PLAYERAVATAR, "Diver", aRegId, aSyncId} {
+Shark::Shark(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSyncId)
+    : SyncObjSuper{aRuntimeRef, SPEMPE_TYPEID_SELF, PRIORITY_PLAYERAVATAR, "Shark", aRegId, aSyncId} {
     if (isMasterObject()) {
         _getCurrentState().initMirror(); // To get autodiff optimization working
 
@@ -68,13 +66,13 @@ Diver::Diver(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSy
     }
 }
 
-Diver::~Diver() {
+Shark::~Shark() {
     if (isMasterObject()) {
         doSyncDestroy();
     }
 }
 
-void Diver::init(int aOwningPlayerIndex, float aX, float aY) {
+void Shark::init(int aOwningPlayerIndex, float aX, float aY) {
     HG_HARD_ASSERT(isMasterObject());
 
     auto& self             = _getCurrentState();
@@ -86,7 +84,7 @@ void Diver::init(int aOwningPlayerIndex, float aX, float aY) {
     cpBodySetPosition(_unibody, cpv(aX, aY));
 }
 
-void Diver::_eventUpdate1(spe::IfMaster) {
+void Shark::_eventUpdate1(spe::IfMaster) {
     if (ctx().getGameState().isPaused) {
         return;
     }
@@ -124,7 +122,7 @@ void Diver::_eventUpdate1(spe::IfMaster) {
     }
 }
 
-void Diver::_eventUpdate1(spe::IfDummy) {
+void Shark::_eventUpdate1(spe::IfDummy) {
     if (this->isDeactivated() || ctx().getGameState().isPaused) {
         return;
     }
@@ -137,11 +135,11 @@ void Diver::_eventUpdate1(spe::IfDummy) {
     }
 }
 
-void Diver::_eventPostUpdate(spe::IfMaster) {
+void Shark::_eventPostUpdate(spe::IfMaster) {
     _getCurrentState().commit();
 }
 
-void Diver::_eventDraw1() {
+void Shark::_eventDraw1() {
     if (this->isDeactivated()) {
         return;
     }
@@ -169,7 +167,7 @@ void Diver::_eventDraw1() {
     canvas.draw(cir);
 }
 
-void Diver::_eventDraw2() {
+void Shark::_eventDraw2() {
     if (this->isDeactivated())
         return;
 
@@ -193,36 +191,7 @@ void Diver::_eventDraw2() {
     // }
 }
 
-void Diver::_eventDrawGUI() {
-    if (this->isDeactivated() || ctx().getGameState().isPaused) {
-        return;
-    }
-
-    auto& self = _getCurrentState();
-
-    auto& lobbyBackend = ccomp<MLobbyBackend>();
-    if (lobbyBackend.getLocalPlayerIndex() == self.owningPlayerIndex) {
-        // Draw O2 meter
-        std::ostringstream oss;
-        oss << "O2 ";
-        for (int i = 1; i <= std::ceil(self.oxygen); i += 1) {
-            oss << "|";
-        }
-
-        auto& winMgr = ccomp<MWindow>();
-        auto& canvas = winMgr.getCanvas();
-
-        hg::gr::Text text{hg::gr::BuiltInFonts::getFont(hg::gr::BuiltInFonts::TITILLIUM_REGULAR),
-                          oss.str()};
-        text.setFillColor(hg::gr::COLOR_AQUA);
-        text.setOutlineColor(hg::gr::COLOR_BLACK);
-        text.setOutlineThickness(2.f);
-        text.setPosition(32.f, canvas.getSize().y - 64.f);
-        canvas.draw(text);
-    }
-}
-
-void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
+void Shark::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
     auto& space = ccomp<MEnvironment>().getSpace();
 
     // Rotation
@@ -265,7 +234,7 @@ void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
     }
 }
 
-hg::alvin::CollisionDelegate Diver::_initColDelegate() {
+hg::alvin::CollisionDelegate Shark::_initColDelegate() {
     auto builder = hg::alvin::CollisionDelegateBuilder{};
     builder.setDefaultDecision(hg::alvin::Decision::ACCEPT_COLLISION);
 
@@ -301,7 +270,7 @@ hg::math::AngleF PointDirection2(hg::math::Vector2f aFrom, hg::math::Vector2f aT
 }
 } // namespace
 
-void Diver::_adjustView() {
+void Shark::_adjustView() {
     auto& self = _getCurrentState();
     auto& view = ccomp<MWindow>().getView(0);
 #if 0
@@ -382,16 +351,16 @@ void Diver::_adjustView() {
     view.setCenter(std::roundf(center.x), std::roundf(center.y));
 }
 
-SPEMPE_GENERATE_DEFAULT_SYNC_HANDLERS(Diver, (CREATE, UPDATE, DESTROY));
+SPEMPE_GENERATE_DEFAULT_SYNC_HANDLERS(Shark, (CREATE, UPDATE, DESTROY));
 
-void Diver::_syncCreateImpl(spe::SyncControlDelegate& aSyncCtrl) const {
-    SPEMPE_SYNC_CREATE_DEFAULT_IMPL(Diver, aSyncCtrl);
+void Shark::_syncCreateImpl(spe::SyncControlDelegate& aSyncCtrl) const {
+    SPEMPE_SYNC_CREATE_DEFAULT_IMPL(Shark, aSyncCtrl);
 }
 
-void Diver::_syncUpdateImpl(spe::SyncControlDelegate& aSyncCtrl) const {
-    SPEMPE_SYNC_UPDATE_DEFAULT_IMPL(Diver, aSyncCtrl);
+void Shark::_syncUpdateImpl(spe::SyncControlDelegate& aSyncCtrl) const {
+    SPEMPE_SYNC_UPDATE_DEFAULT_IMPL(Shark, aSyncCtrl);
 }
 
-void Diver::_syncDestroyImpl(spe::SyncControlDelegate& aSyncCtrl) const {
-    SPEMPE_SYNC_DESTROY_DEFAULT_IMPL(Diver, aSyncCtrl);
+void Shark::_syncDestroyImpl(spe::SyncControlDelegate& aSyncCtrl) const {
+    SPEMPE_SYNC_DESTROY_DEFAULT_IMPL(Shark, aSyncCtrl);
 }

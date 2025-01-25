@@ -2,12 +2,11 @@ find_package(SFML CONFIG REQUIRED)
 find_package(ztcpp CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME}
-    "Character_renderer.cpp"    
-    "Character.cpp"
     "Collisions.cpp"
     "Context_factory.cpp"
     "Diver.cpp"
     "Environment_manager.cpp"
+    "Game_stage_controller.cpp"
     "Host_menu_manager.cpp"
     "Lobby_frontend_manager.cpp"
     "Loot.cpp"
@@ -16,6 +15,7 @@ add_executable(${PROJECT_NAME}
     "Join_menu_manager.cpp"
     "Main.cpp"
     "Resource_manager.cpp"
+    "Shark.cpp"
     "Simple_zerotier.cpp"
  )
 

@@ -1,6 +1,5 @@
 #include "Main_gameplay_manager.hpp"
 
-// #include "Character.hpp"
 #include "Config.hpp"
 #include "Diver.hpp"
 #include "Environment_manager_interface.hpp"
@@ -10,17 +9,113 @@
 #include "Loot.hpp"
 #include "Main_menu_manager.hpp"
 #include "Player_controls.hpp"
+#include "Shark.hpp"
 #include "Varmap_ids.hpp"
+#include "Game_stage.hpp"
+#include "Game_stage_controller.hpp"
 
 #include <Hobgoblin/Format.hpp>
 #include <Hobgoblin/HGExcept.hpp>
 #include <Hobgoblin/Logging.hpp>
 
 #include <cmath>
+#include <vector>
+
+// MARK: Announcements
 
 namespace {
-constexpr int WIN_TIMER_MAX = 10 * 60;
-}
+using hg::gr::BuiltInFonts;
+class Announcement : public hg::gr::Drawable {
+public:
+    Announcement(hg::math::Vector2f aPosition, hg::gr::Color aColor, const std::string& aString)
+        : _text{BuiltInFonts::getFont(BuiltInFonts::TITILLIUM_REGULAR), aString} {
+        _text.setStyle(hg::gr::Text::BOLD);
+        _text.setFillColor(aColor);
+        _text.setOutlineColor(hg::gr::COLOR_BLACK);
+        _text.setOutlineThickness(2.f);
+
+        const auto bounds = _text.getLocalBounds();
+        _text.setOrigin(bounds.getLeft() + bounds.w / 2.0f, bounds.getTop() + bounds.h / 2.0f);
+        _text.setPosition(aPosition);
+        _text.setScale({0.f, 0.f});
+    }
+
+    void update() {
+        static constexpr auto  MAX_ANGLE        = hg::math::AngleF::fromDegrees(135.f);
+        static constexpr auto  ANGLE_INCREMENT  = MAX_ANGLE / 25.f;
+        static constexpr float FADE_INCREMENT   = 1.f / 180.f;
+        static constexpr float SCALE_MULTIPLIER = 2.5f;
+
+        if (_angle < MAX_ANGLE) {
+            _angle += ANGLE_INCREMENT;
+        } else if (_fade < 1.f) {
+            _fade += FADE_INCREMENT;
+        }
+
+        _text.setScale({_angle.sin() * SCALE_MULTIPLIER, _angle.sin() * SCALE_MULTIPLIER});
+        _text.setFillColor(
+            _text.getFillColor().withAlpha(static_cast<std::uint8_t>((1.f - _fade) * 255)));
+        _text.setOutlineColor(
+            _text.getOutlineColor().withAlpha(static_cast<std::uint8_t>((1.f - _fade) * 255)));
+    }
+
+    float getFade() const {
+        return _fade;
+    }
+
+    void move(hg::math::Vector2f aDelta) {
+        _text.move(aDelta);
+    }
+
+    BatchingType getBatchingType() const override {
+        return BatchingType::Custom;
+    }
+
+private:
+    hg::gr::Text _text;
+
+    hg::math::AngleF _angle = hg::math::AngleF::zero();
+
+    float _fade = 0.f;
+
+    void _drawOnto(hg::gr::Canvas& aCanvas, const hg::gr::RenderStates& aStates) const override {
+        aCanvas.draw(_text);
+    }
+};
+} // namespace
+
+class MainGameplayManager::Announcements {
+public:
+    void add(const hg::gr::Canvas& aCanvas, hg::gr::Color aColor, const std::string& aString) {
+        for (auto& item : _items) {
+            item.move({0.f, -64.f});
+        }
+        _items.emplace_back(hg::math::Vector2f{aCanvas.getSize().x * 0.5f, aCanvas.getSize().y * 0.7f},
+                            aColor,
+                            aString);
+    }
+
+    void update() {
+        for (auto& item : _items) {
+            item.update();
+        }
+
+        std::erase_if(_items, [](const Announcement& aItem) {
+            return (aItem.getFade() >= 1.f);
+        });
+    }
+
+    void draw(hg::gr::Canvas& aCanvas) {
+        for (auto& item : _items) {
+            aCanvas.draw(item);
+        }
+    }
+
+private:
+    std::vector<Announcement> _items;
+};
+
+// MARK: RPC
 
 RN_DEFINE_RPC(SetGlobalStateBufferingLength, RN_ARGS(unsigned, aNewLength)) {
     RN_NODE_IN_HANDLER().callIfClient([=](RN_ClientInterface& aClient) {
@@ -33,6 +128,8 @@ RN_DEFINE_RPC(SetGlobalStateBufferingLength, RN_ARGS(unsigned, aNewLength)) {
         throw RN_IllegalMessage();
     });
 }
+
+// MARK: MainGameplayManager
 
 MainGameplayManager::MainGameplayManager(QAO_RuntimeRef aRuntimeRef, int aExecutionPriority)
     : NonstateObject{aRuntimeRef, SPEMPE_TYPEID_SELF, aExecutionPriority, "GameplayManager"} {
@@ -47,8 +144,11 @@ MainGameplayManager::~MainGameplayManager() {
 
 void MainGameplayManager::setToHostMode(hg::PZInteger aPlayerCount) {
     HG_VALIDATE_PRECONDITION(_mode == Mode::UNINITIALIZED);
-    _mode = Mode::HOST;
-    _startGame(aPlayerCount);
+
+    _mode        = Mode::HOST;
+    _playerCount = aPlayerCount;
+
+    ctx().getGameState().isPaused = true;
 }
 
 void MainGameplayManager::setToClientMode() {
@@ -56,65 +156,46 @@ void MainGameplayManager::setToClientMode() {
     _mode = Mode::CLIENT;
 
     auto& views = ccomp<MWindow>().getViewController();
-    views.setViewCount(2);
-
+    views.setViewCount(1);
     views.getView(0).setSize({1920.f, 1080.f});
     views.getView(0).setViewport({0.f, 0.f, 1.f, 1.f});
     views.getView(0).setCenter({0.f, 0.f});
-    views.getView(0).zoom(2.0);
     views.getView(0).setEnabled(true);
 
-    views.getView(1).setSize({1920.f, 1080.f});
-    views.getView(1).setViewport({0.f, 0.f, 1.f, 1.f});
-    views.getView(1).setCenter({0.f, 0.f});
-    views.getView(1).zoom(3.0);
-    views.getView(1).setEnabled(false);
+    _announcements = std::make_unique<Announcements>();
+}
+
+void MainGameplayManager::startGame() {
+    _startGame(_playerCount);
 }
 
 MainGameplayManager::Mode MainGameplayManager::getMode() const {
     return _mode;
 }
 
-void MainGameplayManager::characterReachedTheScales(CharacterObject& aCharacter) {
-    auto& varmap       = ccomp<MVarmap>();
-    auto& lobbyBackend = ccomp<MLobbyBackend>();
+void MainGameplayManager::addAnnouncement(const std::string& aString, hg::gr::Color aColor) {
+    _pendingAnnouncements.push_back({aString, aColor});
+}
 
-    if (contender1 == nullptr) {
-        contender1 = &aCharacter;
-
-        varmap.setInt64(VARMAP_ID_WIN_TIMER, WIN_TIMER_MAX);
-        varmap.setString(VARMAP_ID_CONTENDER_1_NAME,
-                         lobbyBackend.getLockedInPlayerInfo(aCharacter.getOwningPlayerIndex()).name);
-    } else if (contender2 == nullptr && contender1 != &aCharacter &&
-               *varmap.getInt64(VARMAP_ID_GAME_OVER) == 0) {
-        contender2 = &aCharacter;
-
-        varmap.setInt64(VARMAP_ID_WIN_TIMER, -1);
-        varmap.setString(VARMAP_ID_CONTENDER_2_NAME,
-                         lobbyBackend.getLockedInPlayerInfo(aCharacter.getOwningPlayerIndex()).name);
-        varmap.setInt64(VARMAP_ID_GAME_OVER, 1);
-
-        // Determine winner
-        if ((std::abs(contender1->getMass() - contender2->getMass()) < 0.01) ||
-            (contender1->getMass() > contender2->getMass())) {
-            varmap.setString(VARMAP_ID_WINNER_NAME, *varmap.getString(VARMAP_ID_CONTENDER_1_NAME));
-        } else if (contender1->getMass() - contender2->getMass()) {
-            varmap.setString(VARMAP_ID_WINNER_NAME, *varmap.getString(VARMAP_ID_CONTENDER_2_NAME));
-        }
+int MainGameplayManager::getCurrentGameStage() const {
+    if (_gameStageController == nullptr) {
+        return GAME_STAGE_UNKNOWN;
     }
+    return _gameStageController->getCurrentGameStage();
 }
 
 void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
     HG_LOG_INFO(LOG_ID, "Function call: _startGame({})", aPlayerCount);
 
+    _gameStageController = QAO_PCreate<GameStageController>(ctx().getQAORuntime(),
+                                                            ccomp<MNetworking>().getRegistryId(),
+                                                            spe::SYNC_ID_NEW);
+    _gameStageController->init();
+
     _playerCount = aPlayerCount;
 
     auto& varmap = ccomp<MVarmap>();
-    varmap.setInt64(VARMAP_ID_WIN_TIMER, -1);
-    varmap.setString(VARMAP_ID_CONTENDER_1_NAME, "n/a");
-    varmap.setString(VARMAP_ID_CONTENDER_2_NAME, "n/a");
-    varmap.setInt64(VARMAP_ID_GAME_OVER, 0);
-    varmap.setString(VARMAP_ID_WINNER_NAME, "n/a");
+    // varmap.setInt64(VARMAP_ID_GAME_STAGE, GAME_STAGE_INITIAL_COUNTDOWN);
 
     auto& envMgr = ccomp<MEnvironment>();
     // for (hg::PZInteger i = 0; i < aPlayerCount; i += 1) {
@@ -133,6 +214,8 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
                                    ccomp<MNetworking>().getRegistryId(),
                                    spe::SYNC_ID_NEW);
     obj->init(1, 1000.f, 1000.f);
+
+    ctx().getGameState().isPaused = false;
 }
 
 void MainGameplayManager::_restartGame() {
@@ -140,7 +223,8 @@ void MainGameplayManager::_restartGame() {
 
     std::vector<QAO_Base*> objectsToDelete;
     for (auto* object : runtime) {
-        if (object->getTypeInfo() == typeid(CharacterObject) ||
+        if (object->getTypeInfo() == typeid(Diver) ||
+            object->getTypeInfo() == typeid(Shark) ||
             object->getTypeInfo() == typeid(LootObject)) {
             objectsToDelete.push_back(object);
         }
@@ -151,10 +235,9 @@ void MainGameplayManager::_restartGame() {
         }
     }
 
-    ccomp<MEnvironment>().generateLoot();
+    _gameStageController->init();
 
-    contender1 = nullptr;
-    contender2 = nullptr;
+    ccomp<MEnvironment>().generateLoot();
 
     _startGame(_playerCount);
 }
@@ -210,6 +293,7 @@ void MainGameplayManager::_backToMainMenu() {
 
 void MainGameplayManager::_eventUpdate1() {
     if (ctx().isPrivileged()) {
+#if 0
         auto& varmap       = ccomp<MVarmap>();
         auto& lobbyBackend = ccomp<MLobbyBackend>();
 
@@ -247,6 +331,7 @@ void MainGameplayManager::_eventUpdate1() {
                 _restartGame();
             }
         }
+#endif
 #if 0
         auto& winMgr = ccomp<MWindow>();
 
@@ -278,6 +363,11 @@ void MainGameplayManager::_eventUpdate1() {
     }
 
     if (!ctx().isPrivileged()) {
+        if (_gameStageController == nullptr) {
+            _gameStageController =
+                static_cast<GameStageController*>(getRuntime()->find("GameStageController"));
+        }
+
         const auto input  = ccomp<MWindow>().getInput();
         auto&      client = ccomp<MNetworking>().getClient();
         // If connected, upload input
@@ -301,6 +391,8 @@ void MainGameplayManager::_eventUpdate1() {
             wrapper.triggerEvent(CTRL_ID_START, start);
         }
 
+        _announcements->update();
+
         if (input.checkPressed(hg::in::PK_ESCAPE, spe::WindowFrameInputView::Mode::Edge)) {
             _backToMainMenu(); // WARNING: this will delete `this`!
         }
@@ -314,6 +406,14 @@ void MainGameplayManager::_eventDrawGUI() {
     auto& varmap = ccomp<MVarmap>();
     auto& canvas = winMgr.getCanvas();
 
+    for (const auto& announcement : _pendingAnnouncements) {
+        _announcements->add(canvas, announcement.color, announcement.string);
+    }
+    _pendingAnnouncements.clear();
+
+    _announcements->draw(canvas);
+
+#if 0
     const auto winTimer       = varmap.getInt64(VARMAP_ID_WIN_TIMER);
     const auto contender1name = varmap.getString(VARMAP_ID_CONTENDER_1_NAME);
     const auto gameOver       = varmap.getInt64(VARMAP_ID_GAME_OVER);
@@ -346,6 +446,7 @@ void MainGameplayManager::_eventDrawGUI() {
         text.setPosition({100.f, 100.f});
         canvas.draw(text);
     }
+#endif
 }
 
 void MainGameplayManager::_eventPostUpdate() {

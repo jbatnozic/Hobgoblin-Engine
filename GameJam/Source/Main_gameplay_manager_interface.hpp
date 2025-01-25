@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Engine.hpp"
-
-#include "Character.hpp"
+#include "Game_stage.hpp"
 
 //! TODO(add description)
 class MainGameplayManagerInterface : public spe::ContextComponent {
@@ -20,10 +19,11 @@ public:
     virtual void setToClientMode()                         = 0;
     virtual Mode getMode() const                           = 0;
 
-    virtual void characterReachedTheScales(CharacterObject& aCharacter) = 0;
+    virtual void startGame() = 0;
 
-    virtual CharacterObject* getContender1() const = 0;
-    virtual CharacterObject* getContender2() const = 0;
+    virtual void addAnnouncement(const std::string& aString, hg::gr::Color aColor) = 0;
+
+    virtual int getCurrentGameStage() const = 0;
 
 private:
     SPEMPE_CTXCOMP_TAG("MainGameplayManagerInterface");

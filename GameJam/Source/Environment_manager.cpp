@@ -23,16 +23,304 @@ void SetTerrainImpl(EnvironmentManager& aEnvMgr,
 namespace {
 constexpr cpFloat CELL_RESOLUTION = single_terrain_size;
 
-NeverNull<cpShape*> CreateRectanglePolyShape(NeverNull<cpBody*>  aBody,
-                                             hg::math::Vector2pz aGridPosition) {
-    std::array<cpVect, 5> vertices = {
-        cpv(0.0, 0.0),
-        cpv(1.0, 0.0),
-        cpv(1.0, 1.0),
-        cpv(0.0, 1.0),
-        cpv(0.0, 0.0),
-    };
-    for (auto& v : vertices) {
+enum class CellShape {
+    //
+    //
+    //
+    //
+    //
+    EMPTY,
+
+    // X X X X X
+    // X X X X X
+    // X X X X X
+    // X X X X X
+    // X X X X X
+    FULL_SQUARE,
+
+    // X X X X X
+    // X X X X X
+    // X X X X X
+    //
+    //
+    HALF_SQUARE_TOP,
+
+    //
+    //
+    // X X X X X
+    // X X X X X
+    // X X X X X
+    HALF_SQUARE_BOTTOM,
+
+    // X X X X X
+    // X X X X
+    // X X X
+    // X X
+    // X
+    LARGE_TRIANGLE_TL,
+
+    // X X X X X
+    //   X X X X
+    //     X X X
+    //       X X
+    //         X
+    LARGE_TRIANGLE_TR,
+
+    // X
+    // X X
+    // X X X
+    // X X X X
+    // X X X X X
+    LARGE_TRIANGLE_BL,
+
+    //         X
+    //       X X
+    //     X X X
+    //   X X X X
+    // X X X X X
+    LARGE_TRIANGLE_BR,
+
+    // X X X X X
+    // X X X
+    // X
+    //
+    //
+    SMALL_TRIANGLE_TL,
+
+    // X X X X X
+    //     X X X
+    //         X
+    //
+    //
+    SMALL_TRIANGLE_TR,
+
+    //
+    //
+    // X
+    // X X X
+    // X X X X X
+    SMALL_TRIANGLE_BL,
+
+    //
+    //
+    //         X
+    //     X X X
+    // X X X X X
+    SMALL_TRIANGLE_BR,
+
+    // X X X X X
+    // X X X X X
+    // X X X X X
+    // X X X
+    // X
+    HIGH_SMALL_TRIANGLE_TL,
+
+    // X X X X X
+    // X X X X X
+    // X X X X X
+    //     X X X
+    //         X
+    HIGH_SMALL_TRIANGLE_TR,
+
+    // X
+    // X X X
+    // X X X X X
+    // X X X X X
+    // X X X X X
+    HIGH_SMALL_TRIANGLE_BL,
+
+    //         X
+    //     X X X
+    // X X X X X
+    // X X X X X
+    // X X X X X
+    HIGH_SMALL_TRIANGLE_BR,
+};
+
+void GetCellVertices(
+    /*  in */ CellShape              aCellShape,
+    /* out */ std::array<cpVect, 5>& aVertices,
+    /* out */ std::size_t&           aVertexCount) //
+{
+    // Note: always set vertices in clockwise order
+    switch (aCellShape) {
+    case CellShape::EMPTY:
+        aVertexCount = 0;
+        break;
+
+    case CellShape::FULL_SQUARE:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.0),
+            cpv(1.0, 1.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 5;
+        break;
+
+    case CellShape::HALF_SQUARE_TOP:
+        aVertices = {
+            cpv(0.0, 0.5),
+            cpv(1.0, 0.5),
+            cpv(1.0, 1.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.5),
+        };
+        aVertexCount = 5;
+        break;
+
+    case CellShape::HALF_SQUARE_BOTTOM:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.0),
+            cpv(1.0, 0.5),
+            cpv(0.0, 0.5),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 5;
+        break;
+
+    case CellShape::LARGE_TRIANGLE_TL:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 4;
+        break;
+
+    case CellShape::LARGE_TRIANGLE_TR:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.0),
+            cpv(1.0, 1.0),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 4;
+        break;
+
+    case CellShape::LARGE_TRIANGLE_BL:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 1.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 4;
+        break;
+
+    case CellShape::LARGE_TRIANGLE_BR:
+        aVertices = {
+            cpv(1.0, 0.0),
+            cpv(1.0, 1.0),
+            cpv(0.0, 1.0),
+            cpv(1.0, 0.0),
+        };
+        aVertexCount = 4;
+        break;
+
+    case CellShape::SMALL_TRIANGLE_TL:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.0),
+            cpv(0.0, 0.5),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 4;
+        break;
+
+    case CellShape::SMALL_TRIANGLE_TR:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.0),
+            cpv(1.0, 0.5),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 4;
+        break;
+
+    case CellShape::SMALL_TRIANGLE_BL:
+        aVertices = {
+            cpv(0.0, 0.5),
+            cpv(1.0, 1.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.5),
+        };
+        aVertexCount = 4;
+        break;
+
+    case CellShape::SMALL_TRIANGLE_BR:
+        aVertices = {
+            cpv(1.0, 0.5),
+            cpv(1.0, 1.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.5),
+        };
+        aVertexCount = 4;
+        break;
+
+    case CellShape::HIGH_SMALL_TRIANGLE_TL:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.0),
+            cpv(0.0, 0.5),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 5;
+        break;
+
+    case CellShape::HIGH_SMALL_TRIANGLE_TR:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.0),
+            cpv(1.0, 1.0),
+            cpv(1.0, 0.5),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 5;
+        break;
+
+    case CellShape::HIGH_SMALL_TRIANGLE_BL:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.5),
+            cpv(1.0, 1.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 5;
+        break;
+
+    case CellShape::HIGH_SMALL_TRIANGLE_BR:
+        aVertices = {
+            cpv(1.0, 0.0),
+            cpv(1.0, 1.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.5),
+            cpv(1.0, 0.0),
+        };
+        aVertexCount = 5;
+        break;
+
+    default:
+        HG_UNREACHABLE("Invalid value for CellShape ({}).", (int)aCellShape);
+    }
+}
+
+NeverNull<cpShape*> CreateCellPolyShape(NeverNull<cpBody*>  aBody,
+                                        hg::math::Vector2pz aGridPosition,
+                                        CellShape           aCellShape) {
+    std::array<cpVect, 5> vertices;
+    std::size_t           vertexCount;
+
+    GetCellVertices(aCellShape, vertices, vertexCount);
+
+    for (std::size_t i = 0; i < vertexCount; i += 1) {
+        auto& v = vertices[i];
+
         v.x += (cpFloat)aGridPosition.x;
         v.x *= CELL_RESOLUTION;
 
@@ -341,7 +629,8 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
     for (hg::PZInteger y = 0; y < _temp_cells.size(); y += 1) {
         for (hg::PZInteger x = 0; x < _temp_cells[y].size(); x += 1) {
             if (_cells[y][x] != CellKind::EMPTY) {
-                auto alvinShape = hg::alvin::Shape{CreateRectanglePolyShape(*_terrainBody, {x, y})};
+                auto alvinShape =
+                    hg::alvin::Shape{CreateCellPolyShape(*_terrainBody, {x, y}, CellShape::FULL_SQUARE)};
                 {
                     auto pair = _shapeToPosition.insert(
                         std::make_pair(static_cast<cpShape*>(alvinShape), hg::math::Vector2pz{x, y}));

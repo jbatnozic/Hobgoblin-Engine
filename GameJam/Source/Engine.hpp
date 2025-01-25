@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Hobgoblin/Common.hpp>
+#include <Hobgoblin/Graphics.hpp>
 #include <Hobgoblin/Logging.hpp>
 #include <Hobgoblin/QAO.hpp>
 #include <Hobgoblin/RigelNet.hpp>
@@ -32,6 +33,7 @@ using MVarmap       = spe::SyncedVarmapManagerInterface;
 #define PRIORITY_LOBBYBACKMGR   14
 #define PRIORITY_LOBBYFRONTMGR  13
 #define PRIORITY_AUTHMGR        12
+#define PRIORITY_GAMESTAGECTRL  11
 #define PRIORITY_GAMEPLAYMGR    10
 #define PRIORITY_INPUTMGR       7
 #define PRIORITY_LOOT           6

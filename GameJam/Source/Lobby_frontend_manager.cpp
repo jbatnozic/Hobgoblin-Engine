@@ -1,5 +1,7 @@
 #include "Lobby_frontend_manager.hpp"
 
+#include "Main_gameplay_manager_interface.hpp"
+
 #include "Engine.hpp"
 
 #include <Hobgoblin/HGExcept.hpp>
@@ -134,7 +136,7 @@ void ActivateCommand(LobbyFrontendManager& aMgr, int aCommand, void* aArgs) {
     case COMMAND_START:
         {
             if (aMgr.getMode() == LobbyFrontendManager::Mode::HEADLESS_HOST) {
-                // TODO(start game)
+                aMgr.ccomp<MainGameplayManagerInterface>().startGame();
                 aMgr._notifyAllToStart();
             } else {
                 aMgr.setVisible(false);

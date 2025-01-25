@@ -3,6 +3,12 @@
 #include "Engine.hpp"
 #include "Main_gameplay_manager_interface.hpp"
 
+#include <memory>
+#include <string>
+#include <vector>
+
+class GameStageController;
+
 class MainGameplayManager
     : public MainGameplayManagerInterface
     , public spe::NonstateObject
@@ -16,24 +22,28 @@ public:
     void setToClientMode() override;
     Mode getMode() const override;
 
-    void characterReachedTheScales(CharacterObject& aCharacter) override;
+    void startGame() override;
 
-    CharacterObject* getContender1() const override {
-        return contender1;
-    }
+    void addAnnouncement(const std::string& aString, hg::gr::Color aColor) override;
 
-    CharacterObject* getContender2() const override {
-        return contender2;
-    }
+    int getCurrentGameStage() const override;
 
 private:
     Mode _mode = Mode::UNINITIALIZED;
 
+    GameStageController* _gameStageController;
+
     // hg::PZInteger stateBufferingLength = 0;
     hg::PZInteger _playerCount;
 
-    CharacterObject* contender1 = nullptr;
-    CharacterObject* contender2 = nullptr;
+    class Announcements;
+    std::unique_ptr<Announcements> _announcements;
+
+    struct PendingAnnouncement {
+        std::string   string;
+        hg::gr::Color color;
+    };
+    std::vector<PendingAnnouncement> _pendingAnnouncements;
 
     void _startGame(hg::PZInteger aPlayerCount);
     void _restartGame();

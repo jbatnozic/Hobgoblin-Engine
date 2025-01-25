@@ -115,21 +115,21 @@ void LootObject::_eventDraw2() {
 
 hg::alvin::CollisionDelegate LootObject::_initColDelegate() {
     auto builder = hg::alvin::CollisionDelegateBuilder{};
-    builder.addInteraction<CharacterInterface>(
-        hg::alvin::COLLISION_PRE_SOLVE,
-        [this](CharacterInterface& aCharacter, const hg::alvin::CollisionData& aCollisionData) {
-            auto& self = _getCurrentState();
-            switch ((LootKind)self.kind) {
-            case LootKind::PROTEIN:
-                aCharacter.addProtein();
-                self.kind = (std::int8_t)LootKind::NONE;
-                break;
+    // builder.addInteraction<CharacterInterface>(
+    //     hg::alvin::COLLISION_PRE_SOLVE,
+    //     [this](CharacterInterface& aCharacter, const hg::alvin::CollisionData& aCollisionData) {
+    //         auto& self = _getCurrentState();
+    //         switch ((LootKind)self.kind) {
+    //         case LootKind::PROTEIN:
+    //             aCharacter.addProtein();
+    //             self.kind = (std::int8_t)LootKind::NONE;
+    //             break;
 
-            default:
-                break;
-            };
-            return hg::alvin::Decision::ACCEPT_COLLISION;
-        });
+    //         default:
+    //             break;
+    //         };
+    //         return hg::alvin::Decision::ACCEPT_COLLISION;
+    //     });
 
     return builder.finalize();
 }
