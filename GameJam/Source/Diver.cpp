@@ -86,6 +86,10 @@ void Diver::init(int aOwningPlayerIndex, float aX, float aY) {
     cpBodySetPosition(_unibody, cpv(aX, aY));
 }
 
+void Diver::kill() {
+    HG_LOG_INFO(LOG_ID, "================= PLAYER KILLED =================");
+}
+
 void Diver::_eventUpdate1(spe::IfMaster) {
     if (ctx().getGameState().isPaused) {
         return;

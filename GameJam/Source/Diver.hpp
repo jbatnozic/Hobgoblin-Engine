@@ -30,6 +30,8 @@ public:
 
     void init(int aOwningPlayerIndex, float aX, float aY);
 
+    void kill() override;
+
     int getOwningPlayerIndex() const {
         return _getCurrentState().owningPlayerIndex;
     }

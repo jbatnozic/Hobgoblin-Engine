@@ -177,8 +177,16 @@ private:
         HG_HARD_ASSERT(handle.has_value()); // TODO
         _dataModelHandle = *handle;
 
-        hg::rml::PreprocessRcssFile("Assets/join_menu.rcss.fp");
-        _document = guiContext.LoadDocument("Assets/join_menu.rml");
+        std::filesystem::path root = std::filesystem::current_path();
+        for (int i = 0; i < 10; i += 1) {
+            if (std::filesystem::exists(root / "Assets")) {
+                break;
+            }
+            root = root.parent_path();
+        }
+
+        hg::rml::PreprocessRcssFile(root / "Assets/join_menu.rcss.fp");
+        _document = guiContext.LoadDocument(root / "Assets/join_menu.rml");
 
         auto* form = _document->GetElementById("join-form");
         if (form) {

@@ -90,8 +90,16 @@ private:
         HG_HARD_ASSERT(handle.has_value()); // TODO
         _dataModelHandle = *handle;
 
-        hg::rml::PreprocessRcssFile("Assets/main_menu.rcss.fp");
-        _document = guiContext.LoadDocument("Assets/main_menu.rml");
+        std::filesystem::path root = std::filesystem::current_path();
+        for (int i = 0; i < 10; i += 1) {
+            if (std::filesystem::exists(root / "Assets")) {
+                break;
+            }
+            root = root.parent_path();
+        }
+
+        hg::rml::PreprocessRcssFile(root / "Assets/main_menu.rcss.fp");
+        _document = guiContext.LoadDocument(root / "Assets/main_menu.rml");
 
         if (_document) {
             _document->Show();
