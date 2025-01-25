@@ -13,6 +13,7 @@
 #include <array>
 #include <deque>
 #include <sstream>
+#include <vector>
 
 void SetTerrainImpl(EnvironmentManager& aEnvMgr,
                     hg::PZInteger       aWidth,
@@ -411,8 +412,9 @@ EnvironmentManager::Mode EnvironmentManager::getMode() const {
 }
 
 void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHeight) {
-    // Cells
 
+    loadTerrainText();
+    // Cells
     std::deque<std::deque<CellKind>> _temp_cells;
     _temp_cells.push_back({});
     _temp_cells.push_back({});
@@ -873,4 +875,29 @@ void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {
                                str);
         }
     });
+}
+
+std::vector<std::string> Split(std::string str, char split_char) {
+
+    std::stringstream        str_stream(str);
+    std::string              segment;
+    std::vector<std::string> seglist;
+
+    while (std::getline(str_stream, segment, split_char)) {
+        seglist.push_back(segment);
+    }
+
+    return seglist;
+}
+
+void EnvironmentManager::loadTerrainText() {
+
+
+    std::string mapText = hg::util::SlurpFileBytes(map_path);
+    std::vector<std::string> separator = Split(mapText, ',');
+    HG_LOG_FATAL(LOG_ID, "sosilica --------------------------------------------");
+
+
+    HG_LOG_FATAL(LOG_ID, separator[0]);
+    
 }
