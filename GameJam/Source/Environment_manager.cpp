@@ -892,12 +892,21 @@ std::vector<std::string> Split(std::string str, char split_char) {
 
 void EnvironmentManager::loadTerrainText() {
 
-
-    std::string mapText = hg::util::SlurpFileBytes(map_path);
+    std::filesystem::path root = std::filesystem::current_path();
+    for (int i = 0; i < 10; i += 1) {
+        if (std::filesystem::exists(root / "Assets")) {
+            break;
+        }
+        root = root.parent_path();
+    }
+    std::string mapText = hg::util::SlurpFileBytes(root/map_path);
     std::vector<std::string> separator = Split(mapText, ',');
     HG_LOG_FATAL(LOG_ID, "sosilica --------------------------------------------");
 
-
-    HG_LOG_FATAL(LOG_ID, separator[0]);
+    std::stringstream oss;
+    for (auto sep: separator) {
+        oss << sep << ", ";
+    }
+    HG_LOG_FATAL(LOG_ID, oss.str());
     
 }

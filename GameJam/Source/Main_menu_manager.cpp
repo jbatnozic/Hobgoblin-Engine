@@ -98,8 +98,8 @@ private:
             root = root.parent_path();
         }
 
-        hg::rml::PreprocessRcssFile(root / "Assets/main_menu.rcss.fp");
-        _document = guiContext.LoadDocument(root / "Assets/main_menu.rml");
+        hg::rml::PreprocessRcssFile((root / "Assets/main_menu.rcss.fp").string());
+        _document = guiContext.LoadDocument((root / "Assets/main_menu.rml").string());
 
         if (_document) {
             _document->Show();

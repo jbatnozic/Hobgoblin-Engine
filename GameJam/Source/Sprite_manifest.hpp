@@ -49,7 +49,7 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
     }
 
     const std::filesystem::path basePath     = root / "Assets/Sprites";
-    const std::filesystem::path mountainPath = root / "Assets/Sprites/Mountain";
+    const std::filesystem::path mountainPath = root / "Assets/Sprites/Terrain";
 
     float occupancy = 0.f;
 

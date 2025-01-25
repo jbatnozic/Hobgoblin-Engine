@@ -185,8 +185,8 @@ private:
             root = root.parent_path();
         }
 
-        hg::rml::PreprocessRcssFile(root / "Assets/join_menu.rcss.fp");
-        _document = guiContext.LoadDocument(root / "Assets/join_menu.rml");
+        hg::rml::PreprocessRcssFile((root / "Assets/join_menu.rcss.fp").string());
+        _document = guiContext.LoadDocument((root / "Assets/join_menu.rml").string());
 
         auto* form = _document->GetElementById("join-form");
         if (form) {

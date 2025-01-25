@@ -193,8 +193,8 @@ private:
             root = root.parent_path();
         }
 
-        hg::rml::PreprocessRcssFile(root / "Assets/host_menu.rcss.fp");
-        _document = guiContext.LoadDocument(root / "Assets/host_menu.rml");
+        hg::rml::PreprocessRcssFile((root / "Assets/host_menu.rcss.fp").string());
+        _document = guiContext.LoadDocument((root / "Assets/host_menu.rml").string());
 
         if (_document) {
             auto* form = _document->GetElementById("host-form");

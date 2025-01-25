@@ -312,8 +312,8 @@ public:
             root = root.parent_path();
         }
 
-        hg::rml::PreprocessRcssFile(root / "Assets/lobby.rcss.fp");
-        _document = guiContext.LoadDocument(root / "Assets/lobby.rml");
+        hg::rml::PreprocessRcssFile((root / "Assets/lobby.rcss.fp").string());
+        _document = guiContext.LoadDocument((root / "Assets/lobby.rml").string());
         if (_document) {
             _document->Show();
             _documentVisible = true;
