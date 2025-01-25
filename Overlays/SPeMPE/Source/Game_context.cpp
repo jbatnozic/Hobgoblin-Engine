@@ -28,6 +28,10 @@ GameContext::GameContext(const RuntimeConfig& aRuntimeConfig, hg::PZInteger aCom
 }
 
 GameContext::~GameContext() {
+    cleanUp();
+}
+
+void GameContext::cleanUp() {
     _qaoRuntime.destroyAllOwnedObjects();
     //_postStepActions.clear(); TODO
 

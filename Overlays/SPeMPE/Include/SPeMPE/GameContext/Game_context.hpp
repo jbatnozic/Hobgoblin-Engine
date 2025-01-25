@@ -75,6 +75,8 @@ public:
     GameContext(const RuntimeConfig& aRuntimeConfig, hg::PZInteger aComponentTableSize = 32);
     ~GameContext();
 
+    void cleanUp();
+
     //! Only transitions between Initial and other modes (and the other way
     //! round) are possible.
     void setToMode(Mode aMode);

@@ -3,6 +3,8 @@
 #include "Engine.hpp"
 #include "Game_stage.hpp"
 
+#include <Hobgoblin/Alvin.hpp>
+
 //! TODO(add description)
 class MainGameplayManagerInterface : public spe::ContextComponent {
 public:
@@ -24,6 +26,9 @@ public:
     virtual void addAnnouncement(const std::string& aString, hg::gr::Color aColor) = 0;
 
     virtual int getCurrentGameStage() const = 0;
+
+    virtual std::optional<cpVect> getPositionOfClient(int aClientIndex) const             = 0;
+    virtual void                  setPositionOfClient(int aClientIndex, cpVect aPosition) = 0;
 
 private:
     SPEMPE_CTXCOMP_TAG("MainGameplayManagerInterface");

@@ -3,6 +3,8 @@
 #include "Engine.hpp"
 #include "Main_gameplay_manager_interface.hpp"
 
+#include <Hobgoblin/Alvin.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -28,6 +30,9 @@ public:
 
     int getCurrentGameStage() const override;
 
+    std::optional<cpVect> getPositionOfClient(int aClientIndex) const override;
+    void                  setPositionOfClient(int aClientIndex, cpVect aPosition) override;
+
 private:
     Mode _mode = Mode::UNINITIALIZED;
 
@@ -44,6 +49,8 @@ private:
         hg::gr::Color color;
     };
     std::vector<PendingAnnouncement> _pendingAnnouncements;
+
+    std::vector<cpVect> _playerPositions;
 
     void _startGame(hg::PZInteger aPlayerCount);
     void _restartGame();

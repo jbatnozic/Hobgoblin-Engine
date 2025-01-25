@@ -41,6 +41,8 @@ private:
 
     hg::alvin::CollisionDelegate _initColDelegate();
 
+    hg::PZInteger _bubbleSpawnCooldown = 30;
+
     void _execMovement(bool aLeft, bool aRight, bool aUp, bool aDown);
 
     void _adjustView();

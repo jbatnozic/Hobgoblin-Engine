@@ -49,7 +49,7 @@ Shark::Shark(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSy
             },
             [this]() {
                 return hg::alvin::Body::createDynamic(
-                    80.0,
+                    PHYS_MASS,
                     cpMomentForCircle(PHYS_MASS, 0.0, PHYS_RADIUS, cpvzero));
             },
             [this]() {
@@ -122,6 +122,10 @@ void Shark::_eventUpdate1(spe::IfMaster) {
         self.y              = static_cast<float>(pos.y);
         const auto rot      = cpBodyGetRotation(_unibody);
         self.directionInRad = hg::math::AngleF::fromVector({(float)rot.x, (float)rot.y}).asRadians();
+
+        if (clientIndex != spe::CLIENT_INDEX_LOCAL) {
+            ccomp<MainGameplayManagerInterface>().setPositionOfClient(clientIndex, pos);
+        }
     }
 }
 

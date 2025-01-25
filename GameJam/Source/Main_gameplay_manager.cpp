@@ -1,8 +1,11 @@
 #include "Main_gameplay_manager.hpp"
 
+#include "Bubble.hpp"
 #include "Config.hpp"
 #include "Diver.hpp"
 #include "Environment_manager_interface.hpp"
+#include "Game_stage.hpp"
+#include "Game_stage_controller.hpp"
 #include "Host_menu_manager.hpp"
 #include "Join_menu_manager.hpp"
 #include "Lobby_frontend_manager_interface.hpp"
@@ -11,8 +14,6 @@
 #include "Player_controls.hpp"
 #include "Shark.hpp"
 #include "Varmap_ids.hpp"
-#include "Game_stage.hpp"
-#include "Game_stage_controller.hpp"
 
 #include <Hobgoblin/Format.hpp>
 #include <Hobgoblin/HGExcept.hpp>
@@ -120,8 +121,7 @@ private:
 // MARK: Utility
 
 namespace {
-std::optional<hg::PZInteger> SelectRandomPlayer(
-    const spe::LobbyBackendManagerInterface& aLobbyMgr) //
+std::optional<hg::PZInteger> SelectRandomPlayer(const spe::LobbyBackendManagerInterface& aLobbyMgr) //
 {
     std::vector<hg::PZInteger> indices;
     for (hg::PZInteger i = 1; i < aLobbyMgr.getSize(); i += 1) {
@@ -173,6 +173,8 @@ void MainGameplayManager::setToHostMode(hg::PZInteger aPlayerCount) {
     _mode        = Mode::HOST;
     _playerCount = aPlayerCount;
 
+    _playerPositions.resize(hg::pztos(aPlayerCount));
+
     ctx().getGameState().isPaused = true;
 }
 
@@ -207,6 +209,18 @@ int MainGameplayManager::getCurrentGameStage() const {
         return GAME_STAGE_UNKNOWN;
     }
     return _gameStageController->getCurrentGameStage();
+}
+
+std::optional<cpVect> MainGameplayManager::getPositionOfClient(int aClientIndex) const {
+    if (aClientIndex < 0 || aClientIndex >= (int)_playerPositions.size()) {
+        return std::nullopt;
+    }
+    return _playerPositions[(std::size_t)aClientIndex];
+}
+
+void MainGameplayManager::setPositionOfClient(int aClientIndex, cpVect aPosition) {
+    HG_VALIDATE_ARGUMENT(aClientIndex >= 0 && aClientIndex < (int)_playerPositions.size());
+    _playerPositions[(std::size_t)aClientIndex] = aPosition;
 }
 
 void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
@@ -255,9 +269,8 @@ void MainGameplayManager::_restartGame() {
 
     std::vector<QAO_Base*> objectsToDelete;
     for (auto* object : runtime) {
-        if (object->getTypeInfo() == typeid(Diver) ||
-            object->getTypeInfo() == typeid(Shark) ||
-            object->getTypeInfo() == typeid(LootObject)) {
+        if (object->getTypeInfo() == typeid(Diver) || object->getTypeInfo() == typeid(Shark) ||
+            object->getTypeInfo() == typeid(LootObject) || object->getTypeInfo() == typeid(Bubble)) {
             objectsToDelete.push_back(object);
         }
     }
@@ -291,6 +304,7 @@ void MainGameplayManager::_backToMainMenu() {
         const auto childStatus = ctx().stopAndJoinChildContext();
         HG_LOG_INFO(LOG_ID, "Child context stopped with exit code {}.", childStatus);
         auto childCtx = ctx().detachChildContext();
+        childCtx->cleanUp();
         childCtx.reset();
     }
 

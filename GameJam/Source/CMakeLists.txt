@@ -2,6 +2,7 @@ find_package(SFML CONFIG REQUIRED)
 find_package(ztcpp CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME}
+    "Bubble.cpp"
     "Collisions.cpp"
     "Context_factory.cpp"
     "Diver.cpp"

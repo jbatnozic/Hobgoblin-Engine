@@ -1,5 +1,6 @@
 #include "Diver.hpp"
 
+#include "Bubble.hpp"
 #include "Environment_manager.hpp"
 #include "Main_gameplay_manager_interface.hpp"
 #include "Player_controls.hpp"
@@ -48,7 +49,7 @@ Diver::Diver(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSy
             },
             [this]() {
                 return hg::alvin::Body::createDynamic(
-                    80.0,
+                    PHYS_MASS,
                     cpMomentForBox(PHYS_MASS, PHYS_WIDTH, PHYS_HEIGHT));
             },
             [this]() {
@@ -125,6 +126,20 @@ void Diver::_eventUpdate1(spe::IfMaster) {
         self.y              = static_cast<float>(pos.y);
         const auto rot      = cpBodyGetRotation(_unibody);
         self.directionInRad = hg::math::AngleF::fromVector({(float)rot.x, (float)rot.y}).asRadians();
+
+        if (clientIndex != spe::CLIENT_INDEX_LOCAL) {
+            ccomp<MainGameplayManagerInterface>().setPositionOfClient(clientIndex, pos);
+        }
+    }
+
+    // Spawn bubbles
+    _bubbleSpawnCooldown -= 1;
+    if (_bubbleSpawnCooldown == 0) {
+        auto* obj = QAO_PCreate<Bubble>(ctx().getQAORuntime(),
+                                        ccomp<MNetworking>().getRegistryId(),
+                                        spe::SYNC_ID_NEW);
+        obj->init(self.x, self.y - 60.f, 8.f);
+        _bubbleSpawnCooldown = 30;
     }
 }
 
