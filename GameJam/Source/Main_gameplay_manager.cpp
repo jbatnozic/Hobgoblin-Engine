@@ -283,7 +283,7 @@ void MainGameplayManager::_restartGame() {
     // It will have been erased in the loop above
     _gameStageController = nullptr;
 
-    ccomp<MEnvironment>().generateLoot();
+    ccomp<MEnvironment>().generatePearls();
 
     _startGame(_playerCount);
 }

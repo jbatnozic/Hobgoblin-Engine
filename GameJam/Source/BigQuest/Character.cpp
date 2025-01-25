@@ -376,11 +376,6 @@ hg::alvin::CollisionDelegate CharacterObject::_initColDelegate() {
             if (otherShape == _unibody.shape) {
                 otherShape = shape2;
             }
-            const auto cellKind = aTerrain.getCellKindOfShape(otherShape);
-            if (cellKind && *cellKind == CellKind::SCALE) {
-                HG_LOG_INFO(LOG_ID, "Character reached the scales.");
-                ccomp<MainGameplayManagerInterface>().characterReachedTheScales(*this);
-            }
             return hg::alvin::Decision::ACCEPT_COLLISION;
         });
 

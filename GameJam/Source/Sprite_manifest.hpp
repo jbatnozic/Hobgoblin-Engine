@@ -31,8 +31,7 @@ enum SpriteIds {
     SPR_FOREARM_SIZE_4,
     SPR_FOREARM_SIZE_5,
     // Mountain
-    SPR_MOUNTAIN,
-    SPR_ROCK_EDGE,
+    SPR_TERRAIN,
     // Miscellaneous
     SPR_POWER,
     SPR_BACKGROUND,
@@ -79,18 +78,18 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
         ->addSubsprite(SPR_FOREARM_SIZE_4, basePath / "b4r2.png")
         ->addSubsprite(SPR_FOREARM_SIZE_5, basePath / "b5r2.png")
         // Map pieces
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "C.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "A.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "E.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "F.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "H.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "Q.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "R.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "S.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "T.png")
-        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "W.png")
-        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "Q.png")
-        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "Z.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "0.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "1.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "2.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "3.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "4.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "5.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "6.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "7.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "8.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "9.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "10.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "11.png")
         // Miscellaneous
         ->addSubsprite(SPR_POWER, basePath / "power.png")
         // Finalize

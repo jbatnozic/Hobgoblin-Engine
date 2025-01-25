@@ -40,14 +40,13 @@ public:
 
     hg::alvin::Space& getSpace() override;
 
-    std::optional<CellKind> getCellKindOfShape(NeverNull<cpShape*> aShape) const override;
 
     hg::math::Vector2pz getGridSize() const override;
     hg::math::Vector2pz getScalesGridPosition() const override {
         return _scalesGridPosition;
     }
 
-    void generateLoot() override;
+    void generatePearls() override;
 
 private:
     Mode _mode = Mode::UNINITIALIZED;
@@ -57,20 +56,18 @@ private:
 
     std::optional<hg::alvin::CollisionDelegate>             _collisionDelegate;
     std::optional<hg::alvin::Body>                          _terrainBody;
-    hg::util::RowMajorGrid<CellKind>                        _cells;
+    hg::util::RowMajorGrid<std::vector<std::string>>        _cells;
+    std::vector<CellKind>                                   _extraObjects;
     hg::util::RowMajorGrid<std::optional<hg::alvin::Shape>> _shapes;
     std::unordered_map<cpShape*, hg::math::Vector2pz>       _shapeToPosition;
 
-    // hg::gr::Multisprite _spr;
-    // hg::gr::Multisprite _edgeSpr;
-    // hg::gr::Multisprite _sprScales;
+    hg::gr::Multisprite _spr;
 
     hg::math::Vector2pz _scalesGridPosition = {0, 0};
 
     void _eventUpdate1() override;
     void _eventDraw1() override;
 
-    void _drawEmptyCell(hg::PZInteger aX, hg::PZInteger aY);
 
     void onNetworkingEvent(const RN_Event& aEvent) override;
 
@@ -80,5 +77,5 @@ private:
                                hg::PZInteger       aWidth,
                                hg::PZInteger       aHeight,
                                hg::PZInteger       aRowIdx,
-                               const std::string&  aCellData);
+                               hg::util::BufferStream&  aCellData);
 };

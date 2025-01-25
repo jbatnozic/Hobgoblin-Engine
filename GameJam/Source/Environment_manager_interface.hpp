@@ -27,7 +27,7 @@ public:
     virtual hg::math::Vector2pz getGridSize() const           = 0;
     virtual hg::math::Vector2pz getScalesGridPosition() const = 0;
 
-    virtual void generateLoot() = 0;
+    virtual void generatePearls() = 0;
 
 private:
     SPEMPE_CTXCOMP_TAG("EnvironmentManagerInterface");
