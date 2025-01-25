@@ -14,6 +14,9 @@
 #include <optional>
 #include <unordered_map>
 
+#include <Hobgoblin/Utility/File_io.hpp>
+#include<filesystem>
+
 struct ShapeHasher {
     std::size_t operator()(const cpShape* aShape) const {
         return reinterpret_cast<std::size_t>(aShape);
@@ -70,6 +73,8 @@ private:
     void _drawEmptyCell(hg::PZInteger aX, hg::PZInteger aY);
 
     void onNetworkingEvent(const RN_Event& aEvent) override;
+
+    void loadTerrainText();
 
     friend void SetTerrainImpl(EnvironmentManager& aEnvMgr,
                                hg::PZInteger       aWidth,

@@ -78,20 +78,19 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
         ->addSubsprite(SPR_FOREARM_SIZE_3, basePath / "b3r2.png")
         ->addSubsprite(SPR_FOREARM_SIZE_4, basePath / "b4r2.png")
         ->addSubsprite(SPR_FOREARM_SIZE_5, basePath / "b5r2.png")
-        // Mountain
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "m1.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "m2.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "m3.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "mtr1.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "mtr2.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "mtr3.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "mtl1.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "mtl2.png")
-        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "mtl3.png")
-        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "h-right.png")
-        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "h-up.png")
-        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "h-left.png")
-        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "h-down.png")
+        // Map pieces
+        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "C.png")
+        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "A.png")
+        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "E.png")
+        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "F.png")
+        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "H.png")
+        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "Q.png")
+        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "R.png")
+        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "S.png")
+        ->addSubsprite(SPR_MOUNTAIN, mountainPath / "T.png")
+        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "W.png")
+        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "Q.png")
+        ->addSubsprite(SPR_ROCK_EDGE, mountainPath / "Z.png")
         // Miscellaneous
         ->addSubsprite(SPR_POWER, basePath / "power.png")
         // Finalize
@@ -99,11 +98,6 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
 
     HG_LOG_INFO(LOG_ID, "Game sprites loaded successfully (texture occupancy {}%).", occupancy * 100.f);
 
-    aSpriteLoader.startTexture(2048, 2048)
-        ->addSubsprite(SPR_SCALE, mountainPath / "Scales.png")
-        ->finalize(hg::gr::TexturePackingHeuristic::BestAreaFit, &occupancy);
-
-    HG_LOG_INFO(LOG_ID, "Scale sprite loaded successfully (texture occupancy {}%).", occupancy * 100.f);
 
     aSpriteLoader
         .startTexture(4096, 4094)
