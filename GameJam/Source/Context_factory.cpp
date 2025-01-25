@@ -49,11 +49,15 @@ std::unique_ptr<spe::GameContext> CreateServerContext(const ServerGameParams& aP
     auto winMgr = QAO_UPCreate<spe::DefaultWindowManager>(context->getQAORuntime().nonOwning(),
                                                           PRIORITY_WINDOWMGR);
     spe::WindowManagerInterface::TimingConfig timingConfig{
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
         spe::FrameRate{FRAME_RATE},
         spe::PREVENT_BUSY_WAIT_ON,
         spe::VSYNC_ON
-#else
+#elif defined(__APPLE__)
+        FRAME_RATE,
+        spe::PREVENT_BUSY_WAIT_OFF,
+        spe::VSYNC_OFF
+#else // Linux
         0,
         spe::PREVENT_BUSY_WAIT_OFF,
         spe::VSYNC_OFF
@@ -180,11 +184,15 @@ std::unique_ptr<spe::GameContext> CreateBasicClientContext() {
     auto winMgr = QAO_UPCreate<spe::DefaultWindowManager>(context->getQAORuntime().nonOwning(),
                                                           PRIORITY_WINDOWMGR);
     spe::WindowManagerInterface::TimingConfig timingConfig{
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
         spe::FrameRate{FRAME_RATE},
         spe::PREVENT_BUSY_WAIT_ON,
+        spe::VSYNC_ON
+#elif defined(__APPLE__)
+        FRAME_RATE * 2,
+        spe::PREVENT_BUSY_WAIT_OFF,
         spe::VSYNC_OFF
-#else
+#else // Linux
         0,
         spe::PREVENT_BUSY_WAIT_OFF,
         spe::VSYNC_OFF
