@@ -365,7 +365,7 @@ RN_DEFINE_RPC(SetTerrain,
                       aHeight,
                       std::int32_t,
                       aRowIdx,
-                      std::string&,
+                      hg::util::BufferStream&,
                       aCellData)) {
     RN_NODE_IN_HANDLER().callIfServer([](RN_ServerInterface& aServer) {
         throw RN_IllegalMessage{};
@@ -382,16 +382,15 @@ void SetTerrainImpl(EnvironmentManager& aEnvMgr,
                     hg::PZInteger       aWidth,
                     hg::PZInteger       aHeight,
                     hg::PZInteger       aRowIdx,
-                    const std::string&  aCellData) {
+                    hg::util::BufferStream&  aCellData) {
     if (aEnvMgr._cells.getWidth() != aWidth || aEnvMgr._cells.getHeight() != aHeight) {
         aEnvMgr._cells.reset(aWidth, aHeight);
     }
 
-    HG_HARD_ASSERT(hg::stopz(aCellData.size()) == aWidth);
 
     std::size_t idx = 0;
     for (hg::PZInteger x = 0; x < aWidth; x += 1) {
-        aEnvMgr._cells[aRowIdx][x] = static_cast<CellKind>(aCellData[idx]);
+        aEnvMgr._cells[aRowIdx][x][0] = aCellData.extract<std::string>();
         idx++;
     }
 }
@@ -449,7 +448,7 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
     _space->add(*_terrainBody);
 
     // Shapes
-    _shapes.reset(_temp_cells[0].size(), _temp_cells.size());
+    /* _shapes.reset(_temp_cells[0].size(), _temp_cells.size());
     for (hg::PZInteger y = 0; y < _temp_cells.size(); y += 1) {
         for (hg::PZInteger x = 0; x < _temp_cells[y].size(); x += 1) {
             if (_cells[y][x].size()>0) {
@@ -465,7 +464,7 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                 _space->add(*_shapes[y][x]);
             }
         }
-    }
+    }*/
 
 }
 
@@ -474,14 +473,7 @@ hg::alvin::Space& EnvironmentManager::getSpace() {
     return *_space;
 }
 
-std::optional<CellKind> EnvironmentManager::getCellKindOfShape(NeverNull<cpShape*> aShape) const {
-    const auto iter = _shapeToPosition.find(aShape);
-    if (iter == _shapeToPosition.end()) {
-        return {};
-    }
-    const auto pos = iter->second;
-    return _cells.at(pos.y, pos.x);
-}
+
 
 hg::math::Vector2pz EnvironmentManager::getGridSize() const {
     return {_cells.getWidth(), _cells.getHeight()};
@@ -495,6 +487,18 @@ void EnvironmentManager::_eventUpdate1() {
     if (_space.has_value() && !ctx().getGameState().isPaused) {
         _space->step(1.0 / 60.0);
     }
+}
+std::vector<std::string> Split(std::string str, char split_char) {
+
+    std::stringstream        str_stream(str);
+    std::string              segment;
+    std::vector<std::string> seglist;
+
+    while (std::getline(str_stream, segment, split_char)) {
+        seglist.push_back(segment);
+    }
+
+    return seglist;
 }
 
 void EnvironmentManager::_eventDraw1() {
@@ -539,41 +543,20 @@ void EnvironmentManager::_eventDraw1() {
 
     for (hg::PZInteger y = startY; y < endY; y += 1) {
         for (hg::PZInteger x = startX; x < endX; x += 1) {
+            std::vector<std::string> cell_value  = Split(_cells[y][x][0], '-');
+            int                      spr_index   = std::stoi(cell_value[0]);
+            int                      spr_rotation = std::stoi(cell_value[1]);
+            _spr.selectSubsprite(spr_index);
+            if (spr_rotation == 1) {
+                _spr.setScale(-1, 1);
+            }
+            else if (spr_rotation == 2) {
+                _spr.setScale(1, -1);
+            } else if (spr_rotation == 3) {
+                _spr.setScale(-1, -1);
+            }
 
             bool skipDrawing = false;
-            switch (_cells[y][x]) {
-            case CellKind::ROCK_1:
-                _spr.selectSubsprite(0);
-                break;
-            case CellKind::ROCK_2:
-                _spr.selectSubsprite(1);
-                break;
-            case CellKind::ROCK_3:
-                _spr.selectSubsprite(2);
-                break;
-            case CellKind::ROCK_T_1:
-                _spr.selectSubsprite(3);
-                break;
-            case CellKind::ROCK_T_2:
-                _spr.selectSubsprite(4);
-                break;
-            case CellKind::ROCK_T_3:
-                _spr.selectSubsprite(5);
-                break;
-            case CellKind::ROCK_MT_1:
-                _spr.selectSubsprite(6);
-                break;
-            case CellKind::ROCK_MT_2:
-                _spr.selectSubsprite(7);
-                break;
-            case CellKind::ROCK_MT_3:
-                _spr.selectSubsprite(8);
-                break;
-            default:
-                _spr.selectSubsprite(1);
-                 skipDrawing = true;
-                break;
-            }
 
             if (!skipDrawing) {
                 const auto& bounds = _spr.getLocalBounds();
@@ -609,13 +592,11 @@ void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {
         }
 
         for (hg::PZInteger y = 0; y < _cells.getHeight(); y += 1) {
-            std::string str;
-            str.resize(hg::pztos(_cells.getWidth()));
+            hg::util::BufferStream stream;
 
-            std::size_t idx = 0;
             for (hg::PZInteger x = 0; x < _cells.getWidth(); x += 1) {
-                str[idx] = static_cast<char>(_cells[y][x]);
-                idx++;
+                //TODO
+                stream<< _cells[y][x][0];
             }
 
             Compose_SetTerrain(ccomp<MNetworking>().getNode(),
@@ -623,23 +604,12 @@ void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {
                                static_cast<std::int32_t>(_cells.getWidth()),
                                static_cast<std::int32_t>(_cells.getHeight()),
                                static_cast<std::int32_t>(y),
-                               str);
+                               stream);
         }
     });
 }
 
-std::vector<std::string> Split(std::string str, char split_char) {
 
-    std::stringstream        str_stream(str);
-    std::string              segment;
-    std::vector<std::string> seglist;
-
-    while (std::getline(str_stream, segment, split_char)) {
-        seglist.push_back(segment);
-    }
-
-    return seglist;
-}
 
 void EnvironmentManager::loadTerrainText() {
 
@@ -670,8 +640,8 @@ void EnvironmentManager::loadTerrainText() {
     
     HG_LOG_FATAL(LOG_ID, "sosilica --------------------------------------------");
 
-    std::stringstream oss;
-    for (auto l : cells) {
+   // std::stringstream oss;
+    /* for (auto l : cells) {
         oss << "\n ";
         for (auto ll : l) {
             oss << "|";
@@ -680,18 +650,23 @@ void EnvironmentManager::loadTerrainText() {
             }
 
         }
-    }
+    }*/
 
-    HG_LOG_FATAL(LOG_ID, oss.str());
     hg::PZInteger aWidth  = static_cast<hg::PZInteger>(cells[0].size());
     hg::PZInteger aHeight = static_cast<hg::PZInteger>(cells.size());
 
     _cells.reset(aWidth, aHeight);
-
+    std::stringstream oss;
         for (hg::PZInteger y = 0; y < aHeight; y += 1) {
-        // std::ostringstream oss;
+        oss << "\n ";
             for (hg::PZInteger x = 0; x < cells[y].size(); x += 1) {
                 _cells[y][x] = cells[y][x];
+                oss << _cells[y][x][0] << ';';
         }
     }
+
+
+
+        
+    HG_LOG_FATAL(LOG_ID, oss.str());
 }

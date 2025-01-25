@@ -31,8 +31,6 @@ public:
 
     static constexpr cpBitmask ENTITY_DEFAULT_CATEGORY = CAT_TERRAIN;
     static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_CHARACTER | CAT_LOOT;
-
-    virtual std::optional<CellKind> getCellKindOfShape(NeverNull<cpShape*> aShape) const = 0;
 };
 
 class DiverInterface : public hg::alvin::EntityBase {

@@ -40,7 +40,6 @@ public:
 
     hg::alvin::Space& getSpace() override;
 
-    std::optional<CellKind> getCellKindOfShape(NeverNull<cpShape*> aShape) const override;
 
     hg::math::Vector2pz getGridSize() const override;
     hg::math::Vector2pz getScalesGridPosition() const override {
@@ -78,5 +77,5 @@ private:
                                hg::PZInteger       aWidth,
                                hg::PZInteger       aHeight,
                                hg::PZInteger       aRowIdx,
-                               const std::string&  aCellData);
+                               hg::util::BufferStream&  aCellData);
 };
