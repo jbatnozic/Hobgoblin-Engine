@@ -247,17 +247,17 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
             auto* obj = QAO_PCreate<Shark>(ctx().getQAORuntime(),
                                            ccomp<MNetworking>().getRegistryId(),
                                            spe::SYNC_ID_NEW);
-            obj->init(i, 1000.f, 1000.f);
+            obj->init(i, 100.f, 100.f);
 
             auto* objD = QAO_PCreate<Diver>(ctx().getQAORuntime(),
                                             ccomp<MNetworking>().getRegistryId(),
                                             spe::SYNC_ID_NEW);
-            objD->init(0, 1200.f, 1000.f);
+            objD->init(0, 200.f, 100.f);
         } else {
             auto* obj = QAO_PCreate<Diver>(ctx().getQAORuntime(),
                                            ccomp<MNetworking>().getRegistryId(),
                                            spe::SYNC_ID_NEW);
-            obj->init(i, 1000.f, 1000.f);
+            obj->init(i, 100.f, 100.f);
         }
     }
 

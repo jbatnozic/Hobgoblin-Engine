@@ -18,7 +18,7 @@ static constexpr cpFloat PHYS_RADIUS                 = 48.0;
 static constexpr cpFloat PHYS_DAMPING                = 0.95;
 static constexpr cpFloat PHYS_ROTATIONAL_FORCE       = 1'750'000.0;
 static constexpr cpFloat PHYS_PROPULSION_FORCE_MIN   = 15'000.0;
-static constexpr cpFloat PHYS_PROPULSION_FORCE_MAX   = 140'000.0;
+static constexpr cpFloat PHYS_PROPULSION_FORCE_MAX   = 1400'000.0;
 static constexpr cpFloat PHYS_PROPULSION_FORCE_STEPS = 350.0;
 
 #define NUM_COLORS 12
@@ -369,7 +369,7 @@ void Shark::_adjustView() {
         view.setCenter({1000.f, 1000.f});
     }
 #endif
-    view.setCenter({1000.f, 1000.f});
+    view.setCenter({100.f, 100.f});
 
     // Round
     const auto center = view.getCenter();

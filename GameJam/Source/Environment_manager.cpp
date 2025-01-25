@@ -502,7 +502,6 @@ std::vector<std::string> Split(std::string str, char split_char) {
 }
 
 void EnvironmentManager::_eventDraw1() {
-#if 0
     auto& winMgr = ccomp<MWindow>();
     auto& view   = winMgr.getView(0);
     auto& canvas = winMgr.getCanvas();
@@ -580,7 +579,6 @@ void EnvironmentManager::_eventDraw1() {
     //         {getGridSize().x * (float)CELL_RESOLUTION, view.getCenter().y - view.getSize().y / 2.f});
     //     canvas.draw(rect);
     // }
-#endif
 }
 
 void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {
