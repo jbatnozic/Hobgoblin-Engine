@@ -61,9 +61,9 @@ private:
     hg::util::RowMajorGrid<std::optional<hg::alvin::Shape>> _shapes;
     std::unordered_map<cpShape*, hg::math::Vector2pz>       _shapeToPosition;
 
-    hg::gr::Multisprite _spr;
-    hg::gr::Multisprite _edgeSpr;
-    hg::gr::Multisprite _sprScales;
+    // hg::gr::Multisprite _spr;
+    // hg::gr::Multisprite _edgeSpr;
+    // hg::gr::Multisprite _sprScales;
 
     hg::math::Vector2pz _scalesGridPosition = {0, 0};
 

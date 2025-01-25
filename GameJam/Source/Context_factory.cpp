@@ -172,8 +172,8 @@ std::unique_ptr<spe::GameContext> CreateServerContext(const ServerGameParams& aP
 
 // Main Render Texture (MRT) size determines the resolution
 // at which the game will be rendered internally.
-#define MRT_WIDTH  1920
-#define MRT_HEIGHT 1080
+#define MRT_WIDTH  960
+#define MRT_HEIGHT 540
 
 std::unique_ptr<spe::GameContext> CreateBasicClientContext() {
     auto context =
@@ -209,6 +209,7 @@ std::unique_ptr<spe::GameContext> CreateBasicClientContext() {
         spe::WindowManagerInterface::MainRenderTextureConfig{{MRT_WIDTH, MRT_HEIGHT}},
         timingConfig);
     // clang-format on
+    winMgr->setMainRenderTextureDrawPosition(spe::WindowManagerInterface::DrawPosition::Fit);
     winMgr->setStopIfCloseClicked(true);
 
     struct FontFace {

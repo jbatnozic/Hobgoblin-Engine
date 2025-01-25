@@ -14,9 +14,9 @@
 namespace {
 // Physics parameters for Shark
 static constexpr cpFloat PHYS_MASS                   = 800.0;
-static constexpr cpFloat PHYS_RADIUS                 = 80.0;
+static constexpr cpFloat PHYS_RADIUS                 = 48.0;
 static constexpr cpFloat PHYS_DAMPING                = 0.95;
-static constexpr cpFloat PHYS_ROTATIONAL_FORCE       = 2'500'000.0;
+static constexpr cpFloat PHYS_ROTATIONAL_FORCE       = 1'750'000.0;
 static constexpr cpFloat PHYS_PROPULSION_FORCE_MIN   = 15'000.0;
 static constexpr cpFloat PHYS_PROPULSION_FORCE_MAX   = 140'000.0;
 static constexpr cpFloat PHYS_PROPULSION_FORCE_STEPS = 350.0;

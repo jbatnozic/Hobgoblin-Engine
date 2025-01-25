@@ -182,7 +182,7 @@ void MainGameplayManager::setToClientMode() {
 
     auto& views = ccomp<MWindow>().getViewController();
     views.setViewCount(1);
-    views.getView(0).setSize({1920.f, 1080.f});
+    views.getView(0).setSize({1920.f / 2.f, 1080.f / 2.f});
     views.getView(0).setViewport({0.f, 0.f, 1.f, 1.f});
     views.getView(0).setCenter({0.f, 0.f});
     views.getView(0).setEnabled(true);

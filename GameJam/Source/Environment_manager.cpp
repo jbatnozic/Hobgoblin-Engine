@@ -381,9 +381,9 @@ EnvironmentManager::EnvironmentManager(QAO_RuntimeRef aRuntimeRef, int aExecutio
     if (ccomp<MResource>().getMode() == ResourceManagerInterface::Mode::CLIENT) {
         const auto& sprLoader = ccomp<MResource>().getSpriteLoader();
 
-        _spr       = sprLoader.getMultiBlueprint(SPR_MOUNTAIN).multispr();
-        _edgeSpr   = sprLoader.getMultiBlueprint(SPR_ROCK_EDGE).multispr();
-        _sprScales = sprLoader.getMultiBlueprint(SPR_SCALE).multispr();
+        // _spr       = sprLoader.getMultiBlueprint(SPR_MOUNTAIN).multispr();
+        // _edgeSpr   = sprLoader.getMultiBlueprint(SPR_ROCK_EDGE).multispr();
+        // _sprScales = sprLoader.getMultiBlueprint(SPR_SCALE).multispr();
     }
 }
 
@@ -693,6 +693,7 @@ void EnvironmentManager::_eventUpdate1() {
 }
 
 void EnvironmentManager::_eventDraw1() {
+#if 0
     auto& winMgr = ccomp<MWindow>();
     auto& view   = winMgr.getView(0);
     auto& canvas = winMgr.getCanvas();
@@ -809,9 +810,11 @@ void EnvironmentManager::_eventDraw1() {
     //         {getGridSize().x * (float)CELL_RESOLUTION, view.getCenter().y - view.getSize().y / 2.f});
     //     canvas.draw(rect);
     // }
+#endif
 }
 
 void EnvironmentManager::_drawEmptyCell(hg::PZInteger aX, hg::PZInteger aY) {
+#if 0
     auto& canvas = ccomp<MWindow>().getCanvas();
 
     const auto& bounds = _edgeSpr.getLocalBounds();
@@ -845,6 +848,7 @@ void EnvironmentManager::_drawEmptyCell(hg::PZInteger aX, hg::PZInteger aY) {
         _edgeSpr.selectSubsprite(3);
         canvas.draw(_edgeSpr);
     }
+#endif
 }
 
 void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {
