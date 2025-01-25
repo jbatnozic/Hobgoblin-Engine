@@ -15,12 +15,14 @@ GameStageController::GameStageController(QAO_RuntimeRef  aRuntimeRef,
 {
     if (isMasterObject()) {
         _getCurrentState().initMirror();
+        HG_LOG_INFO(LOG_ID, "GameStageController created.");
     }
 }
 
 GameStageController::~GameStageController() {
     if (isMasterObject()) {
         doSyncDestroy();
+        HG_LOG_INFO(LOG_ID, "GameStageController destroyed.");
     }
 }
 

@@ -17,8 +17,10 @@
 #include <Hobgoblin/Format.hpp>
 #include <Hobgoblin/HGExcept.hpp>
 #include <Hobgoblin/Logging.hpp>
+#include <Hobgoblin/Utility/Randomization.hpp>
 
 #include <cmath>
+#include <optional>
 #include <vector>
 
 // MARK: Announcements
@@ -115,6 +117,29 @@ private:
     std::vector<Announcement> _items;
 };
 
+// MARK: Utility
+
+namespace {
+std::optional<hg::PZInteger> SelectRandomPlayer(
+    const spe::LobbyBackendManagerInterface& aLobbyMgr) //
+{
+    std::vector<hg::PZInteger> indices;
+    for (hg::PZInteger i = 1; i < aLobbyMgr.getSize(); i += 1) {
+        if (aLobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
+            continue;
+        }
+        indices.push_back(i);
+    }
+    if (indices.empty()) {
+        return std::nullopt;
+    }
+    hg::util::DoWith64bitRNG([&indices](auto& aRng) {
+        std::shuffle(indices.begin(), indices.end(), aRng);
+    });
+    return indices.front();
+}
+} // namespace
+
 // MARK: RPC
 
 RN_DEFINE_RPC(SetGlobalStateBufferingLength, RN_ARGS(unsigned, aNewLength)) {
@@ -187,33 +212,35 @@ int MainGameplayManager::getCurrentGameStage() const {
 void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
     HG_LOG_INFO(LOG_ID, "Function call: _startGame({})", aPlayerCount);
 
-    _gameStageController = QAO_PCreate<GameStageController>(ctx().getQAORuntime(),
-                                                            ccomp<MNetworking>().getRegistryId(),
-                                                            spe::SYNC_ID_NEW);
+    if (_gameStageController == nullptr) {
+        _gameStageController = QAO_PCreate<GameStageController>(ctx().getQAORuntime(),
+                                                                ccomp<MNetworking>().getRegistryId(),
+                                                                spe::SYNC_ID_NEW);
+    }
     _gameStageController->init();
 
-    _playerCount = aPlayerCount;
-
-    auto& varmap = ccomp<MVarmap>();
+    // auto& varmap   = ccomp<MVarmap>();
     // varmap.setInt64(VARMAP_ID_GAME_STAGE, GAME_STAGE_INITIAL_COUNTDOWN);
 
-    auto& envMgr = ccomp<MEnvironment>();
-    // for (hg::PZInteger i = 0; i < aPlayerCount; i += 1) {
-    //     if (i == 0) {
-    //         continue; // player 0 is the host, doesn't need a character
-    //     }
-    //     auto* obj = QAO_PCreate<CharacterObject>(ctx().getQAORuntime(),
-    //                                              ccomp<MNetworking>().getRegistryId(),
-    //                                              spe::SYNC_ID_NEW);
-    //     obj->init(i,
-    //               left_offset * single_terrain_size + i * 300.0,
-    //               (terrain_size + 5) * single_terrain_size - 300.0);
-    // }
+    auto& lobbyMgr = ccomp<spe::LobbyBackendManagerInterface>();
 
-    auto* obj = QAO_PCreate<Diver>(ctx().getQAORuntime(),
-                                   ccomp<MNetworking>().getRegistryId(),
-                                   spe::SYNC_ID_NEW);
-    obj->init(1, 1000.f, 1000.f);
+    const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
+    for (hg::PZInteger i = 1; i < lobbyMgr.getSize(); i += 1) {
+        if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
+            continue;
+        }
+        if (i == sharkPlayerIdx) {
+            auto* obj = QAO_PCreate<Shark>(ctx().getQAORuntime(),
+                                           ccomp<MNetworking>().getRegistryId(),
+                                           spe::SYNC_ID_NEW);
+            obj->init(i, 1000.f, 1000.f);
+        } else {
+            auto* obj = QAO_PCreate<Diver>(ctx().getQAORuntime(),
+                                           ccomp<MNetworking>().getRegistryId(),
+                                           spe::SYNC_ID_NEW);
+            obj->init(i, 1000.f, 1000.f);
+        }
+    }
 
     ctx().getGameState().isPaused = false;
 }
@@ -235,7 +262,8 @@ void MainGameplayManager::_restartGame() {
         }
     }
 
-    _gameStageController->init();
+    // It will have been erased in the loop above
+    _gameStageController = nullptr;
 
     ccomp<MEnvironment>().generateLoot();
 

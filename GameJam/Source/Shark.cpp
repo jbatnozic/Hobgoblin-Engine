@@ -13,12 +13,13 @@
 
 namespace {
 // Physics parameters for Shark
-static constexpr cpFloat PHYS_MASS             = 80.0;
-static constexpr cpFloat PHYS_WIDTH            = 32.0;
-static constexpr cpFloat PHYS_HEIGHT           = 64.0;
-static constexpr cpFloat PHYS_DAMPING          = 0.9;
-static constexpr cpFloat PHYS_ROTATIONAL_FORCE = 250'000.0;
-static constexpr cpFloat PHYS_PROPULSION_FORCE = 400'000.0;
+static constexpr cpFloat PHYS_MASS                   = 800.0;
+static constexpr cpFloat PHYS_RADIUS                 = 80.0;
+static constexpr cpFloat PHYS_DAMPING                = 0.95;
+static constexpr cpFloat PHYS_ROTATIONAL_FORCE       = 1'500'000.0;
+static constexpr cpFloat PHYS_PROPULSION_FORCE_MIN   = 15'000.0;
+static constexpr cpFloat PHYS_PROPULSION_FORCE_MAX   = 140'000.0;
+static constexpr cpFloat PHYS_PROPULSION_FORCE_STEPS = 350.0;
 
 #define NUM_COLORS 12
 static const hg::gr::Color COLORS[NUM_COLORS] = {hg::gr::COLOR_BLACK,
@@ -36,7 +37,9 @@ static const hg::gr::Color COLORS[NUM_COLORS] = {hg::gr::COLOR_BLACK,
 } // namespace
 
 Shark::Shark(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSyncId)
-    : SyncObjSuper{aRuntimeRef, SPEMPE_TYPEID_SELF, PRIORITY_PLAYERAVATAR, "Shark", aRegId, aSyncId} {
+    : SyncObjSuper{aRuntimeRef, SPEMPE_TYPEID_SELF, PRIORITY_PLAYERAVATAR, "Shark", aRegId, aSyncId}
+    , _propulsionForce{PHYS_PROPULSION_FORCE_MIN} //
+{
     if (isMasterObject()) {
         _getCurrentState().initMirror(); // To get autodiff optimization working
 
@@ -47,10 +50,10 @@ Shark::Shark(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSy
             [this]() {
                 return hg::alvin::Body::createDynamic(
                     80.0,
-                    cpMomentForBox(PHYS_MASS, PHYS_WIDTH, PHYS_HEIGHT));
+                    cpMomentForCircle(PHYS_MASS, 0.0, PHYS_RADIUS, cpvzero));
             },
             [this]() {
-                return hg::alvin::Shape::createBox(_unibody.body, PHYS_WIDTH, PHYS_HEIGHT);
+                return hg::alvin::Shape::createCircle(_unibody.body, PHYS_RADIUS, cpvzero);
             });
         _unibody.bindDelegate(*this);
         _unibody.addToSpace(ccomp<MEnvironment>().getSpace());
@@ -149,22 +152,20 @@ void Shark::_eventDraw1() {
 
     const auto& self = _getCurrentState();
 
-    hg::gr::RectangleShape rect;
-    rect.setSize({(float)PHYS_WIDTH, (float)PHYS_HEIGHT});
-    rect.setOrigin({(float)PHYS_WIDTH / 2.f, (float)PHYS_HEIGHT / 2.f});
-    rect.setFillColor(hg::gr::COLOR_TRANSPARENT);
-    rect.setOutlineColor(hg::gr::COLOR_YELLOW);
-    rect.setOutlineThickness(2.f);
-    rect.setPosition(self.x, self.y);
-    rect.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
-    canvas.draw(rect);
-
-    hg::gr::CircleShape cir{8.f};
-    cir.setFillColor(hg::gr::COLOR_RED);
-    cir.setOrigin({8.f, 32.f});
+    hg::gr::CircleShape cir{(float)PHYS_RADIUS};
+    cir.setFillColor(hg::gr::COLOR_TRANSPARENT);
+    cir.setOutlineColor(hg::gr::COLOR_YELLOW);
+    cir.setOutlineThickness(2.f);
+    cir.setOrigin({(float)PHYS_RADIUS, (float)PHYS_RADIUS});
     cir.setPosition(self.x, self.y);
-    cir.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
     canvas.draw(cir);
+
+    hg::gr::CircleShape eye{8.f};
+    eye.setFillColor(hg::gr::COLOR_RED);
+    eye.setOrigin({8.f, 32.f});
+    eye.setPosition(self.x, self.y);
+    eye.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
+    canvas.draw(eye);
 }
 
 void Shark::_eventDraw2() {
@@ -192,10 +193,8 @@ void Shark::_eventDraw2() {
 }
 
 void Shark::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
-    auto& space = ccomp<MEnvironment>().getSpace();
-
     // Rotation
-    {
+    if (aLeft || aRight || aUp || aDown) {
         const cpFloat lr = static_cast<cpFloat>(aRight) - static_cast<cpFloat>(aLeft);
         const cpFloat ud = static_cast<cpFloat>(aDown) - static_cast<cpFloat>(aUp);
 
@@ -203,10 +202,8 @@ void Shark::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
         const auto currentRotation =
             hg::math::Angle<cpFloat>::fromVector(currentRotationVec.x, currentRotationVec.y);
 
-        const auto targetRotation = (aLeft || aRight || aUp || aDown)
-                                        ? (hg::math::Angle<cpFloat>::fromVector({lr, ud}) -
-                                           hg::math::Angle<cpFloat>::fromDeg(90.0))
-                                        : hg::math::Angle<cpFloat>::zero();
+        const auto targetRotation =
+            hg::math::Angle<cpFloat>::fromVector({lr, ud}) - hg::math::Angle<cpFloat>::fromDeg(90.0);
 
         const auto rotationDiff = currentRotation.shortestDistanceTo(targetRotation);
 
@@ -222,15 +219,25 @@ void Shark::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
 
         cpBodyApplyForceAtLocalPoint(_unibody,
                                      cpvneg(rotationalForce),
-                                     cpv(12.0, 0.0)); // Idk why 12 but it works
+                                     cpv(24.0, 0.0)); // Idk why 12 but it works
         cpBodyApplyForceAtLocalPoint(_unibody, rotationalForce, cpvzero);
     }
 
     // Propulsion
+    static constexpr cpFloat PROPULSION_FORCE_DELTA =
+        (PHYS_PROPULSION_FORCE_MAX - PHYS_PROPULSION_FORCE_MIN) / PHYS_PROPULSION_FORCE_STEPS;
     if (aLeft || aRight || aUp || aDown) {
+        if (_propulsionForce < PHYS_PROPULSION_FORCE_MAX) {
+            _propulsionForce += PROPULSION_FORCE_DELTA;
+        }
+
         const auto   angleRad = cpvtoangle(cpBodyGetRotation(_unibody)) - hg::math::Pi<cpFloat>() / 2;
-        const cpVect force    = cpvmult(cpvforangle(angleRad), PHYS_PROPULSION_FORCE);
+        const cpVect force    = cpvmult(cpvforangle(angleRad), _propulsionForce);
         cpBodyApplyForceAtWorldPoint(_unibody, force, cpBodyGetPosition(_unibody));
+    } else {
+        if (_propulsionForce > PHYS_PROPULSION_FORCE_MIN) {
+            _propulsionForce -= PROPULSION_FORCE_DELTA;
+        }
     }
 }
 

@@ -89,13 +89,13 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
         // Finalize
         ->finalize(hg::gr::TexturePackingHeuristic::BestAreaFit, &occupancy);
 
-    HG_LOG_INFO(LOG_ID, "Game sprites loaded successfully (testure occupancy {}%).", occupancy * 100.f);
+    HG_LOG_INFO(LOG_ID, "Game sprites loaded successfully (texture occupancy {}%).", occupancy * 100.f);
 
     aSpriteLoader.startTexture(2048, 2048)
         ->addSubsprite(SPR_SCALE, mountainPath / "Scales.png")
         ->finalize(hg::gr::TexturePackingHeuristic::BestAreaFit, &occupancy);
 
-    HG_LOG_INFO(LOG_ID, "Scale sprite loaded successfully (testure occupancy {}%).", occupancy * 100.f);
+    HG_LOG_INFO(LOG_ID, "Scale sprite loaded successfully (texture occupancy {}%).", occupancy * 100.f);
 
     aSpriteLoader
         .startTexture(4096, 4094)
@@ -105,6 +105,6 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
         ->finalize(hg::gr::TexturePackingHeuristic::BestAreaFit, &occupancy);
 
     HG_LOG_INFO(LOG_ID,
-                "Background sprites loaded successfully (testure occupancy {}%).",
+                "Background sprites loaded successfully (texture occupancy {}%).",
                 occupancy * 100.f);
 }

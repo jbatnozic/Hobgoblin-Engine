@@ -36,6 +36,8 @@ public:
 private:
     hg::alvin::Unibody _unibody;
 
+    cpFloat _propulsionForce;
+
     hg::alvin::CollisionDelegate _initColDelegate();
 
     void _execMovement(bool aLeft, bool aRight, bool aUp, bool aDown);
