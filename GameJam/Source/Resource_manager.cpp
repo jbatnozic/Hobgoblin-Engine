@@ -20,8 +20,16 @@ void ResourceManager::setToClientMode() {
 
     LoadSprites(_spriteLoader);
 
-    _underpantsShader.loadFromFile("Assets/underpants_shader_vertex.txt",
-                                   "Assets/underpants_shader_fragment.txt");
+    std::filesystem::path root = std::filesystem::current_path();
+    for (int i = 0; i < 10; i += 1) {
+        if (std::filesystem::exists(root / "Assets")) {
+            break;
+        }
+        root = root.parent_path();
+    }
+
+    _underpantsShader.loadFromFile(root / "Assets/underpants_shader_vertex.txt",
+                                   root / "Assets/underpants_shader_fragment.txt");
 }
 
 ResourceManager::Mode ResourceManager::getMode() const {

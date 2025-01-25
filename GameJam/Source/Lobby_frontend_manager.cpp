@@ -304,8 +304,16 @@ public:
         HG_HARD_ASSERT(handle.has_value()); // TODO
         _dataModelHandle = *handle;
 
-        hg::rml::PreprocessRcssFile("Assets/lobby.rcss.fp");
-        _document = guiContext.LoadDocument("Assets/lobby.rml");
+        std::filesystem::path root = std::filesystem::current_path();
+        for (int i = 0; i < 10; i += 1) {
+            if (std::filesystem::exists(root / "Assets")) {
+                break;
+            }
+            root = root.parent_path();
+        }
+
+        hg::rml::PreprocessRcssFile(root / "Assets/lobby.rcss.fp");
+        _document = guiContext.LoadDocument(root / "Assets/lobby.rml");
         if (_document) {
             _document->Show();
             _documentVisible = true;

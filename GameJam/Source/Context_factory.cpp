@@ -221,8 +221,15 @@ std::unique_ptr<spe::GameContext> CreateBasicClientContext() {
         {      "LatoLatin-Bold.ttf", false},
         {"LatoLatin-BoldItalic.ttf", false},
     };
+    std::filesystem::path root = std::filesystem::current_path();
+    for (int i = 0; i < 10; i += 1) {
+        if (std::filesystem::exists(root / "Assets")) {
+            break;
+        }
+        root = root.parent_path();
+    }
     for (const FontFace& face : font_faces) {
-        Rml::LoadFontFace("Assets/fonts/" + face.filename, face.fallback_face);
+        Rml::LoadFontFace((root / "Assets/fonts/").string() + face.filename, face.fallback_face);
     }
 
 #ifndef NDEBUG

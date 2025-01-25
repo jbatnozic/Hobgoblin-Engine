@@ -19,14 +19,14 @@ PRIVATE
 
 # https://stackoverflow.com/questions/48468205/cmake-forcing-copy-of-specified-files-in-post-build-even-if-no-change-in-source
 
-add_custom_command(
-    OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/assets"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/assets"
-)
+# add_custom_command(
+#     OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets"
+#     COMMAND ${CMAKE_COMMAND} -E copy_directory
+#             "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+#             "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets"
+#     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+# )
 
-add_custom_target("copy-assets" DEPENDS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
+# add_custom_target("copy-assets" DEPENDS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
 
-add_dependencies("multiplayer-foundation" "copy-assets")
+# add_dependencies("multiplayer-foundation" "copy-assets")

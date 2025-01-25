@@ -40,8 +40,16 @@ enum SpriteIds {
 };
 
 inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
-    const std::filesystem::path basePath     = "Assets/Sprites";
-    const std::filesystem::path mountainPath = "Assets/Sprites/Mountain";
+    std::filesystem::path root = std::filesystem::current_path();
+    for (int i = 0; i < 10; i += 1) {
+        if (std::filesystem::exists(root / "Assets")) {
+            break;
+        }
+        root = root.parent_path();
+    }
+
+    const std::filesystem::path basePath     = root / "Assets/Sprites";
+    const std::filesystem::path mountainPath = root / "Assets/Sprites/Mountain";
 
     float occupancy = 0.f;
 
