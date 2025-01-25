@@ -42,6 +42,8 @@ private:
 
     void _execMovement(bool aLeft, bool aRight, bool aUp, bool aDown);
 
+    bool _isInMouth(const cpVect& aPosition) const;
+
     void _adjustView();
 
     void _eventUpdate1(spe::IfMaster) override;

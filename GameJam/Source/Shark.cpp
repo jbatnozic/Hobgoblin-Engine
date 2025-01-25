@@ -241,30 +241,44 @@ void Shark::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
     }
 }
 
+bool Shark::_isInMouth(const cpVect& aPosition) const {
+    const auto currentRotationVec = cpBodyGetRotation(_unibody);
+    const auto currentRotation =
+        hg::math::Angle<cpFloat>::fromVector(currentRotationVec.x, currentRotationVec.y) +
+        hg::math::Angle<cpFloat>::fromDeg(90.0);
+
+    const auto currentPosition = cpBodyGetPosition(_unibody);
+    const auto targetRotation =
+        hg::math::PointDirection(currentPosition.x, currentPosition.y, aPosition.x, aPosition.y);
+
+    HG_LOG_INFO(LOG_ID,
+                "_isInMouth() - aPosition = ({}, {}); currentPosition = ({}, {}); currentRotation = "
+                "{}deg; targetRotation = {}deg.",
+                aPosition.x,
+                aPosition.y,
+                currentPosition.x,
+                currentPosition.y,
+                currentRotation.asDeg(),
+                targetRotation.asDeg());
+
+    return std::abs(currentRotation.shortestDistanceTo(targetRotation).asDeg()) <= 30.0;
+}
+
 hg::alvin::CollisionDelegate Shark::_initColDelegate() {
     auto builder = hg::alvin::CollisionDelegateBuilder{};
     builder.setDefaultDecision(hg::alvin::Decision::ACCEPT_COLLISION);
 
-    builder.addInteraction<TerrainInterface>(
+    builder.addInteraction<DiverInterface>(
         hg::alvin::COLLISION_CONTACT,
-        [this](TerrainInterface& aTerrain, const hg::alvin::CollisionData& aCollisionData) {
-            // CP_ARBITER_GET_SHAPES(aCollisionData.arbiter, shape1, shape2);
-            // NeverNull<cpShape*> otherShape = shape1;
-            // if (otherShape == _unibody.shape) {
-            //     otherShape = shape2;
-            // }
-            // const auto cellKind = aTerrain.getCellKindOfShape(otherShape);
-            // if (cellKind && *cellKind == CellKind::SCALE) {
-            //     HG_LOG_INFO(LOG_ID, "Character reached the scales.");
-            //     ccomp<MainGameplayManagerInterface>().characterReachedTheScales(*this);
-            // }
-            return hg::alvin::Decision::ACCEPT_COLLISION;
-        });
-
-    builder.addInteraction<SharkInterface>(
-        hg::alvin::COLLISION_CONTACT,
-        [this](SharkInterface& aShark, const hg::alvin::CollisionData& aCollisionData) {
-            // TODO: die
+        [this](DiverInterface& aDiver, const hg::alvin::CollisionData& aCollisionData) {
+            const auto contactPoints = cpArbiterGetContactPointSet(aCollisionData.arbiter);
+            for (int i = 0; i < contactPoints.count; i += 1) {
+                if (_isInMouth(contactPoints.points[i].pointA) ||
+                    _isInMouth(contactPoints.points[i].pointB)) {
+                    aDiver.kill();
+                    break;
+                }
+            }
             return hg::alvin::Decision::ACCEPT_COLLISION;
         });
 

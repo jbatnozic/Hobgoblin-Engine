@@ -234,6 +234,11 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
                                            ccomp<MNetworking>().getRegistryId(),
                                            spe::SYNC_ID_NEW);
             obj->init(i, 1000.f, 1000.f);
+
+            auto* objD = QAO_PCreate<Diver>(ctx().getQAORuntime(),
+                                            ccomp<MNetworking>().getRegistryId(),
+                                            spe::SYNC_ID_NEW);
+            objD->init(0, 1200.f, 1000.f);
         } else {
             auto* obj = QAO_PCreate<Diver>(ctx().getQAORuntime(),
                                            ccomp<MNetworking>().getRegistryId(),
@@ -318,6 +323,8 @@ void MainGameplayManager::_backToMainMenu() {
     joinMenuMgr->setVisible(false);
     context.attachAndOwnComponent(std::move(joinMenuMgr));
 }
+
+// MARK: QAO Events
 
 void MainGameplayManager::_eventUpdate1() {
     if (ctx().isPrivileged()) {
