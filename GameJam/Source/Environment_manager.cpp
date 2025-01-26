@@ -590,10 +590,22 @@ void EnvironmentManager::_eventDraw1() {
         rect.setPosition(0.f, 0.f);
         canvas.draw(rect);
     }
+    const hg::PZInteger startX = std::max(
+        static_cast<int>((view.getCenter().x - view.getSize().x / 2.f) / (float)CELL_RESOLUTION - 1.f),
+        0);
+    const hg::PZInteger startY = std::max(
+        static_cast<int>((view.getCenter().y - view.getSize().y / 2.f) / (float)CELL_RESOLUTION - 1.f),
+        0);
+    const hg::PZInteger endX = std::min(
+        static_cast<int>((view.getCenter().x + view.getSize().x / 2.f) / (float)CELL_RESOLUTION + 1.f),
+        _cells.getWidth());
+    const hg::PZInteger endY = std::min(
+        static_cast<int>((view.getCenter().y + view.getSize().y / 2.f) / (float)CELL_RESOLUTION + 1.f),
+        _cells.getHeight());
+    bool renderScale = true;
+    for (hg::PZInteger y = startY; y < endY; y += 1) {
+        for (hg::PZInteger x = startX; x < endX; x += 1) {
 
-
-    for (hg::PZInteger y = 0; y < _cells.getHeight(); y += 1) {
-        for (hg::PZInteger x = 0; x < _cells.getWidth(); x += 1) {
             std::vector<std::string> cell_value  = Split(_cells[y][x][0], '-');
             int                      spr_index   = std::stoi(cell_value[0]);
             int                      spr_rotation = std::stoi(cell_value[1]);
