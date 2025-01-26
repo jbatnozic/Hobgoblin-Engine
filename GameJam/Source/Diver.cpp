@@ -4,6 +4,7 @@
 #include "Environment_manager.hpp"
 #include "Main_gameplay_manager_interface.hpp"
 #include "Player_controls.hpp"
+#include "Pearl.hpp"
 
 #include <Hobgoblin/HGExcept.hpp>
 
@@ -95,8 +96,12 @@ void Diver::addOxygen(float aOxygen) {
 void Diver::kill() {
     auto& self = _getCurrentState();
     if (!self.eaten) {
-        HG_LOG_INFO(LOG_ID, "================= PLAYER KILLED =================");
+        // HG_LOG_INFO(LOG_ID, "================= PLAYER KILLED =================");
         self.eaten = true;
+
+        if (_pearl != nullptr) {
+            _pearl->_holder = nullptr;
+        }
     }
 }
 
@@ -153,6 +158,10 @@ void Diver::_eventUpdate1(spe::IfMaster) {
     // Oxygen & Bubbles
     if (!self.eaten && self.oxygen > 0.f) {
         self.oxygen -= 100.f / (1 * 60 * 60);
+
+        if (self.oxygen  <= 0.f && _pearl != nullptr) {
+            _pearl->_holder = nullptr;
+        }
 
         _bubbleSpawnCooldown -= 1;
         if (_bubbleSpawnCooldown == 0) {

@@ -15,6 +15,7 @@ add_executable(${PROJECT_NAME}
     "Main_menu_manager.cpp"
     "Join_menu_manager.cpp"
     "Main.cpp"
+    "Pearl.cpp"
     "Resource_manager.cpp"
     "Shark.cpp"
     "Sponge.cpp"

@@ -21,6 +21,8 @@ SPEMPE_DEFINE_AUTODIFF_STATE(Diver_VisibleState,
 };
 // clang-format on
 
+class Pearl;
+
 class /* Holy */ Diver // You've been down too long in the midnight sea...
     : public spe::SynchronizedObject<Diver_VisibleState>
     , public DiverInterface {
@@ -45,6 +47,9 @@ public:
     }
 
 private:
+    friend class Pearl;
+    Pearl* _pearl = nullptr;
+
     hg::alvin::Unibody _unibody;
 
     static constexpr hg::PZInteger BUBBLE_SPAWN_COOLDOWN = 30;

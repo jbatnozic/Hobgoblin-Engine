@@ -33,6 +33,8 @@ public:
     std::optional<cpVect> getPositionOfClient(int aClientIndex) const override;
     void                  setPositionOfClient(int aClientIndex, cpVect aPosition) override;
 
+    void depositPearl() override;
+
 private:
     Mode _mode = Mode::UNINITIALIZED;
 

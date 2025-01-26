@@ -15,7 +15,7 @@ const cpVect      PHYS_GRAVITY = cpv(0.0, -500.0);
 } // namespace
 
 Bubble::Bubble(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSyncId)
-    : SyncObjSuper{aRuntimeRef, SPEMPE_TYPEID_SELF, PRIORITY_PLAYERAVATAR, "Bubble", aRegId, aSyncId} //
+    : SyncObjSuper{aRuntimeRef, SPEMPE_TYPEID_SELF, PRIORITY_LOOT, "Bubble", aRegId, aSyncId} //
 {
     if (isMasterObject()) {
         _getCurrentState().initMirror();

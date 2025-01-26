@@ -30,6 +30,8 @@ public:
     virtual std::optional<cpVect> getPositionOfClient(int aClientIndex) const             = 0;
     virtual void                  setPositionOfClient(int aClientIndex, cpVect aPosition) = 0;
 
+    virtual void depositPearl() = 0;
+
 private:
     SPEMPE_CTXCOMP_TAG("MainGameplayManagerInterface");
 };
