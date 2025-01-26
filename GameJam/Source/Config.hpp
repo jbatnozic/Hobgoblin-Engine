@@ -12,7 +12,7 @@ constexpr int   terrain_size        = 40;
 constexpr float y_floor             = single_terrain_size * (terrain_size + 5.f);
 
 
-inline const std::filesystem::path map_path = "Assets/Map/MainMap.txt";
+inline const std::filesystem::path map_path = "Assets/Map/MainMap2.txt";
 
 constexpr float hole_chance      = 0.15f;
 constexpr float terrain_1_chance = 0.3f;
