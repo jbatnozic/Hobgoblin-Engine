@@ -30,8 +30,8 @@ inline constexpr std::array<int, GAME_STAGE_COUNT> GetStageDurations() {
     std::array<int, GAME_STAGE_COUNT> arr;
     arr[GAME_STAGE_UNKNOWN]           = -1;
     arr[GAME_STAGE_INITIAL_COUNTDOWN] = Seconds(3);
-    arr[GAME_STAGE_RUNNING]           = Seconds(20);
-    arr[GAME_STAGE_HIDE_N_SEEK]       = Seconds(2);
+    arr[GAME_STAGE_RUNNING]           = Seconds(10);
+    arr[GAME_STAGE_HIDE_N_SEEK]       = Seconds(60);
     arr[GAME_STAGE_PEARL_HUNTING]     = Minutes(5);
     arr[GAME_STAGE_FINAL]             = Minutes(1);
     arr[GAME_STAGE_FINISHED]          = -1; // infinite
