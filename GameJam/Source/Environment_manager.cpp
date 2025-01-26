@@ -9,6 +9,7 @@
 #include "Config.hpp"
 #include "Loot.hpp"
 #include "Shell.hpp"
+#include "Sponge.hpp"
 #include "Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 #include <array>
@@ -450,6 +451,13 @@ std::vector<std::string> Split(std::string str, char split_char) {
     }
 
     return seglist;
+}
+
+void EnvironmentManager::_createSpongeAt(hg::math::Vector2f aPosition) {
+    auto* p = QAO_PCreate<Sponge>(ctx().getQAORuntime(),
+                                 ccomp<MNetworking>().getRegistryId(),
+                                 spe::SYNC_ID_NEW);
+    p->init(aPosition.x, aPosition.y);
 }
 
 void EnvironmentManager::_createShellAt(hg::math::Vector2f aPosition) {
