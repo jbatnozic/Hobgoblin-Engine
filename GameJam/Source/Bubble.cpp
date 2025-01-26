@@ -130,8 +130,9 @@ void Bubble::_eventPostUpdate(spe::IfMaster) {
 }
 
 void Bubble::_eventDraw1() {
-    if (this->isDeactivated())
+    if (this->isDeactivated()) {
         return;
+    }
 
     const auto& self_curr = _getCurrentState();
     const auto& self_next = _getFollowingState();

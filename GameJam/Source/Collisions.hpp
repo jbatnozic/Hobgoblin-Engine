@@ -63,7 +63,7 @@ public:
     static constexpr hg::alvin::EntityTypeId ENTITY_TYPE_ID = EID_LOOT;
 
     static constexpr cpBitmask ENTITY_DEFAULT_CATEGORY = CAT_LOOT;
-    static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_CHARACTER;
+    static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_CHARACTER | CAT_TERRAIN;
 };
 
 void InitColliders(hg::alvin::MainCollisionDispatcher& aDispatcher, hg::NeverNull<cpSpace*> aSpace);

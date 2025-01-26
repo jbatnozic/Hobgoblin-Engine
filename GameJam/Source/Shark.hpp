@@ -38,6 +38,9 @@ private:
 
     cpFloat _propulsionForce;
 
+    hg::gr::Multisprite _bodySprite;
+    hg::gr::Multisprite _finsSprite;
+
     hg::alvin::CollisionDelegate _initColDelegate();
 
     void _execMovement(bool aLeft, bool aRight, bool aUp, bool aDown);

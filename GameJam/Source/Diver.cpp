@@ -107,6 +107,11 @@ void Diver::_eventUpdate1(spe::IfMaster) {
         return;
     }
 
+    const auto gameStage = ccomp<MainGameplayManagerInterface>().getCurrentGameStage();
+    if (gameStage <= GAME_STAGE_INITIAL_COUNTDOWN || gameStage == GAME_STAGE_FINISHED) {
+        return;
+    }
+
     auto& self = _getCurrentState();
     HG_HARD_ASSERT(self.owningPlayerIndex >= 0);
 

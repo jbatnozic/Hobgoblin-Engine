@@ -17,6 +17,7 @@ add_executable(${PROJECT_NAME}
     "Main.cpp"
     "Resource_manager.cpp"
     "Shark.cpp"
+    "Sponge.cpp"
     "Simple_zerotier.cpp"
  )
 

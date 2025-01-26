@@ -39,6 +39,11 @@ int GameStageController::getCurrentGameStage() const {
     return _getCurrentState().stage;
 }
 
+void GameStageController::setCurrentGameStage(int aGameStage) {
+    auto& self = _getCurrentState();
+    self.stage = aGameStage;
+}
+
 void GameStageController::_addAnnouncement(const std::string& aString, hg::gr::Color aColor) {
     ccomp<MainGameplayManagerInterface>().addAnnouncement(aString, aColor);
 }

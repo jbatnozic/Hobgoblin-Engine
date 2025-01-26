@@ -13,6 +13,7 @@
 #include "Main_menu_manager.hpp"
 #include "Player_controls.hpp"
 #include "Shark.hpp"
+#include "Sponge.hpp"
 #include "Varmap_ids.hpp"
 
 #include <Hobgoblin/Format.hpp>
@@ -239,7 +240,7 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
     auto& lobbyMgr = ccomp<spe::LobbyBackendManagerInterface>();
 
     const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
-    //auto sharkPlayerIdx = 123;
+    // auto sharkPlayerIdx = 123;
     for (hg::PZInteger i = 1; i < lobbyMgr.getSize(); i += 1) {
         if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
             continue;
@@ -261,6 +262,11 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
             obj->init(i, 100.f, 100.f);
         }
     }
+
+    auto* obj = QAO_PCreate<Sponge>(ctx().getQAORuntime(),
+                                    ccomp<MNetworking>().getRegistryId(),
+                                    spe::SYNC_ID_NEW);
+    obj->init(-50.f, 200.f);
 
     ctx().getGameState().isPaused = false;
 }
@@ -343,6 +349,40 @@ void MainGameplayManager::_backToMainMenu() {
 
 void MainGameplayManager::_eventUpdate1() {
     if (ctx().isPrivileged()) {
+        if (_gameStageController) {
+            if (_gameStageController->getCurrentGameStage() != GAME_STAGE_FINISHED) {
+                bool  allDiversDead = true;
+                auto& runtime       = *getRuntime();
+                for (const QAO_Base* object : runtime) {
+                    if (object->getTypeInfo() == typeid(Diver)) {
+                        auto* diver = static_cast<const Diver*>(object);
+                        if (diver->isAlive()) {
+                            allDiversDead = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (allDiversDead) {
+                    _gameStageController->setCurrentGameStage(GAME_STAGE_FINISHED);
+                    // TODO: shark wins
+                }
+            } else {
+                // Restart game if anyone pressed Enter
+                auto&                        netMgr = ccomp<MNetworking>();
+                spe::InputSyncManagerWrapper wrapper{ccomp<MInput>()};
+
+                bool startPressed = false;
+                for (hg::PZInteger i = 0; i < netMgr.getServer().getSize() && !startPressed; i += 1) {
+                    wrapper.pollSimpleEvent(i, CTRL_ID_START, [&]() {
+                        startPressed = true;
+                    });
+                }
+                if (startPressed) {
+                    _restartGame();
+                }
+            }
+        }
 #if 0
         auto& varmap       = ccomp<MVarmap>();
         auto& lobbyBackend = ccomp<MLobbyBackend>();
