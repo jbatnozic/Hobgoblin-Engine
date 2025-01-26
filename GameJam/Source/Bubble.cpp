@@ -31,8 +31,15 @@ Bubble::~Bubble() {
     }
 }
 
-void Bubble::init(float aX, float aY, float aRadius) {
+void Bubble::init(float                        aOxygen,
+                  float                        aX,
+                  float                        aY,
+                  float                        aRadius,
+                  const hg::alvin::EntityBase* aOwner) {
     assert(isMasterObject());
+
+    _oxygen = aOxygen;
+    _owner = aOwner;
 
     auto& self  = _getCurrentState();
     self.x      = aX;
@@ -44,7 +51,7 @@ void Bubble::init(float aX, float aY, float aRadius) {
             return _initColDelegate();
         },
         [this, aRadius]() {
-            return hg::alvin::Body::createDynamic(80.0,
+            return hg::alvin::Body::createDynamic(PHYS_MASS,
                                                   cpMomentForCircle(PHYS_MASS, 0.0, aRadius, cpvzero));
         },
         [this, aRadius]() {
@@ -77,7 +84,14 @@ hg::alvin::CollisionDelegate Bubble::_initColDelegate() {
     builder.addInteraction<DiverInterface>(
         hg::alvin::COLLISION_CONTACT,
         [this](DiverInterface& aDiver, const hg::alvin::CollisionData& aCollisionData) {
-            _pop = true;
+            if (&aDiver == _owner) {
+                _owner = nullptr;
+                return hg::alvin::Decision::REJECT_COLLISION;
+            }
+            if (!_pop) {
+                aDiver.addOxygen(_oxygen);
+                _pop = true;
+            }
             return hg::alvin::Decision::REJECT_COLLISION;
         });
 

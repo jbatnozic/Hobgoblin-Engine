@@ -22,14 +22,16 @@ public:
 
     ~Bubble() override;
 
-    void init(float aX, float aY, float aRadius);
+    void init(float aOxygen, float aX, float aY, float aRadius, const hg::alvin::EntityBase* aOwner);
 
 private:
     spe::GameContext* _gameContext;
 
     hg::alvin::Unibody _unibody;
 
-    bool _pop = false;
+    const hg::alvin::EntityBase* _owner = nullptr;
+    float                        _oxygen;
+    bool                         _pop = false;
 
     hg::alvin::CollisionDelegate _initColDelegate();
 

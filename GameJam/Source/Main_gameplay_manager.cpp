@@ -239,6 +239,7 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
     auto& lobbyMgr = ccomp<spe::LobbyBackendManagerInterface>();
 
     const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
+    //auto sharkPlayerIdx = 123;
     for (hg::PZInteger i = 1; i < lobbyMgr.getSize(); i += 1) {
         if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
             continue;
@@ -426,8 +427,7 @@ void MainGameplayManager::_eventUpdate1() {
             const bool right = input.checkPressed(hg::in::PK_D);
             const bool up    = input.checkPressed(hg::in::PK_W);
             const bool down  = input.checkPressed(hg::in::PK_S);
-            const bool jump =
-                input.checkPressed(hg::in::PK_SPACE, spe::WindowFrameInputView::Mode::Edge);
+            const bool hold  = input.checkPressed(hg::in::PK_SPACE);
             const bool start =
                 input.checkPressed(hg::in::PK_ENTER, spe::WindowFrameInputView::Mode::Edge);
 
@@ -436,7 +436,7 @@ void MainGameplayManager::_eventUpdate1() {
             wrapper.setSignalValue<bool>(CTRL_ID_RIGHT, right);
             wrapper.setSignalValue<bool>(CTRL_ID_UP, up);
             wrapper.setSignalValue<bool>(CTRL_ID_DOWN, down);
-            wrapper.triggerEvent(CTRL_ID_JUMP, jump);
+            wrapper.setSignalValue<bool>(CTRL_ID_HOLD, hold);
             wrapper.triggerEvent(CTRL_ID_START, start);
         }
 

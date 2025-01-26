@@ -87,9 +87,20 @@ void Diver::init(int aOwningPlayerIndex, float aX, float aY) {
     cpBodySetPosition(_unibody, cpv(aX, aY));
 }
 
-void Diver::kill() {
-    HG_LOG_INFO(LOG_ID, "================= PLAYER KILLED =================");
+void Diver::addOxygen(float aOxygen) {
+    auto& self  = _getCurrentState();
+    self.oxygen = std::min(100.f, self.oxygen + aOxygen);
 }
+
+void Diver::kill() {
+    auto& self = _getCurrentState();
+    if (!self.eaten) {
+        HG_LOG_INFO(LOG_ID, "================= PLAYER KILLED =================");
+        self.eaten = true;
+    }
+}
+
+// MARK: QAO Events
 
 void Diver::_eventUpdate1(spe::IfMaster) {
     if (ctx().getGameState().isPaused) {
@@ -103,23 +114,25 @@ void Diver::_eventUpdate1(spe::IfMaster) {
     if (const auto clientIndex = lobbyBackend.playerIdxToClientIdx(self.owningPlayerIndex);
         clientIndex != spe::CLIENT_INDEX_UNKNOWN) {
 
-        spe::InputSyncManagerWrapper wrapper{ccomp<MInput>()};
+        if (self.oxygen > 0.f) {
+            spe::InputSyncManagerWrapper wrapper{ccomp<MInput>()};
 
-        const auto left  = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_LEFT);
-        const auto right = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_RIGHT);
+            const auto left  = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_LEFT);
+            const auto right = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_RIGHT);
 
-        const auto up   = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_UP);
-        const auto down = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_DOWN);
+            const auto up   = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_UP);
+            const auto down = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_DOWN);
 
-        // space.runRaycastQuery(cpv(self.x - RAY_X_OFFSET, self.y + RAY_Y_OFFSET),
-        //                       cpv(self.x + RAY_X_OFFSET, self.y + RAY_Y_OFFSET),
-        //                       10.0,
-        //                       cpShapeFilterNew(0, CP_ALL_CATEGORIES, CAT_TERRAIN),
-        //                       [&, this](const hg::alvin::RaycastQueryInfo&) {
-        //                           touchingTerrain = true;
-        //                       });
+            // space.runRaycastQuery(cpv(self.x - RAY_X_OFFSET, self.y + RAY_Y_OFFSET),
+            //                       cpv(self.x + RAY_X_OFFSET, self.y + RAY_Y_OFFSET),
+            //                       10.0,
+            //                       cpShapeFilterNew(0, CP_ALL_CATEGORIES, CAT_TERRAIN),
+            //                       [&, this](const hg::alvin::RaycastQueryInfo&) {
+            //                           touchingTerrain = true;
+            //                       });
 
-        _execMovement(left, right, up, down);
+            _execMovement(left, right, up, down);
+        }
 
         const auto pos      = cpBodyGetPosition(_unibody);
         self.x              = static_cast<float>(pos.x);
@@ -132,14 +145,18 @@ void Diver::_eventUpdate1(spe::IfMaster) {
         }
     }
 
-    // Spawn bubbles
-    _bubbleSpawnCooldown -= 1;
-    if (_bubbleSpawnCooldown == 0) {
-        auto* obj = QAO_PCreate<Bubble>(ctx().getQAORuntime(),
-                                        ccomp<MNetworking>().getRegistryId(),
-                                        spe::SYNC_ID_NEW);
-        obj->init(self.x, self.y - 60.f, 8.f);
-        _bubbleSpawnCooldown = 30;
+    // Oxygen & Bubbles
+    if (!self.eaten && self.oxygen > 0.f) {
+        self.oxygen -= 100.f / (1 * 60 * 60);
+
+        _bubbleSpawnCooldown -= 1;
+        if (_bubbleSpawnCooldown == 0) {
+            auto* obj = QAO_PCreate<Bubble>(ctx().getQAORuntime(),
+                                            ccomp<MNetworking>().getRegistryId(),
+                                            spe::SYNC_ID_NEW);
+            obj->init(0.f, self.x, self.y - 60.f, 8.f, this);
+            _bubbleSpawnCooldown = BUBBLE_SPAWN_COOLDOWN;
+        }
     }
 }
 
@@ -165,10 +182,15 @@ void Diver::_eventDraw1() {
         return;
     }
 
+    const auto& self = _getCurrentState();
+    if (self.eaten) {
+        return;
+    }
+
     auto& winMgr = ccomp<MWindow>();
     auto& canvas = winMgr.getCanvas();
 
-    const auto& self = _getCurrentState();
+    
 
     hg::gr::RectangleShape rect;
     rect.setSize({(float)PHYS_WIDTH, (float)PHYS_HEIGHT});
@@ -241,6 +263,8 @@ void Diver::_eventDrawGUI() {
     }
 }
 
+// MARK: Private
+
 void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
     auto& space = ccomp<MEnvironment>().getSpace();
 
@@ -288,28 +312,29 @@ hg::alvin::CollisionDelegate Diver::_initColDelegate() {
     auto builder = hg::alvin::CollisionDelegateBuilder{};
     builder.setDefaultDecision(hg::alvin::Decision::ACCEPT_COLLISION);
 
-    builder.addInteraction<TerrainInterface>(
-        hg::alvin::COLLISION_CONTACT,
-        [this](TerrainInterface& aTerrain, const hg::alvin::CollisionData& aCollisionData) {
-            // CP_ARBITER_GET_SHAPES(aCollisionData.arbiter, shape1, shape2);
-            // NeverNull<cpShape*> otherShape = shape1;
-            // if (otherShape == _unibody.shape) {
-            //     otherShape = shape2;
-            // }
-            // const auto cellKind = aTerrain.getCellKindOfShape(otherShape);
-            // if (cellKind && *cellKind == CellKind::SCALE) {
-            //     HG_LOG_INFO(LOG_ID, "Character reached the scales.");
-            //     ccomp<MainGameplayManagerInterface>().characterReachedTheScales(*this);
-            // }
+    builder.addInteraction<hg::alvin::EntityBase>(hg::alvin::COLLISION_CONTACT, [this](auto&, auto&) {
+        if (_getCurrentState().eaten) {
+            return hg::alvin::Decision::REJECT_COLLISION;
+        } else {
             return hg::alvin::Decision::ACCEPT_COLLISION;
-        });
+        }
+    });
 
-    builder.addInteraction<SharkInterface>(
-        hg::alvin::COLLISION_CONTACT,
-        [this](SharkInterface& aShark, const hg::alvin::CollisionData& aCollisionData) {
-            // TODO: die
-            return hg::alvin::Decision::ACCEPT_COLLISION;
-        });
+    // builder.addInteraction<TerrainInterface>(
+    //     hg::alvin::COLLISION_CONTACT,
+    //     [this](TerrainInterface& aTerrain, const hg::alvin::CollisionData& aCollisionData) {
+    //         CP_ARBITER_GET_SHAPES(aCollisionData.arbiter, shape1, shape2);
+    //         NeverNull<cpShape*> otherShape = shape1;
+    //         if (otherShape == _unibody.shape) {
+    //             otherShape = shape2;
+    //         }
+    //         const auto cellKind = aTerrain.getCellKindOfShape(otherShape);
+    //         if (cellKind && *cellKind == CellKind::SCALE) {
+    //             HG_LOG_INFO(LOG_ID, "Character reached the scales.");
+    //             ccomp<MainGameplayManagerInterface>().characterReachedTheScales(*this);
+    //         }
+    //         return hg::alvin::Decision::ACCEPT_COLLISION;
+    //     });
 
     return builder.finalize();
 }
@@ -394,12 +419,14 @@ void Diver::_adjustView() {
         view.setCenter({1000.f, 1000.f});
     }
 #endif
-    view.setCenter({1000.f, 1000.f});
+    view.setCenter({100.f, 100.f});
 
     // Round
     const auto center = view.getCenter();
     view.setCenter(std::roundf(center.x), std::roundf(center.y));
 }
+
+// MARK: RPC
 
 SPEMPE_GENERATE_DEFAULT_SYNC_HANDLERS(Diver, (CREATE, UPDATE, DESTROY));
 

@@ -16,7 +16,8 @@ SPEMPE_DEFINE_AUTODIFF_STATE(Diver_VisibleState,
     SPEMPE_MEMBER(float, x, 0.f),
     SPEMPE_MEMBER(float, y, 0.f),
     SPEMPE_MEMBER(float, directionInRad, 0.f),
-    SPEMPE_MEMBER(float, oxygen, 100.f)) {
+    SPEMPE_MEMBER(float, oxygen, 100.f),
+    SPEMPE_MEMBER(bool, eaten, false)) {
 };
 // clang-format on
 
@@ -30,18 +31,28 @@ public:
 
     void init(int aOwningPlayerIndex, float aX, float aY);
 
+    void addOxygen(float aOxygen) override;
+
     void kill() override;
 
     int getOwningPlayerIndex() const {
         return _getCurrentState().owningPlayerIndex;
     }
 
+    bool isAlive() const {
+        auto& self = _getCurrentState();
+        return (self.oxygen > 0.f && !self.eaten);
+    }
+
 private:
     hg::alvin::Unibody _unibody;
 
-    hg::alvin::CollisionDelegate _initColDelegate();
+    static constexpr hg::PZInteger BUBBLE_SPAWN_COOLDOWN = 30;
+    static constexpr hg::PZInteger HOLD_BREATH_DURATION  = 300;
 
-    hg::PZInteger _bubbleSpawnCooldown = 30;
+    hg::PZInteger _bubbleSpawnCooldown = BUBBLE_SPAWN_COOLDOWN;
+
+    hg::alvin::CollisionDelegate _initColDelegate();
 
     void _execMovement(bool aLeft, bool aRight, bool aUp, bool aDown);
 
