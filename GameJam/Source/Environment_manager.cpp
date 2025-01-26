@@ -452,6 +452,12 @@ std::vector<std::string> Split(std::string str, char split_char) {
     return seglist;
 }
 
+void EnvironmentManager::_createPearlAt(hg::math::Vector2f aPosition) {
+    auto* p = QAO_PCreate<Pearl>(ctx().getQAORuntime(),
+                                 ccomp<MNetworking>().getRegistryId(),
+                                 spe::SYNC_ID_NEW);
+    p->init(aPosition.x, aPosition.y);
+}
 void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHeight) {
 
     loadTerrainText();
@@ -470,7 +476,7 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
     _shapes.reset(_cells.getWidth(), _cells.getHeight());
     for (hg::PZInteger y = 0; y < _cells.getHeight(); y += 1) {
         for (hg::PZInteger x = 0; x < _cells.getWidth(); x += 1) {
-            if (_cells[y][x].size() > 0 && _cells[y][x].size() < 12) {
+            if (_cells[y][x].size() > 0 && _cells[y][x].size() < 14) {
 
                 std::vector<std::string> cell_value   = Split(_cells[y][x][0], '-');
                 int                      spr_index    = std::stoi(cell_value[0]);
@@ -514,22 +520,24 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                            spr_rotation == 0) {
                     shape = CellShape::HIGH_SMALL_TRIANGLE_BR;
                 }
+                if (shape != CellShape::EMPTY) {
+                    auto alvinShape =
+                        hg::alvin::Shape{CreateCellPolyShape(*_terrainBody, {x, y}, shape)};
+                    /* {
+                        auto pair = _shapeToPosition.insert(
+                            std::make_pair(static_cast<cpShape*>(alvinShape), hg::math::Vector2pz{x,
+                    y})); HG_HARD_ASSERT(pair.second && "Insertion must happen!");
+                    }*/
+                    _shapes[y][x].emplace(std::move(alvinShape));
+                    _collisionDelegate->bind(*this, *_shapes[y][x]);
+                    _space->add(*_shapes[y][x]);
+                }
 
-                auto alvinShape = hg::alvin::Shape{CreateCellPolyShape(*_terrainBody, {x, y}, shape)};
-                /* {
-                    auto pair = _shapeToPosition.insert(
-                        std::make_pair(static_cast<cpShape*>(alvinShape), hg::math::Vector2pz{x, y}));
-                    HG_HARD_ASSERT(pair.second && "Insertion must happen!");
-                }*/
-                _shapes[y][x].emplace(std::move(alvinShape));
-                _collisionDelegate->bind(*this, *_shapes[y][x]);
-                _space->add(*_shapes[y][x]);
-            } else if (_cells[y][x].size() == 12) {
-                //spawn pearl point
-            } else if (_cells[y][x].size() == 13) {
-                //spawnt player point
             } else if (_cells[y][x].size() == 14) {
-                // spawnt shark point
+                _createPearlAt({
+                    x * (float)CELL_RESOLUTION,
+                    y * (float)CELL_RESOLUTION,
+                });
             }
         }
     }
@@ -582,15 +590,27 @@ void EnvironmentManager::_eventDraw1() {
         rect.setPosition(0.f, 0.f);
         canvas.draw(rect);
     }
+    const hg::PZInteger startX = std::max(
+        static_cast<int>((view.getCenter().x - view.getSize().x / 2.f) / (float)CELL_RESOLUTION - 1.f),
+        0);
+    const hg::PZInteger startY = std::max(
+        static_cast<int>((view.getCenter().y - view.getSize().y / 2.f) / (float)CELL_RESOLUTION - 1.f),
+        0);
+    const hg::PZInteger endX = std::min(
+        static_cast<int>((view.getCenter().x + view.getSize().x / 2.f) / (float)CELL_RESOLUTION + 1.f),
+        _cells.getWidth());
+    const hg::PZInteger endY = std::min(
+        static_cast<int>((view.getCenter().y + view.getSize().y / 2.f) / (float)CELL_RESOLUTION + 1.f),
+        _cells.getHeight());
+    bool renderScale = true;
+    for (hg::PZInteger y = startY; y < endY; y += 1) {
+        for (hg::PZInteger x = startX; x < endX; x += 1) {
 
-
-    for (hg::PZInteger y = 0; y < _cells.getHeight(); y += 1) {
-        for (hg::PZInteger x = 0; x < _cells.getWidth(); x += 1) {
             std::vector<std::string> cell_value  = Split(_cells[y][x][0], '-');
             int                      spr_index   = std::stoi(cell_value[0]);
             int                      spr_rotation = std::stoi(cell_value[1]);
 
-            if (spr_index < 12) {
+            if (spr_index < 14) {
                 _spr.selectSubsprite(spr_index);
                 if (spr_rotation == 0) {
                     _spr.setScale(1, 1);
@@ -625,12 +645,6 @@ void EnvironmentManager::_eventDraw1() {
     // }
 }
 
-void EnvironmentManager::_createPearlAt(hg::math::Vector2f aPosition) {
-    auto* p = QAO_PCreate<Pearl>(ctx().getQAORuntime(),
-                                 ccomp<MNetworking>().getRegistryId(),
-                                 spe::SYNC_ID_NEW);
-    p->init(aPosition.x, aPosition.y);
-}
 
 void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {
     if (!ctx().isPrivileged()) {
