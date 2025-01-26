@@ -5,6 +5,8 @@
 #include "Main_gameplay_manager_interface.hpp"
 #include "Player_controls.hpp"
 #include "Pearl.hpp"
+#include "Resource_manager_interface.hpp"
+#include "Sprite_manifest.hpp"
 
 #include <Hobgoblin/HGExcept.hpp>
 
@@ -65,8 +67,10 @@ Diver::Diver(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSy
                 cpBodyUpdateVelocity(aBody, aGravity, PHYS_DAMPING, aDt);
             });
     } else {
-        // _renderer.emplace(ctx(), hg::gr::COLOR_RED);
-        // _renderer->setMode(CharacterRenderer::Mode::STILL);
+        _sprite = ccomp<ResourceManagerInterface>()
+                      .getSpriteLoader()
+                      .getMultiBlueprint(SPR_DIVER_ALIVE)
+                      .multispr();
     }
 }
 
@@ -228,24 +232,22 @@ void Diver::_eventDraw1() {
     auto& winMgr = ccomp<MWindow>();
     auto& canvas = winMgr.getCanvas();
 
-    
+    _sprite.setPosition(self.x, self.y);
+    _sprite.setRotation(hg::math::AngleF::fromRad(self.directionInRad));
+    if (isAlive()) {
+        _sprite.advanceSubsprite(0.2f);
+    }
+    canvas.draw(_sprite);
 
     hg::gr::RectangleShape rect;
     rect.setSize({(float)PHYS_WIDTH, (float)PHYS_HEIGHT});
     rect.setOrigin({(float)PHYS_WIDTH / 2.f, (float)PHYS_HEIGHT / 2.f});
     rect.setFillColor(hg::gr::COLOR_TRANSPARENT);
     rect.setOutlineColor(hg::gr::COLOR_YELLOW);
-    rect.setOutlineThickness(2.f);
+    rect.setOutlineThickness(1.f);
     rect.setPosition(self.x, self.y);
     rect.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
     canvas.draw(rect);
-
-    hg::gr::CircleShape cir{8.f};
-    cir.setFillColor(hg::gr::COLOR_RED);
-    cir.setOrigin({8.f, 32.f});
-    cir.setPosition(self.x, self.y);
-    cir.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
-    canvas.draw(cir);
 }
 
 void Diver::_eventDraw2() {

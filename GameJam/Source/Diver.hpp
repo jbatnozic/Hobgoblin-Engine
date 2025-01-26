@@ -55,6 +55,8 @@ private:
 
     hg::alvin::Unibody _unibody;
 
+    hg::gr::Multisprite _sprite;
+
     static constexpr hg::PZInteger BUBBLE_SPAWN_COOLDOWN = 30;
 
     hg::PZInteger _bubbleSpawnCooldown = BUBBLE_SPAWN_COOLDOWN;

@@ -10,6 +10,8 @@ enum SpriteIds {
     // Kraken
     SPR_KRAKEN_BODY,
     SPR_KRAKEN_FINS,
+    // Diver
+    SPR_DIVER_ALIVE,
     // Mountain
     SPR_TERRAIN,
     // Miscellaneous
@@ -32,6 +34,7 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
     const std::filesystem::path basePath     = root / "Assets/Sprites";
     const std::filesystem::path krakenPath   = root / "Assets/Sprites/Kraken";
     const std::filesystem::path mountainPath = root / "Assets/Sprites/Terrain";
+    const std::filesystem::path diverPath = root / "Assets/Sprites/Diver";
 
     float occupancy = 0.f;
 
@@ -48,6 +51,11 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
         ->addSubsprite(SPR_KRAKEN_FINS, krakenPath / "kraken-fin-4.png")
         ->addSubsprite(SPR_KRAKEN_FINS, krakenPath / "kraken-fin-5.png")
         ->addSubsprite(SPR_KRAKEN_FINS, krakenPath / "kraken-fin-6.png")
+        // Diver
+        ->addSubsprite(SPR_DIVER_ALIVE, diverPath / "diver-1.png")
+        ->addSubsprite(SPR_DIVER_ALIVE, diverPath / "diver-2.png")
+        ->addSubsprite(SPR_DIVER_ALIVE, diverPath / "diver-3.png")
+        ->addSubsprite(SPR_DIVER_ALIVE, diverPath / "diver-4.png")
         // Map pieces
         ->addSubsprite(SPR_TERRAIN, mountainPath / "0.png")
         ->addSubsprite(SPR_TERRAIN, mountainPath / "1.png")
