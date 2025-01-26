@@ -36,6 +36,6 @@ using MVarmap       = spe::SyncedVarmapManagerInterface;
 #define PRIORITY_GAMESTAGECTRL  11
 #define PRIORITY_GAMEPLAYMGR    10
 #define PRIORITY_INPUTMGR       7
-#define PRIORITY_LOOT           6
-#define PRIORITY_PLAYERAVATAR   5
+#define PRIORITY_PLAYERAVATAR   6
+#define PRIORITY_LOOT           5
 #define PRIORITY_WINDOWMGR      0

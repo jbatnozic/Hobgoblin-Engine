@@ -1,14 +1,16 @@
 #include "Shark.hpp"
 
+#include "Config.hpp"
 #include "Environment_manager.hpp"
 #include "Main_gameplay_manager_interface.hpp"
 #include "Player_controls.hpp"
+#include "Resource_manager_interface.hpp"
+#include "Sprite_manifest.hpp"
+#include "Varmap_ids.hpp"
 
 #include <Hobgoblin/HGExcept.hpp>
-
-#include "Config.hpp"
-#include "Varmap_ids.hpp"
 #include <Hobgoblin/Math.hpp>
+
 #include <cmath>
 
 namespace {
@@ -20,20 +22,6 @@ static constexpr cpFloat PHYS_ROTATIONAL_FORCE       = 1'750'000.0;
 static constexpr cpFloat PHYS_PROPULSION_FORCE_MIN   = 15'000.0;
 static constexpr cpFloat PHYS_PROPULSION_FORCE_MAX   = 1400'000.0;
 static constexpr cpFloat PHYS_PROPULSION_FORCE_STEPS = 350.0;
-
-#define NUM_COLORS 12
-static const hg::gr::Color COLORS[NUM_COLORS] = {hg::gr::COLOR_BLACK,
-                                                 hg::gr::COLOR_RED,
-                                                 hg::gr::COLOR_GREEN,
-                                                 hg::gr::COLOR_YELLOW,
-                                                 hg::gr::COLOR_BLUE,
-                                                 hg::gr::COLOR_ORANGE,
-                                                 hg::gr::COLOR_PURPLE,
-                                                 hg::gr::COLOR_TEAL,
-                                                 hg::gr::COLOR_BROWN,
-                                                 hg::gr::COLOR_FUCHSIA,
-                                                 hg::gr::COLOR_GREY,
-                                                 hg::gr::COLOR_WHITE};
 } // namespace
 
 Shark::Shark(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSyncId)
@@ -64,8 +52,9 @@ Shark::Shark(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSy
                 cpBodyUpdateVelocity(aBody, aGravity, PHYS_DAMPING, aDt);
             });
     } else {
-        // _renderer.emplace(ctx(), hg::gr::COLOR_RED);
-        // _renderer->setMode(CharacterRenderer::Mode::STILL);
+        auto& resMgr = ccomp<ResourceManagerInterface>();
+        _bodySprite  = resMgr.getSpriteLoader().getMultiBlueprint(SPR_KRAKEN_BODY).multispr();
+        _finsSprite  = resMgr.getSpriteLoader().getMultiBlueprint(SPR_KRAKEN_FINS).multispr();
     }
 }
 
@@ -107,15 +96,10 @@ void Shark::_eventUpdate1(spe::IfMaster) {
         const auto up   = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_UP);
         const auto down = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_DOWN);
 
-        // space.runRaycastQuery(cpv(self.x - RAY_X_OFFSET, self.y + RAY_Y_OFFSET),
-        //                       cpv(self.x + RAY_X_OFFSET, self.y + RAY_Y_OFFSET),
-        //                       10.0,
-        //                       cpShapeFilterNew(0, CP_ALL_CATEGORIES, CAT_TERRAIN),
-        //                       [&, this](const hg::alvin::RaycastQueryInfo&) {
-        //                           touchingTerrain = true;
-        //                       });
-
-        _execMovement(left, right, up, down);
+        const auto gameStage = ccomp<MainGameplayManagerInterface>().getCurrentGameStage();
+        if (gameStage >= GAME_STAGE_HIDE_N_SEEK && gameStage < GAME_STAGE_FINISHED) {
+            _execMovement(left, right, up, down);
+        }
 
         const auto pos      = cpBodyGetPosition(_unibody);
         self.x              = static_cast<float>(pos.x);
@@ -156,6 +140,17 @@ void Shark::_eventDraw1() {
 
     const auto& self = _getCurrentState();
 
+    _bodySprite.selectSubsprite(0);
+    _bodySprite.setPosition({self.x, self.y});
+    _bodySprite.setRotation(hg::math::AngleF::fromRad(self.directionInRad + hg::math::Pi<float>() / 2.f));
+    canvas.draw(_bodySprite);
+
+    //_finsSprite.selectSubsprite(0);
+    _finsSprite.advanceSubsprite(0.2f);
+    _finsSprite.setPosition({self.x, self.y});
+    _finsSprite.setRotation(hg::math::AngleF::fromRad(self.directionInRad + hg::math::Pi<float>() / 2.f));
+    canvas.draw(_finsSprite);
+
     hg::gr::CircleShape cir{(float)PHYS_RADIUS};
     cir.setFillColor(hg::gr::COLOR_TRANSPARENT);
     cir.setOutlineColor(hg::gr::COLOR_YELLOW);
@@ -164,12 +159,12 @@ void Shark::_eventDraw1() {
     cir.setPosition(self.x, self.y);
     canvas.draw(cir);
 
-    hg::gr::CircleShape eye{8.f};
-    eye.setFillColor(hg::gr::COLOR_RED);
-    eye.setOrigin({8.f, 32.f});
-    eye.setPosition(self.x, self.y);
-    eye.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
-    canvas.draw(eye);
+    // hg::gr::CircleShape eye{8.f};
+    // eye.setFillColor(hg::gr::COLOR_RED);
+    // eye.setOrigin({8.f, 32.f});
+    // eye.setPosition(self.x, self.y);
+    // eye.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
+    // canvas.draw(eye);
 }
 
 void Shark::_eventDraw2() {

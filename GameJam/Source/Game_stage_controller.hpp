@@ -22,6 +22,7 @@ public:
     void init();
 
     int getCurrentGameStage() const;
+    void setCurrentGameStage(int aGameStage);
 
 private:
     void _addAnnouncement(const std::string& aString, hg::gr::Color aColor);

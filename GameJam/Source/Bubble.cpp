@@ -15,7 +15,7 @@ const cpVect      PHYS_GRAVITY = cpv(0.0, -500.0);
 } // namespace
 
 Bubble::Bubble(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSyncId)
-    : SyncObjSuper{aRuntimeRef, SPEMPE_TYPEID_SELF, PRIORITY_PLAYERAVATAR, "Bubble", aRegId, aSyncId} //
+    : SyncObjSuper{aRuntimeRef, SPEMPE_TYPEID_SELF, PRIORITY_LOOT, "Bubble", aRegId, aSyncId} //
 {
     if (isMasterObject()) {
         _getCurrentState().initMirror();
@@ -130,8 +130,9 @@ void Bubble::_eventPostUpdate(spe::IfMaster) {
 }
 
 void Bubble::_eventDraw1() {
-    if (this->isDeactivated())
+    if (this->isDeactivated()) {
         return;
+    }
 
     const auto& self_curr = _getCurrentState();
     const auto& self_next = _getFollowingState();
