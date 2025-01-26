@@ -128,6 +128,22 @@ enum class CellShape {
     SMALL_TRIANGLE_BR,
 
 
+    // 12-0
+    // X
+    // X
+    // X X
+    // X X
+    // X X X
+    SMALL_TRIANGLE_FLIP_BR,
+
+    // 12-1
+    SMALL_TRIANGLE_FLIP_BL,
+
+    // 12-2
+    SMALL_TRIANGLE_FLIP_TR,
+    // 12-3
+    SMALL_TRIANGLE_FLIP_TL,
+
     // 8-3,9,7
     // X X X X X
     // X X X X X
@@ -288,8 +304,48 @@ void GetCellVertices(
             cpv(0.0, 1.0),
             cpv(1.0, 0.5),
             cpv(1.0, 1.0),
-            cpv(0.0, 0.5),
-            cpv(0.0, 0.5),
+            cpv(0.0, 1.0),
+            cpv(0.0, 1.0),
+        };
+        aVertexCount = 5;
+        break;
+    case CellShape::SMALL_TRIANGLE_FLIP_BR:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(0.5, 1.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.0),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 5;
+        break;
+    case CellShape::SMALL_TRIANGLE_FLIP_BL:
+        aVertices = {
+            cpv(1.0, 0.0),
+            cpv(1.0, 1.0),
+            cpv(0.5, 1.0),
+            cpv(1.0, 0.0),
+            cpv(1.0, 0.0),
+        };
+        aVertexCount = 5;
+        break;
+    case CellShape::SMALL_TRIANGLE_FLIP_TR:
+        aVertices = {
+            cpv(0.0, 0.0),
+            cpv(0.5, 0.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.0),
+            cpv(0.0, 0.0),
+        };
+        aVertexCount = 5;
+        break;
+    case CellShape::SMALL_TRIANGLE_FLIP_TL:
+        aVertices = {
+            cpv(0.5, 0.0),
+            cpv(1.0, 0.0),
+            cpv(1.0, 1.0),
+            cpv(0.5, 0.0),
+            cpv(0.5, 0.0),
         };
         aVertexCount = 5;
         break;
@@ -493,7 +549,7 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                 if (spr_index == 100) {
                     shape = CellShape::EMPTY;
                 }else if (spr_index == 0 || spr_index == 6 || spr_index == 5 || spr_index == 10 ||
-                    spr_index == 11) {
+                           spr_index == 11 || spr_index == 13) {
                     shape = CellShape::FULL_SQUARE;
                 } else if ((spr_index == 3 || spr_index == 2) && spr_rotation == 2) {
                     shape = CellShape::HALF_SQUARE_TOP;
@@ -527,6 +583,14 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                 } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9 ) &&
                            spr_rotation == 0) {
                     shape = CellShape::HIGH_SMALL_TRIANGLE_BR;
+                } else if ((spr_index == 12) && spr_rotation == 0) {
+                    shape = CellShape::SMALL_TRIANGLE_FLIP_BR;
+                } else if ((spr_index == 12) && spr_rotation == 1) {
+                    shape = CellShape::SMALL_TRIANGLE_FLIP_BL;
+                } else if ((spr_index == 12) && spr_rotation == 2) {
+                    shape = CellShape::SMALL_TRIANGLE_FLIP_TR;
+                } else if ((spr_index == 12) && spr_rotation == 3) {
+                    shape = CellShape::SMALL_TRIANGLE_FLIP_TL;
                 }
                 if (shape != CellShape::EMPTY) {
                     auto alvinShape =
@@ -543,6 +607,11 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
 
             } else if (_cells[y][x].size() == 14) {
                 _createShellAt({
+                    x * (float)CELL_RESOLUTION,
+                    y * (float)CELL_RESOLUTION,
+                });
+            } else if (_cells[y][x].size() == 15) {
+                _createSpongeAt({
                     x * (float)CELL_RESOLUTION,
                     y * (float)CELL_RESOLUTION,
                 });
@@ -583,10 +652,17 @@ void EnvironmentManager::_eventDraw1() {
     {
         auto spr = ccomp<MResource>().getSpriteLoader().getMultiBlueprint(SPR_BACKGROUND).multispr();
         spr.selectSubsprite(0);
+
+        //spr.setRotation(hg::math::AngleF::fromDeg(60));
+
         const auto bounds    = spr.getLocalBounds();
         const auto worldSize = getGridSize();
-        spr.setOrigin(0.f, 0.f);
-        spr.setPosition(0.f, 0.f);
+        spr.setOrigin(0.5f, 0.5f);
+
+        sf::Vector2f camera_pos = view.getCenter();
+
+                spr.setPosition(camera_pos.x, camera_pos.y);
+
         canvas.draw(spr);
 
         hg::gr::RectangleShape rect{

@@ -69,6 +69,8 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
         ->addSubsprite(SPR_TERRAIN, mountainPath / "9.png")
         ->addSubsprite(SPR_TERRAIN, mountainPath / "10.png")
         ->addSubsprite(SPR_TERRAIN, mountainPath / "11.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "12.png")
+        ->addSubsprite(SPR_TERRAIN, mountainPath / "13.png")
         // Miscellaneous
         ->addSubsprite(SPR_POWER, basePath / "power.png")
         ->addSubsprite(SPR_SPONGE, basePath / "sponge.png")
