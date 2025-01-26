@@ -8,6 +8,7 @@
 
 #include "Config.hpp"
 #include "Loot.hpp"
+#include "Pearl.hpp"
 #include "Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 #include <array>
@@ -616,6 +617,13 @@ void EnvironmentManager::_eventDraw1() {
     //         {getGridSize().x * (float)CELL_RESOLUTION, view.getCenter().y - view.getSize().y / 2.f});
     //     canvas.draw(rect);
     // }
+}
+
+void EnvironmentManager::_createPearlAt(hg::math::Vector2f aPosition) {
+    auto* p = QAO_PCreate<Pearl>(ctx().getQAORuntime(),
+                                 ccomp<MNetworking>().getRegistryId(),
+                                 spe::SYNC_ID_NEW);
+    p->init(aPosition.x, aPosition.y);
 }
 
 void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {

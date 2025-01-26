@@ -195,8 +195,17 @@ void Diver::_eventUpdate1(spe::IfDummy) {
     auto& self = _getCurrentState();
 
     auto& lobbyBackend = ccomp<MLobbyBackend>();
-    if (lobbyBackend.getLocalPlayerIndex() == self.owningPlayerIndex) {
+    const auto localPlayerIndex = lobbyBackend.getLocalPlayerIndex();
+    if (localPlayerIndex == self.owningPlayerIndex) {
         _adjustView();
+
+        auto& varmap = ccomp<spe::SyncedVarmapManagerInterface>();
+        const auto cs = varmap.getString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex));
+        if (isAlive() && cs != "") {
+            varmap.requestToSetString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex), "");
+        } else if (!isAlive() && cs != "(dead)") {
+            varmap.requestToSetString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex), "(dead)");
+        }
     }
 }
 

@@ -121,8 +121,15 @@ void Shark::_eventUpdate1(spe::IfDummy) {
     auto& self = _getCurrentState();
 
     auto& lobbyBackend = ccomp<MLobbyBackend>();
-    if (lobbyBackend.getLocalPlayerIndex() == self.owningPlayerIndex) {
+    const auto localPlayerIndex = lobbyBackend.getLocalPlayerIndex();
+    if (localPlayerIndex == self.owningPlayerIndex) {
         _adjustView();
+
+        auto& varmap = ccomp<spe::SyncedVarmapManagerInterface>();
+        const auto cs = varmap.getString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex));
+        if (cs != "(Kraken)") {
+            varmap.requestToSetString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex), "(Kraken)");
+        }
     }
 }
 

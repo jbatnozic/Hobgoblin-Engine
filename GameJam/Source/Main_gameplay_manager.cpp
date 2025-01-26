@@ -11,10 +11,10 @@
 #include "Lobby_frontend_manager_interface.hpp"
 #include "Loot.hpp"
 #include "Main_menu_manager.hpp"
+#include "Pearl.hpp"
 #include "Player_controls.hpp"
 #include "Shark.hpp"
 #include "Sponge.hpp"
-#include "Pearl.hpp"
 #include "Varmap_ids.hpp"
 
 #include <Hobgoblin/Format.hpp>
@@ -24,6 +24,7 @@
 
 #include <cmath>
 #include <optional>
+#include <sstream>
 #include <vector>
 
 // MARK: Announcements
@@ -177,6 +178,11 @@ void MainGameplayManager::setToHostMode(hg::PZInteger aPlayerCount) {
 
     _playerPositions.resize(hg::pztos(aPlayerCount));
 
+    auto& varmap = ccomp<spe::SyncedVarmapManagerInterface>();
+    for (int i = 0; i < aPlayerCount; i += 1) {
+        varmap.stringSetClientWritePermission(VARMAP_ID_PLAYER_STATUS + std::to_string(i), i, true);
+    }
+
     ctx().getGameState().isPaused = true;
 }
 
@@ -226,8 +232,8 @@ void MainGameplayManager::setPositionOfClient(int aClientIndex, cpVect aPosition
 }
 
 void MainGameplayManager::depositPearl() {
-    auto& varmap = ccomp<spe::SyncedVarmapManagerInterface>();
-    auto collected = varmap.getInt64(VARMAP_ID_PEARLS_COLLECTED).value();
+    auto& varmap    = ccomp<spe::SyncedVarmapManagerInterface>();
+    auto  collected = varmap.getInt64(VARMAP_ID_PEARLS_COLLECTED).value();
     ++collected;
     varmap.setInt64(VARMAP_ID_PEARLS_COLLECTED, collected);
 }
@@ -244,14 +250,14 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
     }
     _gameStageController->init();
 
-    auto& varmap   = ccomp<MVarmap>();
+    auto& varmap = ccomp<MVarmap>();
     varmap.setInt64(VARMAP_ID_PEARLS_REQUIRED, 10);
     varmap.setInt64(VARMAP_ID_PEARLS_COLLECTED, 0);
 
     auto& lobbyMgr = ccomp<spe::LobbyBackendManagerInterface>();
 
-    //const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
-    auto sharkPlayerIdx = 123;
+     const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
+    //auto sharkPlayerIdx = 123;
     for (hg::PZInteger i = 1; i < lobbyMgr.getSize(); i += 1) {
         if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
             continue;
@@ -280,8 +286,8 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
     obj->init(-50.f, 200.f);
 
     auto* pearl = QAO_PCreate<Pearl>(ctx().getQAORuntime(),
-                                    ccomp<MNetworking>().getRegistryId(),
-                                    spe::SYNC_ID_NEW);
+                                     ccomp<MNetworking>().getRegistryId(),
+                                     spe::SYNC_ID_NEW);
     pearl->init(0.f, 200.f);
 
     ctx().getGameState().isPaused = false;
@@ -292,8 +298,15 @@ void MainGameplayManager::_restartGame() {
 
     std::vector<QAO_Base*> objectsToDelete;
     for (auto* object : runtime) {
-        if (object->getTypeInfo() == typeid(Diver) || object->getTypeInfo() == typeid(Shark) ||
-            object->getTypeInfo() == typeid(LootObject) || object->getTypeInfo() == typeid(Bubble)) {
+        // clang-format off
+        if (object->getTypeInfo() == typeid(Diver) ||
+            object->getTypeInfo() == typeid(Shark) ||
+            object->getTypeInfo() == typeid(LootObject) ||
+            object->getTypeInfo() == typeid(Bubble) ||
+            object->getTypeInfo() == typeid(Sponge) ||
+            object->getTypeInfo() == typeid(Pearl)) 
+        // clang-format on
+        {
             objectsToDelete.push_back(object);
         }
     }
@@ -469,10 +482,10 @@ void MainGameplayManager::_eventUpdate1() {
     }
 
     if (!ctx().isPrivileged()) {
-        if (_gameStageController == nullptr) {
+        //if (_gameStageController == nullptr) {
             _gameStageController =
                 static_cast<GameStageController*>(getRuntime()->find("GameStageController"));
-        }
+        //}
 
         const auto input  = ccomp<MWindow>().getInput();
         auto&      client = ccomp<MNetworking>().getClient();
@@ -517,6 +530,46 @@ void MainGameplayManager::_eventDrawGUI() {
     _pendingAnnouncements.clear();
 
     _announcements->draw(canvas);
+
+    // Draw game status
+    const auto gameStage = getCurrentGameStage();
+    if (gameStage != GAME_STAGE_FINISHED) {
+        const auto& lobbyMgr = ccomp<MLobbyBackend>();
+
+        std::stringstream oss;
+        for (int i = 1; i < lobbyMgr.getSize(); i += 1) {
+            const auto& info = lobbyMgr.getLockedInPlayerInfo(i);
+            if (info.isEmpty()) {
+                continue;
+            }
+            oss << fmt::format(
+                "{} {}\n",
+                info.name,
+                varmap.getString(VARMAP_ID_PLAYER_STATUS + std::to_string(i)).value_or(""));
+        }
+        const auto pc = varmap.getInt64(VARMAP_ID_PEARLS_COLLECTED);
+        const auto pr = varmap.getInt64(VARMAP_ID_PEARLS_REQUIRED);
+        if (pc && pr) {
+            oss << "Pearls: " << *pc << " / " << *pr << '\n';
+        }
+
+        hg::gr::Text text{hg::gr::BuiltInFonts::getFont(hg::gr::BuiltInFonts::TITILLIUM_REGULAR),
+                          oss.str(),
+                          24};
+        text.setFillColor(hg::gr::COLOR_WHITE);
+        text.setOutlineColor(hg::gr::COLOR_BLACK);
+        text.setOutlineThickness(1.f);
+        text.setPosition(32.f, 32.f);
+        canvas.draw(text);
+    } else {
+        hg::gr::Text text{hg::gr::BuiltInFonts::getFont(hg::gr::BuiltInFonts::TITILLIUM_REGULAR),
+                          "Game Over, press ENTER to play again."};
+        text.setFillColor(hg::gr::COLOR_WHITE);
+        text.setOutlineColor(hg::gr::COLOR_BLACK);
+        text.setOutlineThickness(2.f);
+        text.setPosition(32.f, 32.f);
+        canvas.draw(text);
+    }
 
 #if 0
     const auto winTimer       = varmap.getInt64(VARMAP_ID_WIN_TIMER);

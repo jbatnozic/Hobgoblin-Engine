@@ -68,6 +68,7 @@ private:
     void _eventUpdate1() override;
     void _eventDraw1() override;
 
+    void _createPearlAt(hg::math::Vector2f aPosition);
 
     void onNetworkingEvent(const RN_Event& aEvent) override;
 
