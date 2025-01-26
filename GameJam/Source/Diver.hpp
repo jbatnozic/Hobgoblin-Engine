@@ -10,6 +10,8 @@
 #include <memory>
 #include <optional>
 
+static constexpr float HOLD_BREATH_MAX = 240.f;
+
 // clang-format off
 SPEMPE_DEFINE_AUTODIFF_STATE(Diver_VisibleState,
     SPEMPE_MEMBER(std::int32_t, owningPlayerIndex, spe::PLAYER_INDEX_UNKNOWN),
@@ -17,6 +19,7 @@ SPEMPE_DEFINE_AUTODIFF_STATE(Diver_VisibleState,
     SPEMPE_MEMBER(float, y, 0.f),
     SPEMPE_MEMBER(float, directionInRad, 0.f),
     SPEMPE_MEMBER(float, oxygen, 100.f),
+    SPEMPE_MEMBER(float, breath, HOLD_BREATH_MAX),
     SPEMPE_MEMBER(bool, eaten, false)) {
 };
 // clang-format on
@@ -53,7 +56,6 @@ private:
     hg::alvin::Unibody _unibody;
 
     static constexpr hg::PZInteger BUBBLE_SPAWN_COOLDOWN = 30;
-    static constexpr hg::PZInteger HOLD_BREATH_DURATION  = 300;
 
     hg::PZInteger _bubbleSpawnCooldown = BUBBLE_SPAWN_COOLDOWN;
 

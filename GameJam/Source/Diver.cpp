@@ -120,6 +120,7 @@ void Diver::_eventUpdate1(spe::IfMaster) {
     auto& self = _getCurrentState();
     HG_HARD_ASSERT(self.owningPlayerIndex >= 0);
 
+    bool holdingBreath = false;
     auto& lobbyBackend = ccomp<MLobbyBackend>();
     if (const auto clientIndex = lobbyBackend.playerIdxToClientIdx(self.owningPlayerIndex);
         clientIndex != spe::CLIENT_INDEX_UNKNOWN) {
@@ -142,6 +143,16 @@ void Diver::_eventUpdate1(spe::IfMaster) {
             //                       });
 
             _execMovement(left, right, up, down);
+
+            const auto hold = wrapper.getSignalValue<bool>(clientIndex, CTRL_ID_HOLD);
+            if (hold) {
+                if (self.breath >= 1.f) {
+                    self.breath -= 1.f;
+                    holdingBreath = true;
+                }
+            } else if (self.breath < HOLD_BREATH_MAX) {
+                self.breath += 0.25f;
+            }
         }
 
         const auto pos      = cpBodyGetPosition(_unibody);
@@ -159,16 +170,18 @@ void Diver::_eventUpdate1(spe::IfMaster) {
     if (!self.eaten && self.oxygen > 0.f) {
         self.oxygen -= 100.f / (1 * 60 * 60);
 
-        if (self.oxygen  <= 0.f && _pearl != nullptr) {
+        if (self.oxygen <= 0.f && _pearl != nullptr) {
             _pearl->_holder = nullptr;
         }
 
         _bubbleSpawnCooldown -= 1;
         if (_bubbleSpawnCooldown == 0) {
-            auto* obj = QAO_PCreate<Bubble>(ctx().getQAORuntime(),
-                                            ccomp<MNetworking>().getRegistryId(),
-                                            spe::SYNC_ID_NEW);
-            obj->init(0.f, self.x, self.y - 60.f, 8.f, this);
+            if (!holdingBreath) {
+                auto* obj = QAO_PCreate<Bubble>(ctx().getQAORuntime(),
+                                                ccomp<MNetworking>().getRegistryId(),
+                                                spe::SYNC_ID_NEW);
+                obj->init(0.f, self.x, self.y - 10.f, 8.f, this);
+            }
             _bubbleSpawnCooldown = BUBBLE_SPAWN_COOLDOWN;
         }
     }
@@ -257,23 +270,53 @@ void Diver::_eventDrawGUI() {
 
     auto& lobbyBackend = ccomp<MLobbyBackend>();
     if (lobbyBackend.getLocalPlayerIndex() == self.owningPlayerIndex) {
-        // Draw O2 meter
-        std::ostringstream oss;
-        oss << "O2 ";
-        for (int i = 1; i <= std::ceil(self.oxygen); i += 1) {
-            oss << "|";
-        }
-
         auto& winMgr = ccomp<MWindow>();
         auto& canvas = winMgr.getCanvas();
 
-        hg::gr::Text text{hg::gr::BuiltInFonts::getFont(hg::gr::BuiltInFonts::TITILLIUM_REGULAR),
-                          oss.str()};
-        text.setFillColor(hg::gr::COLOR_AQUA);
-        text.setOutlineColor(hg::gr::COLOR_BLACK);
-        text.setOutlineThickness(2.f);
-        text.setPosition(32.f, canvas.getSize().y - 64.f);
-        canvas.draw(text);
+        // Draw O2 meter
+        {
+            std::ostringstream oss;
+            oss << "O2 ";
+            for (int i = 1; i <= std::ceil(self.oxygen); i += 1) {
+                oss << "|";
+            }
+
+            hg::gr::Text text{hg::gr::BuiltInFonts::getFont(hg::gr::BuiltInFonts::TITILLIUM_REGULAR),
+                              oss.str()};
+            text.setFillColor(hg::gr::COLOR_AQUA);
+            text.setOutlineColor(hg::gr::COLOR_BLACK);
+            text.setOutlineThickness(2.f);
+            text.setPosition(32.f, canvas.getSize().y - 64.f);
+            canvas.draw(text);
+        }
+
+        // Draw breath meter
+        {
+            std::ostringstream oss;
+            oss << "   ";
+            for (int i = 1; i <= std::ceil(self.breath) * 115.f / HOLD_BREATH_MAX; i += 1) {
+                oss << ".";
+            }
+
+            hg::gr::Text text{hg::gr::BuiltInFonts::getFont(hg::gr::BuiltInFonts::TITILLIUM_REGULAR),
+                              oss.str()};
+            text.setFillColor(hg::gr::COLOR_LIME);
+            text.setOutlineColor(hg::gr::COLOR_BLACK);
+            text.setOutlineThickness(2.f);
+            text.setPosition(55.f, canvas.getSize().y - 88.f);
+            canvas.draw(text);
+        }
+
+        // Delimiter
+        {
+            hg::gr::Text text{hg::gr::BuiltInFonts::getFont(hg::gr::BuiltInFonts::TITILLIUM_REGULAR),
+                              "|"};
+            text.setFillColor(hg::gr::COLOR_WHITE);
+            text.setOutlineColor(hg::gr::COLOR_BLACK);
+            text.setOutlineThickness(2.f);
+            text.setPosition(769.f, canvas.getSize().y - 64.f);
+            canvas.draw(text);
+        }
     }
 }
 
