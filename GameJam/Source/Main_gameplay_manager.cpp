@@ -11,6 +11,7 @@
 #include "Lobby_frontend_manager_interface.hpp"
 #include "Loot.hpp"
 #include "Main_menu_manager.hpp"
+#include "Shell.hpp"
 #include "Pearl.hpp"
 #include "Player_controls.hpp"
 #include "Shark.hpp"
@@ -285,10 +286,10 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
                                     spe::SYNC_ID_NEW);
     obj->init(-50.f, 200.f);
 
-    auto* pearl = QAO_PCreate<Pearl>(ctx().getQAORuntime(),
+    auto* shell = QAO_PCreate<Shell>(ctx().getQAORuntime(),
                                      ccomp<MNetworking>().getRegistryId(),
                                      spe::SYNC_ID_NEW);
-    pearl->init(0.f, 200.f);
+    shell->init(0.f, 200.f);
 
     ctx().getGameState().isPaused = false;
 }
@@ -305,6 +306,7 @@ void MainGameplayManager::_restartGame() {
             object->getTypeInfo() == typeid(Bubble) ||
             object->getTypeInfo() == typeid(Sponge) ||
             object->getTypeInfo() == typeid(GameStageController) ||
+            object->getTypeInfo() == typeid(Shell) ||
             object->getTypeInfo() == typeid(Pearl))
         // clang-format on
         {

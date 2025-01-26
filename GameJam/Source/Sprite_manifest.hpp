@@ -16,7 +16,8 @@ enum SpriteIds {
     SPR_POWER,
     SPR_BACKGROUND,
     SPR_SPONGE,
-    SPR_PEARL
+    SPR_PEARL,
+    SPR_SHELL,
 };
 
 inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
@@ -64,11 +65,11 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
         ->addSubsprite(SPR_POWER, basePath / "power.png")
         ->addSubsprite(SPR_SPONGE, basePath / "sponge.png")
         ->addSubsprite(SPR_PEARL, basePath / "pearl.png")
+        ->addSubsprite(SPR_SHELL, basePath / "shell.png")
         // Finalize
         ->finalize(hg::gr::TexturePackingHeuristic::BestAreaFit, &occupancy);
 
     HG_LOG_INFO(LOG_ID, "Game sprites loaded successfully (texture occupancy {}%).", occupancy * 100.f);
-
 
     aSpriteLoader
         .startTexture(4096, 4094)

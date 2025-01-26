@@ -8,7 +8,7 @@
 
 #include "Config.hpp"
 #include "Loot.hpp"
-#include "Pearl.hpp"
+#include "Shell.hpp"
 #include "Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 #include <array>
@@ -452,8 +452,8 @@ std::vector<std::string> Split(std::string str, char split_char) {
     return seglist;
 }
 
-void EnvironmentManager::_createPearlAt(hg::math::Vector2f aPosition) {
-    auto* p = QAO_PCreate<Pearl>(ctx().getQAORuntime(),
+void EnvironmentManager::_createShellAt(hg::math::Vector2f aPosition) {
+    auto* p = QAO_PCreate<Shell>(ctx().getQAORuntime(),
                                  ccomp<MNetworking>().getRegistryId(),
                                  spe::SYNC_ID_NEW);
     p->init(aPosition.x, aPosition.y);
@@ -534,7 +534,7 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                 }
 
             } else if (_cells[y][x].size() == 14) {
-                _createPearlAt({
+                _createShellAt({
                     x * (float)CELL_RESOLUTION,
                     y * (float)CELL_RESOLUTION,
                 });
