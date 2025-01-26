@@ -665,6 +665,8 @@ void EnvironmentManager::_eventDraw1() {
 
         canvas.draw(spr);
 
+
+
         hg::gr::RectangleShape rect{
             {4000.f, 4000.f}
         };
@@ -673,6 +675,12 @@ void EnvironmentManager::_eventDraw1() {
                        worldSize.y * (float)CELL_RESOLUTION / bounds.h});
         rect.setPosition(0.f, 0.f);
         canvas.draw(rect);
+        auto spr_layout = ccomp<MResource>().getSpriteLoader().getMultiBlueprint(SPR_LAYOUT).multispr();
+        spr_layout.selectSubsprite(0);
+        spr_layout.setPosition({0, 0});
+        spr_layout.setOrigin({0, 0});
+
+        canvas.draw(spr_layout);
     }
     const hg::PZInteger startX = std::max(
         static_cast<int>((view.getCenter().x - view.getSize().x / 2.f) / (float)CELL_RESOLUTION - 1.f),

@@ -17,6 +17,7 @@ enum SpriteIds {
     // Miscellaneous
     SPR_POWER,
     SPR_BACKGROUND,
+    SPR_LAYOUT,
     SPR_SPONGE,
     SPR_PEARL,
     SPR_SHELL,
@@ -85,6 +86,12 @@ inline void LoadSprites(hg::gr::SpriteLoader& aSpriteLoader) {
         .startTexture(4096, 4094)
         // Miscellaneous
         ->addSubsprite(SPR_BACKGROUND, basePath / "background.png")
+        // Finalize
+        ->finalize(hg::gr::TexturePackingHeuristic::BestAreaFit, &occupancy);
+    aSpriteLoader
+        .startTexture(4096, 4094)
+        // Miscellaneous
+        ->addSubsprite(SPR_LAYOUT, basePath / "Mapfinal.png")
         // Finalize
         ->finalize(hg::gr::TexturePackingHeuristic::BestAreaFit, &occupancy);
 

@@ -260,9 +260,9 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
     const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
     //auto sharkPlayerIdx = 123;
     for (hg::PZInteger i = 1; i < lobbyMgr.getSize(); i += 1) {
-        if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
+        /* if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
             continue;
-        }
+        }*/
         if (i == sharkPlayerIdx) {
             auto* obj = QAO_PCreate<Shark>(ctx().getQAORuntime(),
                                            ccomp<MNetworking>().getRegistryId(),
