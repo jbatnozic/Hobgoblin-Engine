@@ -591,6 +591,16 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                     shape = CellShape::SMALL_TRIANGLE_FLIP_TR;
                 } else if ((spr_index == 12) && spr_rotation == 3) {
                     shape = CellShape::SMALL_TRIANGLE_FLIP_TL;
+                } else if (spr_index == 14) {
+                    _createShellAt({
+                        x * (float)CELL_RESOLUTION,
+                        y * (float)CELL_RESOLUTION,
+                    });
+                } else if (spr_index == 15) {
+                    _createSpongeAt({
+                        x * (float)CELL_RESOLUTION,
+                        y * (float)CELL_RESOLUTION,
+                    });
                 }
                 if (shape != CellShape::EMPTY) {
                     auto alvinShape =
@@ -605,17 +615,7 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                     _space->add(*_shapes[y][x]);
                 }
 
-            } else if (_cells[y][x].size() == 14) {
-                _createShellAt({
-                    x * (float)CELL_RESOLUTION,
-                    y * (float)CELL_RESOLUTION,
-                });
-            } else if (_cells[y][x].size() == 15) {
-                _createSpongeAt({
-                    x * (float)CELL_RESOLUTION,
-                    y * (float)CELL_RESOLUTION,
-                });
-            }
+            } 
         }
     }
 
