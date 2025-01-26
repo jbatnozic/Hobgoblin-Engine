@@ -113,9 +113,6 @@ void Diver::_eventUpdate1(spe::IfMaster) {
     }
 
     const auto gameStage = ccomp<MainGameplayManagerInterface>().getCurrentGameStage();
-    if (gameStage <= GAME_STAGE_INITIAL_COUNTDOWN || gameStage == GAME_STAGE_FINISHED) {
-        return;
-    }
 
     auto& self = _getCurrentState();
     HG_HARD_ASSERT(self.owningPlayerIndex >= 0);
@@ -125,7 +122,8 @@ void Diver::_eventUpdate1(spe::IfMaster) {
     if (const auto clientIndex = lobbyBackend.playerIdxToClientIdx(self.owningPlayerIndex);
         clientIndex != spe::CLIENT_INDEX_UNKNOWN) {
 
-        if (self.oxygen > 0.f) {
+        if (self.oxygen > 0.f &&
+            !(gameStage <= GAME_STAGE_INITIAL_COUNTDOWN || gameStage == GAME_STAGE_FINISHED)) {
             spe::InputSyncManagerWrapper wrapper{ccomp<MInput>()};
 
             const auto left  = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_LEFT);
@@ -164,6 +162,10 @@ void Diver::_eventUpdate1(spe::IfMaster) {
         if (clientIndex != spe::CLIENT_INDEX_LOCAL) {
             ccomp<MainGameplayManagerInterface>().setPositionOfClient(clientIndex, pos);
         }
+    }
+
+    if (gameStage <= GAME_STAGE_INITIAL_COUNTDOWN || gameStage == GAME_STAGE_FINISHED) {
+        return;
     }
 
     // Oxygen & Bubbles

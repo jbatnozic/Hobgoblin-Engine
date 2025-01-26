@@ -256,8 +256,8 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
 
     auto& lobbyMgr = ccomp<spe::LobbyBackendManagerInterface>();
 
-     const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
-    //auto sharkPlayerIdx = 123;
+    const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
+    // auto sharkPlayerIdx = 123;
     for (hg::PZInteger i = 1; i < lobbyMgr.getSize(); i += 1) {
         if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
             continue;
@@ -304,16 +304,18 @@ void MainGameplayManager::_restartGame() {
             object->getTypeInfo() == typeid(LootObject) ||
             object->getTypeInfo() == typeid(Bubble) ||
             object->getTypeInfo() == typeid(Sponge) ||
-            object->getTypeInfo() == typeid(Pearl)) 
+            object->getTypeInfo() == typeid(GameStageController) ||
+            object->getTypeInfo() == typeid(Pearl))
         // clang-format on
         {
             objectsToDelete.push_back(object);
         }
     }
     for (auto* object : objectsToDelete) {
-        if (runtime.ownsObject(object)) {
-            runtime.eraseObject(object);
-        }
+        // if (runtime.ownsObject(object)) {
+        //     runtime.eraseObject(object);
+        // }
+        QAO_PDestroy(object);
     }
 
     // It will have been erased in the loop above
@@ -378,6 +380,7 @@ void MainGameplayManager::_backToMainMenu() {
 
 void MainGameplayManager::_eventUpdate1() {
     if (ctx().isPrivileged()) {
+        auto& varmap = ccomp<spe::SyncedVarmapManagerInterface>();
         if (_gameStageController) {
             if (_gameStageController->getCurrentGameStage() != GAME_STAGE_FINISHED) {
                 bool  allDiversDead = true;
@@ -394,7 +397,15 @@ void MainGameplayManager::_eventUpdate1() {
 
                 if (allDiversDead) {
                     _gameStageController->setCurrentGameStage(GAME_STAGE_FINISHED);
-                    // TODO: shark wins
+                    varmap.setString(VARMAP_ID_GAMEOVER_STATUS, "The Kraken wins!");
+                }
+
+                if (!allDiversDead) {
+                    if (*varmap.getInt64(VARMAP_ID_PEARLS_COLLECTED) >=
+                        varmap.getInt64(VARMAP_ID_PEARLS_REQUIRED)) {
+                        _gameStageController->setCurrentGameStage(GAME_STAGE_FINISHED);
+                        varmap.setString(VARMAP_ID_GAMEOVER_STATUS, "The Divers win!");
+                    }
                 }
             } else {
                 // Restart game if anyone pressed Enter
@@ -412,45 +423,7 @@ void MainGameplayManager::_eventUpdate1() {
                 }
             }
         }
-#if 0
-        auto& varmap       = ccomp<MVarmap>();
-        auto& lobbyBackend = ccomp<MLobbyBackend>();
 
-        auto winTimer = *varmap.getInt64(VARMAP_ID_WIN_TIMER);
-        auto gameOver = *varmap.getInt64(VARMAP_ID_GAME_OVER);
-        if (winTimer > 0 && gameOver == 0) {
-            winTimer -= 1;
-            if (winTimer > 0) {
-                varmap.setInt64(VARMAP_ID_WIN_TIMER, winTimer);
-            } else {
-                // Contender 1 wins
-                HG_HARD_ASSERT(contender1 != nullptr);
-                HG_HARD_ASSERT(contender2 == nullptr);
-
-                varmap.setInt64(VARMAP_ID_WIN_TIMER, -1);
-                varmap.setString(
-                    VARMAP_ID_WINNER_NAME,
-                    lobbyBackend.getLockedInPlayerInfo(contender1->getOwningPlayerIndex()).name);
-                varmap.setInt64(VARMAP_ID_GAME_OVER, 1);
-            }
-        }
-
-        // Restart game if anyone pressed Enter
-        if (gameOver == 1) {
-            auto&                        netMgr = ccomp<MNetworking>();
-            spe::InputSyncManagerWrapper wrapper{ccomp<MInput>()};
-
-            bool startPressed = false;
-            for (hg::PZInteger i = 0; i < netMgr.getServer().getSize() && !startPressed; i += 1) {
-                wrapper.pollSimpleEvent(i, CTRL_ID_START, [&]() {
-                    startPressed = true;
-                });
-            }
-            if (startPressed) {
-                _restartGame();
-            }
-        }
-#endif
 #if 0
         auto& winMgr = ccomp<MWindow>();
 
@@ -482,9 +455,9 @@ void MainGameplayManager::_eventUpdate1() {
     }
 
     if (!ctx().isPrivileged()) {
-        //if (_gameStageController == nullptr) {
-            _gameStageController =
-                static_cast<GameStageController*>(getRuntime()->find("GameStageController"));
+        // if (_gameStageController == nullptr) {
+        _gameStageController =
+            static_cast<GameStageController*>(getRuntime()->find("GameStageController"));
         //}
 
         const auto input  = ccomp<MWindow>().getInput();
@@ -563,48 +536,14 @@ void MainGameplayManager::_eventDrawGUI() {
         canvas.draw(text);
     } else {
         hg::gr::Text text{hg::gr::BuiltInFonts::getFont(hg::gr::BuiltInFonts::TITILLIUM_REGULAR),
-                          "Game Over, press ENTER to play again."};
+                          fmt::format("Game Over! {} Press ENTER to play again.",
+                                      varmap.getString(VARMAP_ID_GAMEOVER_STATUS).value_or(""))};
         text.setFillColor(hg::gr::COLOR_WHITE);
         text.setOutlineColor(hg::gr::COLOR_BLACK);
         text.setOutlineThickness(2.f);
         text.setPosition(32.f, 32.f);
         canvas.draw(text);
     }
-
-#if 0
-    const auto winTimer       = varmap.getInt64(VARMAP_ID_WIN_TIMER);
-    const auto contender1name = varmap.getString(VARMAP_ID_CONTENDER_1_NAME);
-    const auto gameOver       = varmap.getInt64(VARMAP_ID_GAME_OVER);
-    const auto winnerName     = varmap.getString(VARMAP_ID_WINNER_NAME);
-
-    Text text{BuiltInFonts::getFont(BuiltInFonts::FontChoice::TITILLIUM_REGULAR)};
-    text.setCharacterSize(30);
-    text.setStyle(Text::BOLD);
-    text.setFillColor(COLOR_WHITE);
-    text.setOutlineColor(COLOR_BLACK);
-    text.setOutlineThickness(4.f);
-
-    bool doDraw = true;
-    if (gameOver.has_value() && *gameOver == 1) {
-        text.setString(fmt::format(FMT_STRING("{} wins! Press ENTER to play again."),
-                                   (winnerName.has_value() ? *winnerName : "A player")));
-    } else if (winTimer.has_value() && *winTimer > 0) {
-        text.setString(fmt::format(
-            FMT_STRING("{} has reached the top! Hurry up!\n               {} seconds remaining!"),
-            (contender1name.has_value() ? *contender1name : "A player"),
-            *winTimer / 60));
-    } else {
-        doDraw = false;
-    }
-
-    if (doDraw) {
-        // const auto& bounds = text.getLocalBounds();
-        // text.setOrigin({bounds.x / 2.f, bounds.y / 2.f});
-        // text.setPosition({winMgr.getWindowSize().x / 2.f, 100.f});
-        text.setPosition({100.f, 100.f});
-        canvas.draw(text);
-    }
-#endif
 }
 
 void MainGameplayManager::_eventPostUpdate() {
