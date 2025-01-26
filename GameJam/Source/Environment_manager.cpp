@@ -520,16 +520,19 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                            spr_rotation == 0) {
                     shape = CellShape::HIGH_SMALL_TRIANGLE_BR;
                 }
+                if (shape != CellShape::EMPTY) {
+                    auto alvinShape =
+                        hg::alvin::Shape{CreateCellPolyShape(*_terrainBody, {x, y}, shape)};
+                    /* {
+                        auto pair = _shapeToPosition.insert(
+                            std::make_pair(static_cast<cpShape*>(alvinShape), hg::math::Vector2pz{x,
+                    y})); HG_HARD_ASSERT(pair.second && "Insertion must happen!");
+                    }*/
+                    _shapes[y][x].emplace(std::move(alvinShape));
+                    _collisionDelegate->bind(*this, *_shapes[y][x]);
+                    _space->add(*_shapes[y][x]);
+                }
 
-                auto alvinShape = hg::alvin::Shape{CreateCellPolyShape(*_terrainBody, {x, y}, shape)};
-                /* {
-                    auto pair = _shapeToPosition.insert(
-                        std::make_pair(static_cast<cpShape*>(alvinShape), hg::math::Vector2pz{x, y}));
-                    HG_HARD_ASSERT(pair.second && "Insertion must happen!");
-                }*/
-                _shapes[y][x].emplace(std::move(alvinShape));
-                _collisionDelegate->bind(*this, *_shapes[y][x]);
-                _space->add(*_shapes[y][x]);
             } else if (_cells[y][x].size() == 14) {
                 _createPearlAt({
                     x * (float)CELL_RESOLUTION,
