@@ -416,21 +416,7 @@ hg::math::AngleF PointDirection2(hg::math::Vector2f aFrom, hg::math::Vector2f aT
 void Diver::_adjustView() {
     auto& self = _getCurrentState();
     auto& view = ccomp<MWindow>().getView(0);
-#if 0
-    auto& view = [this]() -> hg::gr::View& {
-        auto gameOver = ccomp<MVarmap>().getInt64(VARMAP_ID_GAME_OVER);
-        if (gameOver.has_value() && *gameOver == 1) {
-            auto& winMgr = ccomp<MWindow>();
-            winMgr.getView(0).setEnabled(false);
-            return winMgr.getView(1);
-        } else {
-            auto& winMgr = ccomp<MWindow>();
-            winMgr.getView(1).setEnabled(false);
-            return winMgr.getView(0);
-        }
-    }();
-    view.setEnabled(true);
-
+#if 1
     auto targetPos = sf::Vector2f{self.x, self.y};
     // if (self.direction & DIRECTION_RIGHT) {
     //     targetPos.x += CAMERA_OFFSET;
@@ -446,12 +432,12 @@ void Diver::_adjustView() {
     // }
 
     {
-        auto gameOver = ccomp<MVarmap>().getInt64(VARMAP_ID_GAME_OVER);
-        if (gameOver.has_value() && *gameOver == 1) {
-            const auto scalesPos = ccomp<MEnvironment>().getScalesGridPosition();
-            targetPos            = {static_cast<float>((scalesPos.x + 2.f) * single_terrain_size),
-                                    static_cast<float>(scalesPos.y * single_terrain_size)};
-        }
+        // auto gameOver = ccomp<MVarmap>().getInt64(VARMAP_ID_GAME_OVER);
+        // if (gameOver.has_value() && *gameOver == 1) {
+        //     const auto scalesPos = ccomp<MEnvironment>().getScalesGridPosition();
+        //     targetPos            = {static_cast<float>((scalesPos.x + 2.f) * single_terrain_size),
+        //                             static_cast<float>(scalesPos.y * single_terrain_size)};
+        // }
     }
 
     const auto viewCenter = view.getCenter();
@@ -483,11 +469,11 @@ void Diver::_adjustView() {
         } else if (pos.y >= maxY) {
             pos.y = maxY - 1.f;
         }
-        // view.setCenter(pos);
-        view.setCenter({1000.f, 1000.f});
+        view.setCenter(pos);
     }
-#endif
+#else
     view.setCenter({100.f, 100.f});
+#endif
 
     // Round
     const auto center = view.getCenter();
