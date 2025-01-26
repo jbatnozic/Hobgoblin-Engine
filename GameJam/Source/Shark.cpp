@@ -364,7 +364,7 @@ void Shark::_adjustView() {
         view.setCenter({1000.f, 1000.f});
     }
 #endif
-    view.setCenter({100.f, 100.f});
+    view.setCenter({300.f, 300.f});
 
     // Round
     const auto center = view.getCenter();

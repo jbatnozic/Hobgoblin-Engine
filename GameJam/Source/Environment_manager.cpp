@@ -184,22 +184,22 @@ void GetCellVertices(
 
     case CellShape::HALF_SQUARE_TOP:
         aVertices = {
-            cpv(0.0, 0.5),
+            cpv(0.0, 0.0),
+            cpv(1.0, 0.0),
             cpv(1.0, 0.5),
-            cpv(1.0, 1.0),
-            cpv(0.0, 1.0),
             cpv(0.0, 0.5),
+            cpv(0.0, 0.0),
         };
         aVertexCount = 5;
         break;
 
     case CellShape::HALF_SQUARE_BOTTOM:
         aVertices = {
-            cpv(0.0, 0.0),
-            cpv(1.0, 0.0),
-            cpv(1.0, 0.5),
             cpv(0.0, 0.5),
-            cpv(0.0, 0.0),
+            cpv(1.0, 0.5),
+            cpv(1.0, 1.0),
+            cpv(0.0, 1.0),
+            cpv(0.0, 0.5),
         };
         aVertexCount = 5;
         break;
@@ -467,7 +467,9 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                 int                      spr_index    = std::stoi(cell_value[0]);
                 int                      spr_rotation = std::stoi(cell_value[1]);
                 CellShape                shape        = CellShape::EMPTY;
-                if (spr_index == 0 || spr_index == 6 || spr_index == 5 || spr_index == 10 ||
+                if (spr_index == 100) {
+                    shape = CellShape::EMPTY;
+                }else if (spr_index == 0 || spr_index == 6 || spr_index == 5 || spr_index == 10 ||
                     spr_index == 11) {
                     shape = CellShape::FULL_SQUARE;
                 } else if ((spr_index == 3 || spr_index == 2) && spr_rotation == 2) {
@@ -552,8 +554,6 @@ void EnvironmentManager::_eventDraw1() {
         spr.selectSubsprite(0);
         const auto bounds    = spr.getLocalBounds();
         const auto worldSize = getGridSize();
-        spr.setScale({worldSize.x * (float)CELL_RESOLUTION / bounds.w,
-                      worldSize.y * (float)CELL_RESOLUTION / bounds.h});
         spr.setOrigin(0.f, 0.f);
         spr.setPosition(0.f, 0.f);
         canvas.draw(spr);
@@ -568,43 +568,32 @@ void EnvironmentManager::_eventDraw1() {
         canvas.draw(rect);
     }
 
-    const hg::PZInteger startX = std::max(
-        static_cast<int>((view.getCenter().x - view.getSize().x / 2.f) / (float)CELL_RESOLUTION - 3.f),
-        0);
-    const hg::PZInteger startY = std::max(
-        static_cast<int>((view.getCenter().y - view.getSize().y / 2.f) / (float)CELL_RESOLUTION - 3.f),
-        0);
-    const hg::PZInteger endX = std::min(
-        static_cast<int>((view.getCenter().x + view.getSize().x / 2.f) / (float)CELL_RESOLUTION + 3.f),
-        _cells.getWidth());
-    const hg::PZInteger endY = std::min(
-        static_cast<int>((view.getCenter().y + view.getSize().y / 2.f) / (float)CELL_RESOLUTION + 3.f),
-        _cells.getHeight());
 
-    for (hg::PZInteger y = startY; y < endY; y += 1) {
-        for (hg::PZInteger x = startX; x < endX; x += 1) {
+    for (hg::PZInteger y = 0; y < _cells.getHeight(); y += 1) {
+        for (hg::PZInteger x = 0; x < _cells.getWidth(); x += 1) {
             std::vector<std::string> cell_value  = Split(_cells[y][x][0], '-');
             int                      spr_index   = std::stoi(cell_value[0]);
             int                      spr_rotation = std::stoi(cell_value[1]);
-            _spr.selectSubsprite(spr_index);
-            if (spr_rotation == 1) {
-                _spr.setScale(-1, 1);
-            }
-            else if (spr_rotation == 2) {
-                _spr.setScale(1, -1);
-            } else if (spr_rotation == 3) {
-                _spr.setScale(-1, -1);
-            }
 
-            bool skipDrawing = false;
-
-            if (!skipDrawing) {
+            if (spr_index != 100) {
+                _spr.selectSubsprite(spr_index);
+                if (spr_rotation == 0) {
+                    _spr.setScale(1, 1);
+                }
+                else if (spr_rotation == 1) {
+                    _spr.setScale(-1, 1);
+                } else if (spr_rotation == 2) {
+                    _spr.setScale(1, -1);
+                } else if (spr_rotation == 3) {
+                    _spr.setScale(-1, -1);
+                }
                 const auto& bounds = _spr.getLocalBounds();
                 _spr.setOrigin(bounds.w / 2.f, bounds.h / 2.f);
                 _spr.setPosition((float)CELL_RESOLUTION * (x + 0.5f),
                                  (float)CELL_RESOLUTION * (y + 0.5f));
                 canvas.draw(_spr);
             }
+
         }
     }
 
