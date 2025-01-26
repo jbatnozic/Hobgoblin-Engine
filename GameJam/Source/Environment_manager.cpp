@@ -41,7 +41,7 @@ enum class CellShape {
     FULL_SQUARE,
 
 
-    //3-2
+    //3-2,2-2
     // X X X X X
     // X X X X X
     // X X X X X
@@ -50,7 +50,7 @@ enum class CellShape {
     HALF_SQUARE_TOP,
 
 
-    //3-0
+    //3-0,2-0
     //
     //
     // X X X X X
@@ -126,7 +126,7 @@ enum class CellShape {
     SMALL_TRIANGLE_BR,
 
 
-    // 8-3
+    // 8-3,9,7
     // X X X X X
     // X X X X X
     // X X X X X
@@ -134,7 +134,7 @@ enum class CellShape {
     // X
     HIGH_SMALL_TRIANGLE_TL,
 
-    //8-2
+    //8-2,7,8,9
     // X X X X X
     // X X X X X
     // X X X X X
@@ -143,7 +143,7 @@ enum class CellShape {
     HIGH_SMALL_TRIANGLE_TR,
 
 
-    //8-1
+    //8-1,7,9
     // X
     // X X X
     // X X X X X
@@ -151,7 +151,7 @@ enum class CellShape {
     // X X X X X
     HIGH_SMALL_TRIANGLE_BL,
     
-    //8-0
+    //8-0,7,9
     //         X
     //     X X X
     // X X X X X
@@ -430,13 +430,23 @@ EnvironmentManager::Mode EnvironmentManager::getMode() const {
     return _mode;
 }
 
+std::vector<std::string> Split(std::string str, char split_char) {
+
+    std::stringstream        str_stream(str);
+    std::string              segment;
+    std::vector<std::string> seglist;
+
+    while (std::getline(str_stream, segment, split_char)) {
+        seglist.push_back(segment);
+    }
+
+    return seglist;
+}
+
 void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHeight) {
 
     loadTerrainText();
     // Cells
-
-
-
 
     // Collision delegate
     _collisionDelegate.emplace(hg::alvin::CollisionDelegateBuilder{}
@@ -448,12 +458,53 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
     _space->add(*_terrainBody);
 
     // Shapes
-    /* _shapes.reset(_temp_cells[0].size(), _temp_cells.size());
-    for (hg::PZInteger y = 0; y < _temp_cells.size(); y += 1) {
-        for (hg::PZInteger x = 0; x < _temp_cells[y].size(); x += 1) {
+    _shapes.reset(_cells.getWidth(), _cells.getHeight());
+    for (hg::PZInteger y = 0; y < _cells.getHeight(); y += 1) {
+        for (hg::PZInteger x = 0; x < _cells.getWidth(); x += 1) {
             if (_cells[y][x].size()>0) {
-                auto alvinShape =
-                    hg::alvin::Shape{CreateCellPolyShape(*_terrainBody, {x, y}, CellShape::FULL_SQUARE)};
+
+                std::vector<std::string> cell_value   = Split(_cells[y][x][0], '-');
+                int                      spr_index    = std::stoi(cell_value[0]);
+                int                      spr_rotation = std::stoi(cell_value[1]);
+                CellShape                shape        = CellShape::EMPTY;
+                if (spr_index == 0 || spr_index == 6 || spr_index == 5 || spr_index == 10 ||
+                    spr_index == 11) {
+                    shape = CellShape::FULL_SQUARE;
+                } else if ((spr_index == 3 || spr_index == 2) && spr_rotation == 2) {
+                    shape = CellShape::HALF_SQUARE_TOP;
+                } else if ((spr_index == 3 || spr_index == 2) && spr_rotation == 0) {
+                    shape = CellShape::HALF_SQUARE_BOTTOM;
+                } else if (spr_index == 4 && spr_rotation == 3) {
+                    shape = CellShape::LARGE_TRIANGLE_TL;
+                } else if (spr_index == 4 && spr_rotation == 2) {
+                    shape = CellShape::LARGE_TRIANGLE_TR;
+                } else if (spr_index == 4 && spr_rotation == 1) {
+                    shape = CellShape::LARGE_TRIANGLE_BL;
+                } else if (spr_index == 4 && spr_rotation == 0) {
+                    shape = CellShape::LARGE_TRIANGLE_BR;
+                } else if (spr_index == 1 && spr_rotation == 3) {
+                    shape = CellShape::SMALL_TRIANGLE_TL;
+                } else if (spr_index == 1 && spr_rotation == 2) {
+                    shape = CellShape::SMALL_TRIANGLE_TR;
+                } else if (spr_index == 1 && spr_rotation == 1) {
+                    shape = CellShape::SMALL_TRIANGLE_BL;
+                } else if (spr_index == 1 && spr_rotation == 0) {
+                    shape = CellShape::SMALL_TRIANGLE_BR;
+                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9 ) &&
+                           spr_rotation == 3) {
+                    shape = CellShape::HIGH_SMALL_TRIANGLE_TL;
+                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9 ) &&
+                           spr_rotation == 2) {
+                    shape = CellShape::HIGH_SMALL_TRIANGLE_TR;
+                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9 ) &&
+                           spr_rotation == 1) {
+                    shape = CellShape::HIGH_SMALL_TRIANGLE_BL;
+                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9 ) &&
+                           spr_rotation == 0) {
+                    shape = CellShape::HIGH_SMALL_TRIANGLE_BR;
+                }
+
+                auto alvinShape = hg::alvin::Shape{CreateCellPolyShape(*_terrainBody, {x, y}, shape)};
                 {
                     auto pair = _shapeToPosition.insert(
                         std::make_pair(static_cast<cpShape*>(alvinShape), hg::math::Vector2pz{x, y}));
@@ -464,7 +515,7 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                 _space->add(*_shapes[y][x]);
             }
         }
-    }*/
+    }
 
 }
 
@@ -488,18 +539,7 @@ void EnvironmentManager::_eventUpdate1() {
         _space->step(1.0 / 60.0);
     }
 }
-std::vector<std::string> Split(std::string str, char split_char) {
 
-    std::stringstream        str_stream(str);
-    std::string              segment;
-    std::vector<std::string> seglist;
-
-    while (std::getline(str_stream, segment, split_char)) {
-        seglist.push_back(segment);
-    }
-
-    return seglist;
-}
 
 void EnvironmentManager::_eventDraw1() {
     auto& winMgr = ccomp<MWindow>();

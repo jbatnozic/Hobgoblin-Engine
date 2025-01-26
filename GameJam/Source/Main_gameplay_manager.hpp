@@ -36,7 +36,7 @@ public:
 private:
     Mode _mode = Mode::UNINITIALIZED;
 
-    GameStageController* _gameStageController;
+    GameStageController* _gameStageController = nullptr;
 
     // hg::PZInteger stateBufferingLength = 0;
     hg::PZInteger _playerCount;
