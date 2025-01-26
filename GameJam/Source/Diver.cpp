@@ -3,8 +3,8 @@
 #include "Bubble.hpp"
 #include "Environment_manager.hpp"
 #include "Main_gameplay_manager_interface.hpp"
-#include "Player_controls.hpp"
 #include "Pearl.hpp"
+#include "Player_controls.hpp"
 #include "Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 
@@ -23,8 +23,8 @@ static constexpr cpFloat PHYS_MASS             = 80.0;
 static constexpr cpFloat PHYS_WIDTH            = 32.0;
 static constexpr cpFloat PHYS_HEIGHT           = 64.0;
 static constexpr cpFloat PHYS_DAMPING          = 0.9;
-static constexpr cpFloat PHYS_ROTATIONAL_FORCE = 250'000.0;
-static constexpr cpFloat PHYS_PROPULSION_FORCE = 400'000.0;
+static constexpr cpFloat PHYS_ROTATIONAL_FORCE = 80'000.0;
+static constexpr cpFloat PHYS_PROPULSION_FORCE = 200'000.0;
 
 #define NUM_COLORS 12
 static const hg::gr::Color COLORS[NUM_COLORS] = {hg::gr::COLOR_BLACK,
@@ -121,8 +121,8 @@ void Diver::_eventUpdate1(spe::IfMaster) {
     auto& self = _getCurrentState();
     HG_HARD_ASSERT(self.owningPlayerIndex >= 0);
 
-    bool holdingBreath = false;
-    auto& lobbyBackend = ccomp<MLobbyBackend>();
+    bool  holdingBreath = false;
+    auto& lobbyBackend  = ccomp<MLobbyBackend>();
     if (const auto clientIndex = lobbyBackend.playerIdxToClientIdx(self.owningPlayerIndex);
         clientIndex != spe::CLIENT_INDEX_UNKNOWN) {
 
@@ -200,17 +200,18 @@ void Diver::_eventUpdate1(spe::IfDummy) {
 
     auto& self = _getCurrentState();
 
-    auto& lobbyBackend = ccomp<MLobbyBackend>();
+    auto&      lobbyBackend     = ccomp<MLobbyBackend>();
     const auto localPlayerIndex = lobbyBackend.getLocalPlayerIndex();
     if (localPlayerIndex == self.owningPlayerIndex) {
         _adjustView();
 
-        auto& varmap = ccomp<spe::SyncedVarmapManagerInterface>();
-        const auto cs = varmap.getString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex));
+        auto&      varmap = ccomp<spe::SyncedVarmapManagerInterface>();
+        const auto cs     = varmap.getString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex));
         if (isAlive() && cs != "") {
             varmap.requestToSetString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex), "");
         } else if (!isAlive() && cs != "(dead)") {
-            varmap.requestToSetString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex), "(dead)");
+            varmap.requestToSetString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex),
+                                      "(dead)");
         }
     }
 }
@@ -239,15 +240,17 @@ void Diver::_eventDraw1() {
     }
     canvas.draw(_sprite);
 
-    hg::gr::RectangleShape rect;
-    rect.setSize({(float)PHYS_WIDTH, (float)PHYS_HEIGHT});
-    rect.setOrigin({(float)PHYS_WIDTH / 2.f, (float)PHYS_HEIGHT / 2.f});
-    rect.setFillColor(hg::gr::COLOR_TRANSPARENT);
-    rect.setOutlineColor(hg::gr::COLOR_YELLOW);
-    rect.setOutlineThickness(1.f);
-    rect.setPosition(self.x, self.y);
-    rect.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
-    canvas.draw(rect);
+    if (false) {
+        hg::gr::RectangleShape rect;
+        rect.setSize({(float)PHYS_WIDTH, (float)PHYS_HEIGHT});
+        rect.setOrigin({(float)PHYS_WIDTH / 2.f, (float)PHYS_HEIGHT / 2.f});
+        rect.setFillColor(hg::gr::COLOR_TRANSPARENT);
+        rect.setOutlineColor(hg::gr::COLOR_YELLOW);
+        rect.setOutlineThickness(1.f);
+        rect.setPosition(self.x, self.y);
+        rect.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
+        canvas.draw(rect);
+    }
 }
 
 void Diver::_eventDraw2() {
@@ -338,8 +341,9 @@ void Diver::_eventDrawGUI() {
 void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
     auto& space = ccomp<MEnvironment>().getSpace();
 
-    // Rotation
-    {
+// Rotation
+#if 0
+    if (aLeft || aRight || aUp || aDown) {
         const cpFloat lr = static_cast<cpFloat>(aRight) - static_cast<cpFloat>(aLeft);
         const cpFloat ud = static_cast<cpFloat>(aDown) - static_cast<cpFloat>(aUp);
 
@@ -347,10 +351,8 @@ void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
         const auto currentRotation =
             hg::math::Angle<cpFloat>::fromVector(currentRotationVec.x, currentRotationVec.y);
 
-        const auto targetRotation = (aLeft || aRight || aUp || aDown)
-                                        ? (hg::math::Angle<cpFloat>::fromVector({lr, ud}) -
-                                           hg::math::Angle<cpFloat>::fromDeg(90.0))
-                                        : hg::math::Angle<cpFloat>::zero();
+        const auto targetRotation = hg::math::Angle<cpFloat>::fromVector({lr, ud}) -
+                                           hg::math::Angle<cpFloat>::fromDeg(90.0);
 
         const auto rotationDiff = currentRotation.shortestDistanceTo(targetRotation);
 
@@ -369,12 +371,34 @@ void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
                                      cpv(12.0, 0.0)); // Idk why 12 but it works
         cpBodyApplyForceAtLocalPoint(_unibody, rotationalForce, cpvzero);
     }
+#else
+    if (aLeft || aRight) {
+        const cpFloat lr = static_cast<cpFloat>(aRight) - static_cast<cpFloat>(aLeft);
+
+        cpVect rotationalForce;
+        if (lr < 0.0) {
+            rotationalForce = cpv(0.0, +PHYS_ROTATIONAL_FORCE);
+        } else {
+            rotationalForce = cpv(0.0, -PHYS_ROTATIONAL_FORCE);
+        }
+
+        cpBodyApplyForceAtLocalPoint(_unibody,
+                                     cpvneg(rotationalForce),
+                                     cpv(12.0, 0.0)); // Idk why 12 but it works
+        cpBodyApplyForceAtLocalPoint(_unibody, rotationalForce, cpvzero);
+    }
+#endif
 
     // Propulsion
-    if (aLeft || aRight || aUp || aDown) {
+    if (aUp && !aDown) {
         const auto   angleRad = cpvtoangle(cpBodyGetRotation(_unibody)) - hg::math::Pi<cpFloat>() / 2;
         const cpVect force    = cpvmult(cpvforangle(angleRad), PHYS_PROPULSION_FORCE);
         cpBodyApplyForceAtWorldPoint(_unibody, force, cpBodyGetPosition(_unibody));
+    }
+    if (!aUp && aDown) {
+        const auto   angleRad = cpvtoangle(cpBodyGetRotation(_unibody)) - hg::math::Pi<cpFloat>() / 2;
+        const cpVect force    = cpvmult(cpvforangle(angleRad), PHYS_PROPULSION_FORCE);
+        cpBodyApplyForceAtWorldPoint(_unibody, cpvneg(force), cpBodyGetPosition(_unibody));
     }
 }
 
@@ -420,6 +444,9 @@ void Diver::_adjustView() {
     auto& view = ccomp<MWindow>().getView(0);
 #if 1
     auto targetPos = sf::Vector2f{self.x, self.y};
+    targetPos +=
+        hg::math::AngleF::fromRadians(self.directionInRad + hg::math::PI_F / 2.f).asNormalizedVector() *
+        300.f;
     // if (self.direction & DIRECTION_RIGHT) {
     //     targetPos.x += CAMERA_OFFSET;
     // }

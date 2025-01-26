@@ -257,8 +257,8 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
 
     auto& lobbyMgr = ccomp<spe::LobbyBackendManagerInterface>();
 
-    // const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
-    auto sharkPlayerIdx = 123;
+    const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
+    //auto sharkPlayerIdx = 123;
     for (hg::PZInteger i = 1; i < lobbyMgr.getSize(); i += 1) {
         if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
             continue;
@@ -267,17 +267,19 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
             auto* obj = QAO_PCreate<Shark>(ctx().getQAORuntime(),
                                            ccomp<MNetworking>().getRegistryId(),
                                            spe::SYNC_ID_NEW);
-            obj->init(i, 100.f, 100.f);
+            obj->init(i, 59.f * 32.f, 50.f * 32.f);
 
-            auto* objD = QAO_PCreate<Diver>(ctx().getQAORuntime(),
-                                            ccomp<MNetworking>().getRegistryId(),
-                                            spe::SYNC_ID_NEW);
-            objD->init(0, 200.f, 100.f);
+            if (aPlayerCount == 1) { // For testing
+                auto* objD = QAO_PCreate<Diver>(ctx().getQAORuntime(),
+                                                ccomp<MNetworking>().getRegistryId(),
+                                                spe::SYNC_ID_NEW);
+                objD->init(0, -200.f, -100.f);
+            }
         } else {
             auto* obj = QAO_PCreate<Diver>(ctx().getQAORuntime(),
                                            ccomp<MNetworking>().getRegistryId(),
                                            spe::SYNC_ID_NEW);
-            obj->init(i, 100.f, 100.f);
+            obj->init(i, 56.f * 32.f + i * 32.f, 45.f * 32.f);
         }
     }
 

@@ -158,20 +158,15 @@ void Shark::_eventDraw1() {
     _finsSprite.setRotation(hg::math::AngleF::fromRad(self.directionInRad + hg::math::Pi<float>() / 2.f));
     canvas.draw(_finsSprite);
 
-    hg::gr::CircleShape cir{(float)PHYS_RADIUS};
-    cir.setFillColor(hg::gr::COLOR_TRANSPARENT);
-    cir.setOutlineColor(hg::gr::COLOR_YELLOW);
-    cir.setOutlineThickness(2.f);
-    cir.setOrigin({(float)PHYS_RADIUS, (float)PHYS_RADIUS});
-    cir.setPosition(self.x, self.y);
-    canvas.draw(cir);
-
-    // hg::gr::CircleShape eye{8.f};
-    // eye.setFillColor(hg::gr::COLOR_RED);
-    // eye.setOrigin({8.f, 32.f});
-    // eye.setPosition(self.x, self.y);
-    // eye.setRotation(hg::math::AngleF::fromRadians(self.directionInRad));
-    // canvas.draw(eye);
+    if (false) {
+        hg::gr::CircleShape cir{(float)PHYS_RADIUS};
+        cir.setFillColor(hg::gr::COLOR_TRANSPARENT);
+        cir.setOutlineColor(hg::gr::COLOR_YELLOW);
+        cir.setOutlineThickness(2.f);
+        cir.setOrigin({(float)PHYS_RADIUS, (float)PHYS_RADIUS});
+        cir.setPosition(self.x, self.y);
+        canvas.draw(cir);
+    }
 }
 
 void Shark::_eventDraw2() {
