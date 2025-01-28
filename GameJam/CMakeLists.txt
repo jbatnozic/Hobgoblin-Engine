@@ -1,2 +1,1 @@
-project("DjoxTrauma")
-add_subdirectory("Source")
+add_subdirectory("DjoxTrauma")

@@ -1,6 +1,6 @@
-#include "Lobby_frontend_manager.hpp"
+#include "Managers/Lobby_frontend_manager.hpp"
 
-#include "Main_gameplay_manager_interface.hpp"
+#include "Managers/Main_gameplay_manager_interface.hpp"
 
 #include "Engine.hpp"
 

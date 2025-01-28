@@ -4,7 +4,7 @@
 
 #include <Hobgoblin/Graphics.hpp>
 
-#include "Resource_manager_interface.hpp"
+#include "Managers/Resource_manager_interface.hpp"
 
 class ResourceManager
     : public ResourceManagerInterface

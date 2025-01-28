@@ -1,4 +1,4 @@
-#include "Environment_manager.hpp"
+#include "Managers/Environment_manager.hpp"
 
 #include <Hobgoblin/HGExcept.hpp>
 #include <Hobgoblin/RigelNet_macros.hpp>
@@ -7,13 +7,11 @@
 #include "Collisions.hpp"
 
 #include "Config.hpp"
-#include "Loot.hpp"
-#include "Shell.hpp"
-#include "Sponge.hpp"
-#include "Resource_manager_interface.hpp"
+#include "GameObjects/Shell.hpp"
+#include "GameObjects/Sponge.hpp"
+#include "Managers/Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 #include <array>
-#include <deque>
 #include <sstream>
 #include <vector>
 

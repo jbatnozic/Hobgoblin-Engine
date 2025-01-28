@@ -1,9 +1,9 @@
-#include "Sponge.hpp"
+#include "GameObjects/Sponge.hpp"
 
-#include "Bubble.hpp"
-#include "Environment_manager_interface.hpp"
-#include "Main_gameplay_manager_interface.hpp"
-#include "Resource_manager_interface.hpp"
+#include "GameObjects/Bubble.hpp"
+#include "Managers/Environment_manager_interface.hpp"
+#include "Managers/Main_gameplay_manager_interface.hpp"
+#include "Managers/Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 
 #include <Hobgoblin/Logging.hpp>

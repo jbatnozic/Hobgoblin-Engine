@@ -3,16 +3,16 @@
 #include "Engine.hpp"
 
 #include "Context_factory.hpp"
-#include "Join_menu_manager_interface.hpp"
+#include "Managers/Host_menu_manager_interface.hpp"
 
 #include <memory>
 
-class JoinMenuManager
-    : public JoinMenuManagerInterface
+class HostMenuManager
+    : public HostMenuManagerInterface
     , public spe::NonstateObject {
 public:
-    JoinMenuManager(QAO_RuntimeRef aRuntimeRef, int aExecutionPriority);
-    ~JoinMenuManager() override;
+    HostMenuManager(QAO_RuntimeRef aRuntimeRef, int aExecutionPriority);
+    ~HostMenuManager() override;
 
     void setVisible(bool aVisible) override;
 
@@ -27,6 +27,7 @@ private:
 
     bool                              _zeroTierEnabled = false;
     std::unique_ptr<ClientGameParams> _clientGameParams;
+    std::unique_ptr<ServerGameParams> _serverGameParams;
     bool                              _timeToDie = false;
 
     void _eventPreUpdate() override;

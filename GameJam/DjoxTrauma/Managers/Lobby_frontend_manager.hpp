@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine.hpp"
-#include "Lobby_frontend_manager_interface.hpp"
+#include "Managers/Lobby_frontend_manager_interface.hpp"
 
 #include <memory>
 

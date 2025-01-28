@@ -1,11 +1,11 @@
-#include "Diver.hpp"
+#include "GameObjects/Diver.hpp"
 
-#include "Bubble.hpp"
-#include "Environment_manager.hpp"
-#include "Main_gameplay_manager_interface.hpp"
-#include "Pearl.hpp"
+#include "GameObjects/Bubble.hpp"
+#include "Managers/Environment_manager.hpp"
+#include "Managers/Main_gameplay_manager_interface.hpp"
+#include "GameObjects/Pearl.hpp"
 #include "Player_controls.hpp"
-#include "Resource_manager_interface.hpp"
+#include "Managers/Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 
 #include <Hobgoblin/HGExcept.hpp>

@@ -1,7 +1,7 @@
 #include "Loot.hpp"
 
-#include "Environment_manager_interface.hpp"
-#include "Resource_manager_interface.hpp"
+#include "Managers/Environment_manager_interface.hpp"
+#include "Managers/Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 
 #include <cmath>

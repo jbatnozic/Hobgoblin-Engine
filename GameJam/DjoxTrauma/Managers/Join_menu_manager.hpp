@@ -3,25 +3,29 @@
 #include "Engine.hpp"
 
 #include "Context_factory.hpp"
-#include "Main_menu_manager_interface.hpp"
+#include "Managers/Join_menu_manager_interface.hpp"
 
 #include <memory>
 
-class MainMenuManager
-    : public MainMenuManagerInterface
+class JoinMenuManager
+    : public JoinMenuManagerInterface
     , public spe::NonstateObject {
 public:
-    MainMenuManager(QAO_RuntimeRef aRuntimeRef, int aExecutionPriority);
-    ~MainMenuManager() override;
+    JoinMenuManager(QAO_RuntimeRef aRuntimeRef, int aExecutionPriority);
+    ~JoinMenuManager() override;
 
     void setVisible(bool aVisible) override;
+
+    void setZeroTierEnabled(bool aEnabled) override {
+        _zeroTierEnabled = aEnabled;
+    }
 
 private:
     class Impl;
     friend class Impl;
     std::unique_ptr<Impl> _impl;
 
-    std::unique_ptr<ServerGameParams> _serverGameParams;
+    bool                              _zeroTierEnabled = false;
     std::unique_ptr<ClientGameParams> _clientGameParams;
     bool                              _timeToDie = false;
 

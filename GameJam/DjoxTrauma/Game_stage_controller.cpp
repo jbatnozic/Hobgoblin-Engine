@@ -1,7 +1,7 @@
 
 #include "Game_stage_controller.hpp"
 
-#include "Main_gameplay_manager_interface.hpp"
+#include "Managers/Main_gameplay_manager_interface.hpp"
 
 GameStageController::GameStageController(QAO_RuntimeRef  aRuntimeRef,
                                          spe::RegistryId aRegId,

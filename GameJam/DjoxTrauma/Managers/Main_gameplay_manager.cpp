@@ -1,21 +1,20 @@
-#include "Main_gameplay_manager.hpp"
+#include "Managers/Main_gameplay_manager.hpp"
 
-#include "Bubble.hpp"
+#include "GameObjects/Bubble.hpp"
 #include "Config.hpp"
-#include "Diver.hpp"
-#include "Environment_manager_interface.hpp"
+#include "GameObjects/Diver.hpp"
+#include "Managers/Environment_manager_interface.hpp"
 #include "Game_stage.hpp"
 #include "Game_stage_controller.hpp"
-#include "Host_menu_manager.hpp"
-#include "Join_menu_manager.hpp"
-#include "Lobby_frontend_manager_interface.hpp"
-#include "Loot.hpp"
-#include "Main_menu_manager.hpp"
-#include "Shell.hpp"
-#include "Pearl.hpp"
+#include "Managers/Host_menu_manager.hpp"
+#include "Managers/Join_menu_manager.hpp"
+#include "Managers/Lobby_frontend_manager_interface.hpp"
+#include "Managers/Main_menu_manager.hpp"
+#include "GameObjects/Shell.hpp"
+#include "GameObjects/Pearl.hpp"
 #include "Player_controls.hpp"
-#include "Shark.hpp"
-#include "Sponge.hpp"
+#include "GameObjects/Shark.hpp"
+#include "GameObjects/Sponge.hpp"
 #include "Varmap_ids.hpp"
 
 #include <Hobgoblin/Format.hpp>
@@ -304,7 +303,6 @@ void MainGameplayManager::_restartGame() {
         // clang-format off
         if (object->getTypeInfo() == typeid(Diver) ||
             object->getTypeInfo() == typeid(Shark) ||
-            object->getTypeInfo() == typeid(LootObject) ||
             object->getTypeInfo() == typeid(Bubble) ||
             object->getTypeInfo() == typeid(Sponge) ||
             object->getTypeInfo() == typeid(GameStageController) ||

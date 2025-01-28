@@ -1,8 +1,8 @@
-#include "Host_menu_manager.hpp"
+#include "Managers/Host_menu_manager.hpp"
 
 #include "Context_factory.hpp"
-#include "Join_menu_manager_interface.hpp"
-#include "Main_menu_manager_interface.hpp"
+#include "Managers/Join_menu_manager_interface.hpp"
+#include "Managers/Main_menu_manager_interface.hpp"
 #include "Names.hpp"
 #include "Simple_zerotier.hpp"
 

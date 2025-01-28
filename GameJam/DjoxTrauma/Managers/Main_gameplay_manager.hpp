@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine.hpp"
-#include "Main_gameplay_manager_interface.hpp"
+#include "Managers/Main_gameplay_manager_interface.hpp"
 
 #include <Hobgoblin/Alvin.hpp>
 

@@ -4,7 +4,7 @@
 
 #include "Cell_kind.hpp"
 #include "Collisions.hpp"
-#include "Environment_manager_interface.hpp"
+#include "Managers/Environment_manager_interface.hpp"
 
 #include <Hobgoblin/Alvin.hpp>
 #include <Hobgoblin/ChipmunkPhysics.hpp>

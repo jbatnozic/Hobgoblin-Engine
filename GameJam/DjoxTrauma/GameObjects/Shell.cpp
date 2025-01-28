@@ -1,10 +1,10 @@
-#include "Shell.hpp"
+#include "GameObjects/Shell.hpp"
 
-#include "Bubble.hpp"
-#include "Environment_manager_interface.hpp"
-#include "Main_gameplay_manager_interface.hpp"
-#include "Pearl.hpp"
-#include "Resource_manager_interface.hpp"
+#include "GameObjects/Bubble.hpp"
+#include "Managers/Environment_manager_interface.hpp"
+#include "Managers/Main_gameplay_manager_interface.hpp"
+#include "GameObjects/Pearl.hpp"
+#include "Managers/Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 
 #include <Hobgoblin/Logging.hpp>

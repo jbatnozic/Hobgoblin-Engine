@@ -1,4 +1,4 @@
-#include "Resource_manager.hpp"
+#include "Managers/Resource_manager.hpp"
 
 #include "Sprite_manifest.hpp"
 

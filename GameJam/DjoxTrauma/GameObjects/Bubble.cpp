@@ -1,7 +1,7 @@
-#include "Bubble.hpp"
+#include "GameObjects/Bubble.hpp"
 
-#include "Environment_manager_interface.hpp"
-#include "Main_gameplay_manager_interface.hpp"
+#include "Managers/Environment_manager_interface.hpp"
+#include "Managers/Main_gameplay_manager_interface.hpp"
 
 #include <Hobgoblin/Logging.hpp>
 #include <Hobgoblin/Math.hpp>

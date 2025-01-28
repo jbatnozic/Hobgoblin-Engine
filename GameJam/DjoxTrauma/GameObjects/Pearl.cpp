@@ -1,9 +1,9 @@
-#include "Pearl.hpp"
+#include "GameObjects/Pearl.hpp"
 
-#include "Diver.hpp"
-#include "Environment_manager_interface.hpp"
-#include "Main_gameplay_manager_interface.hpp"
-#include "Resource_manager_interface.hpp"
+#include "GameObjects/Diver.hpp"
+#include "Managers/Environment_manager_interface.hpp"
+#include "Managers/Main_gameplay_manager_interface.hpp"
+#include "Managers/Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 
 #include <Hobgoblin/Logging.hpp>

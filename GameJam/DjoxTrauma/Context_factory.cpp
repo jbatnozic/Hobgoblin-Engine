@@ -6,15 +6,15 @@
 #include "Engine.hpp"
 
 #include "Config.hpp"
-#include "Environment_manager.hpp"
-#include "Lobby_frontend_manager.hpp"
-#include "Main_gameplay_manager.hpp"
+#include "Managers/Environment_manager.hpp"
+#include "Managers/Lobby_frontend_manager.hpp"
+#include "Managers/Main_gameplay_manager.hpp"
 #include "Player_controls.hpp"
-#include "Resource_manager.hpp"
+#include "Managers/Resource_manager.hpp"
 
-#include "Host_menu_manager.hpp"
-#include "Join_menu_manager.hpp"
-#include "Main_menu_manager.hpp"
+#include "Managers/Host_menu_manager.hpp"
+#include "Managers/Join_menu_manager.hpp"
+#include "Managers/Main_menu_manager.hpp"
 
 namespace {
 constexpr auto FRAME_RATE = 60;
@@ -23,7 +23,7 @@ constexpr auto TICK_RATE  = 60;
 constexpr auto INITIAL_STATE_BUFFERING_LENGTH = 3;
 constexpr auto TELEMETRY_CYCLE_LENGTH         = 300;
 
-constexpr auto PASSPHRASE = "GMTK-2024-HQ";
+constexpr auto PASSPHRASE = "ggj-2025-djoxtrauma";
 
 bool MyRetransmitPredicate(hg::PZInteger             aCyclesSinceLastTransmit,
                            std::chrono::microseconds aTimeSinceLastSend,
