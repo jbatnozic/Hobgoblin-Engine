@@ -2,6 +2,7 @@
 
 #include "Collisions.hpp"
 #include "Engine.hpp"
+#include "Player_controls.hpp"
 
 #include <Hobgoblin/Alvin.hpp>
 #include <Hobgoblin/ChipmunkPhysics.hpp>
@@ -63,7 +64,7 @@ private:
 
     hg::alvin::CollisionDelegate _initColDelegate();
 
-    void _execMovement(bool aLeft, bool aRight, bool aUp, bool aDown);
+    void _execMovement(const PlayerInput& aInput);
 
     void _adjustView();
 

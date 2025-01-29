@@ -177,6 +177,7 @@ void MainGameplayManager::setToHostMode(hg::PZInteger aPlayerCount) {
     _playerCount = aPlayerCount;
 
     _playerPositions.resize(hg::pztos(aPlayerCount));
+    _playerInputs.resize(hg::pztos(aPlayerCount));
 
     auto& varmap = ccomp<spe::SyncedVarmapManagerInterface>();
     for (int i = 0; i < aPlayerCount; i += 1) {
@@ -202,6 +203,11 @@ void MainGameplayManager::setToClientMode() {
 
 void MainGameplayManager::startGame() {
     _startGame(_playerCount);
+}
+
+const PlayerInput& MainGameplayManager::getPlayerInput(hg::PZInteger aPlayerIndex) const {
+    HG_HARD_ASSERT(aPlayerIndex < _playerCount);
+    return _playerInputs[hg::pztos(aPlayerIndex)];
 }
 
 MainGameplayManager::Mode MainGameplayManager::getMode() const {
@@ -250,14 +256,16 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
     }
     _gameStageController->init();
 
+    _playerInputs.resize(hg::pztos(aPlayerCount));
+
     auto& varmap = ccomp<MVarmap>();
     varmap.setInt64(VARMAP_ID_PEARLS_REQUIRED, 10);
     varmap.setInt64(VARMAP_ID_PEARLS_COLLECTED, 0);
 
     auto& lobbyMgr = ccomp<spe::LobbyBackendManagerInterface>();
 
-    const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
-    //auto sharkPlayerIdx = 123;
+    //const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
+    auto sharkPlayerIdx = 123;
     for (hg::PZInteger i = 1; i < lobbyMgr.getSize(); i += 1) {
         /* if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
             continue;
@@ -380,6 +388,20 @@ void MainGameplayManager::_backToMainMenu() {
 
 // MARK: QAO Events
 
+void MainGameplayManager::_eventBeginUpdate() {
+    if (ctx().isPrivileged()) {
+        auto& inputSync = ccomp<MInput>();
+        auto& lobbyBackend  = ccomp<MLobbyBackend>();
+
+        for (hg::PZInteger i = 0; i < _playerCount; i += 1) {
+            const auto clientIdx = lobbyBackend.playerIdxToClientIdx(i);
+            if (clientIdx != jbatnozic::spempe::CLIENT_INDEX_UNKNOWN) {
+                _playerInputs[hg::pztos(i)] = GetPlayerInput(inputSync, clientIdx);
+            }
+        }
+    }
+}
+
 void MainGameplayManager::_eventUpdate1() {
     if (ctx().isPrivileged()) {
         auto& varmap = ccomp<spe::SyncedVarmapManagerInterface>();
@@ -410,18 +432,12 @@ void MainGameplayManager::_eventUpdate1() {
                     }
                 }
             } else {
-                // Restart game if anyone pressed Enter
-                auto&                        netMgr = ccomp<MNetworking>();
-                spe::InputSyncManagerWrapper wrapper{ccomp<MInput>()};
-
-                bool startPressed = false;
-                for (hg::PZInteger i = 0; i < netMgr.getServer().getSize() && !startPressed; i += 1) {
-                    wrapper.pollSimpleEvent(i, CTRL_ID_START, [&]() {
-                        startPressed = true;
-                    });
-                }
-                if (startPressed) {
-                    _restartGame();
+                // Restart the game if any of the players pressed ENTER
+                for (hg::PZInteger i = 0; i < _playerCount; i += 1) {
+                    if (getPlayerInput(i).start) {
+                        _restartGame();
+                        break;
+                    }
                 }
             }
         }
@@ -464,24 +480,22 @@ void MainGameplayManager::_eventUpdate1() {
 
         const auto input  = ccomp<MWindow>().getInput();
         auto&      client = ccomp<MNetworking>().getClient();
+
         // If connected, upload input
-
         if (client.getServerConnector().getStatus() == RN_ConnectorStatus::Connected) {
-            const bool left  = input.checkPressed(hg::in::PK_A);
-            const bool right = input.checkPressed(hg::in::PK_D);
-            const bool up    = input.checkPressed(hg::in::PK_W);
-            const bool down  = input.checkPressed(hg::in::PK_S);
-            const bool hold  = input.checkPressed(hg::in::PK_SPACE);
-            const bool start =
-                input.checkPressed(hg::in::PK_ENTER, spe::WindowFrameInputView::Mode::Edge);
+            const auto mousePos = input.getViewRelativeMousePos();
 
-            spe::InputSyncManagerWrapper wrapper{ccomp<MInput>()};
-            wrapper.setSignalValue<bool>(CTRL_ID_LEFT, left);
-            wrapper.setSignalValue<bool>(CTRL_ID_RIGHT, right);
-            wrapper.setSignalValue<bool>(CTRL_ID_UP, up);
-            wrapper.setSignalValue<bool>(CTRL_ID_DOWN, down);
-            wrapper.setSignalValue<bool>(CTRL_ID_HOLD, hold);
-            wrapper.triggerEvent(CTRL_ID_START, start);
+            const PlayerInput playerInput{
+                .up      = input.checkPressed(hg::in::PK_W),
+                .down    = input.checkPressed(hg::in::PK_S),
+                .left    = input.checkPressed(hg::in::PK_A),
+                .right   = input.checkPressed(hg::in::PK_D),
+                .hold    = input.checkPressed(hg::in::PK_SPACE),
+                .start   = input.checkPressed(hg::in::PK_ENTER, spe::WindowFrameInputView::Mode::Edge),
+                .mouse_x = mousePos.x,
+                .mouse_y = mousePos.y};
+
+            SetPlayerInput(ccomp<MInput>(), playerInput);
         }
 
         _announcements->update();

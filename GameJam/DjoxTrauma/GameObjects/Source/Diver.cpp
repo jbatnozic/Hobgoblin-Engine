@@ -1,11 +1,11 @@
 #include "GameObjects/Diver.hpp"
 
 #include "GameObjects/Bubble.hpp"
+#include "GameObjects/Pearl.hpp"
 #include "Managers/Environment_manager.hpp"
 #include "Managers/Main_gameplay_manager_interface.hpp"
-#include "GameObjects/Pearl.hpp"
-#include "Player_controls.hpp"
 #include "Managers/Resource_manager_interface.hpp"
+#include "Player_controls.hpp"
 #include "Sprite_manifest.hpp"
 
 #include <Hobgoblin/HGExcept.hpp>
@@ -100,7 +100,6 @@ void Diver::addOxygen(float aOxygen) {
 void Diver::kill() {
     auto& self = _getCurrentState();
     if (!self.eaten) {
-        // HG_LOG_INFO(LOG_ID, "================= PLAYER KILLED =================");
         self.eaten = true;
 
         if (_pearl != nullptr) {
@@ -116,7 +115,8 @@ void Diver::_eventUpdate1(spe::IfMaster) {
         return;
     }
 
-    const auto gameStage = ccomp<MainGameplayManagerInterface>().getCurrentGameStage();
+    const auto& gpMgr     = ccomp<MainGameplayManagerInterface>();
+    const auto  gameStage = gpMgr.getCurrentGameStage();
 
     auto& self = _getCurrentState();
     HG_HARD_ASSERT(self.owningPlayerIndex >= 0);
@@ -124,30 +124,16 @@ void Diver::_eventUpdate1(spe::IfMaster) {
     bool  holdingBreath = false;
     auto& lobbyBackend  = ccomp<MLobbyBackend>();
     if (const auto clientIndex = lobbyBackend.playerIdxToClientIdx(self.owningPlayerIndex);
-        clientIndex != spe::CLIENT_INDEX_UNKNOWN) {
-
+        clientIndex != spe::CLIENT_INDEX_UNKNOWN) //
+    {
         if (self.oxygen > 0.f &&
-            !(gameStage <= GAME_STAGE_INITIAL_COUNTDOWN || gameStage == GAME_STAGE_FINISHED)) {
-            spe::InputSyncManagerWrapper wrapper{ccomp<MInput>()};
+            !(gameStage <= GAME_STAGE_INITIAL_COUNTDOWN || gameStage == GAME_STAGE_FINISHED)) //
+        {
+            const auto& input = gpMgr.getPlayerInput(self.owningPlayerIndex);
 
-            const auto left  = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_LEFT);
-            const auto right = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_RIGHT);
+            _execMovement(input);
 
-            const auto up   = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_UP);
-            const auto down = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_DOWN);
-
-            // space.runRaycastQuery(cpv(self.x - RAY_X_OFFSET, self.y + RAY_Y_OFFSET),
-            //                       cpv(self.x + RAY_X_OFFSET, self.y + RAY_Y_OFFSET),
-            //                       10.0,
-            //                       cpShapeFilterNew(0, CP_ALL_CATEGORIES, CAT_TERRAIN),
-            //                       [&, this](const hg::alvin::RaycastQueryInfo&) {
-            //                           touchingTerrain = true;
-            //                       });
-
-            _execMovement(left, right, up, down);
-
-            const auto hold = wrapper.getSignalValue<bool>(clientIndex, CTRL_ID_HOLD);
-            if (hold) {
+            if (input.hold) {
                 if (self.breath >= 1.f) {
                     self.breath -= 1.f;
                     holdingBreath = true;
@@ -338,7 +324,7 @@ void Diver::_eventDrawGUI() {
 
 // MARK: Private
 
-void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
+void Diver::_execMovement(const PlayerInput& aInput) {
     auto& space = ccomp<MEnvironment>().getSpace();
 
 // Rotation
@@ -372,8 +358,8 @@ void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
         cpBodyApplyForceAtLocalPoint(_unibody, rotationalForce, cpvzero);
     }
 #else
-    if (aLeft || aRight) {
-        const cpFloat lr = static_cast<cpFloat>(aRight) - static_cast<cpFloat>(aLeft);
+    if (aInput.left || aInput.right) {
+        const cpFloat lr = static_cast<cpFloat>(aInput.right) - static_cast<cpFloat>(aInput.left);
 
         cpVect rotationalForce;
         if (lr < 0.0) {
@@ -390,12 +376,11 @@ void Diver::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
 #endif
 
     // Propulsion
-    if (aUp && !aDown) {
+    if (aInput.up && !aInput.down) {
         const auto   angleRad = cpvtoangle(cpBodyGetRotation(_unibody)) - hg::math::Pi<cpFloat>() / 2;
         const cpVect force    = cpvmult(cpvforangle(angleRad), PHYS_PROPULSION_FORCE);
         cpBodyApplyForceAtWorldPoint(_unibody, force, cpBodyGetPosition(_unibody));
-    }
-    if (!aUp && aDown) {
+    } else if (!aInput.up && aInput.down) {
         const auto   angleRad = cpvtoangle(cpBodyGetRotation(_unibody)) - hg::math::Pi<cpFloat>() / 2;
         const cpVect force    = cpvmult(cpvforangle(angleRad), PHYS_PROPULSION_FORCE);
         cpBodyApplyForceAtWorldPoint(_unibody, cpvneg(force), cpBodyGetPosition(_unibody));
@@ -413,22 +398,6 @@ hg::alvin::CollisionDelegate Diver::_initColDelegate() {
             return hg::alvin::Decision::ACCEPT_COLLISION;
         }
     });
-
-    // builder.addInteraction<TerrainInterface>(
-    //     hg::alvin::COLLISION_CONTACT,
-    //     [this](TerrainInterface& aTerrain, const hg::alvin::CollisionData& aCollisionData) {
-    //         CP_ARBITER_GET_SHAPES(aCollisionData.arbiter, shape1, shape2);
-    //         NeverNull<cpShape*> otherShape = shape1;
-    //         if (otherShape == _unibody.shape) {
-    //             otherShape = shape2;
-    //         }
-    //         const auto cellKind = aTerrain.getCellKindOfShape(otherShape);
-    //         if (cellKind && *cellKind == CellKind::SCALE) {
-    //             HG_LOG_INFO(LOG_ID, "Character reached the scales.");
-    //             ccomp<MainGameplayManagerInterface>().characterReachedTheScales(*this);
-    //         }
-    //         return hg::alvin::Decision::ACCEPT_COLLISION;
-    //     });
 
     return builder.finalize();
 }

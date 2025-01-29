@@ -2,6 +2,7 @@
 
 #include "Engine.hpp"
 #include "Game_stage.hpp"
+#include "Player_controls.hpp"
 
 #include <Hobgoblin/Alvin.hpp>
 
@@ -22,6 +23,8 @@ public:
     virtual Mode getMode() const                           = 0;
 
     virtual void startGame() = 0;
+
+    virtual const PlayerInput& getPlayerInput(hg::PZInteger aPlayerIndex) const = 0;
 
     virtual void addAnnouncement(const std::string& aString, hg::gr::Color aColor) = 0;
 

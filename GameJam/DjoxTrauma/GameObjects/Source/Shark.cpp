@@ -86,19 +86,14 @@ void Shark::_eventUpdate1(spe::IfMaster) {
 
     auto& lobbyBackend = ccomp<MLobbyBackend>();
     if (const auto clientIndex = lobbyBackend.playerIdxToClientIdx(self.owningPlayerIndex);
-        clientIndex != spe::CLIENT_INDEX_UNKNOWN) {
+        clientIndex != spe::CLIENT_INDEX_UNKNOWN) //
+    {
+        const auto& gpMgr = ccomp<MainGameplayManagerInterface>();
 
-        spe::InputSyncManagerWrapper wrapper{ccomp<MInput>()};
-
-        const auto left  = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_LEFT);
-        const auto right = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_RIGHT);
-
-        const auto up   = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_UP);
-        const auto down = wrapper.getSignalValue<ControlDirectionType>(clientIndex, CTRL_ID_DOWN);
-
-        const auto gameStage = ccomp<MainGameplayManagerInterface>().getCurrentGameStage();
+        const auto gameStage = gpMgr.getCurrentGameStage();
         if (gameStage >= GAME_STAGE_HIDE_N_SEEK && gameStage < GAME_STAGE_FINISHED) {
-            _execMovement(left, right, up, down);
+            const auto input = gpMgr.getPlayerInput(self.owningPlayerIndex);
+            _execMovement(input);
         }
 
         const auto pos      = cpBodyGetPosition(_unibody);
@@ -193,11 +188,11 @@ void Shark::_eventDraw2() {
     // }
 }
 
-void Shark::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
+void Shark::_execMovement(const PlayerInput& aInput) {
     // Rotation
-    if (aLeft || aRight || aUp || aDown) {
-        const cpFloat lr = static_cast<cpFloat>(aRight) - static_cast<cpFloat>(aLeft);
-        const cpFloat ud = static_cast<cpFloat>(aDown) - static_cast<cpFloat>(aUp);
+    if (aInput.left || aInput.right || aInput.up || aInput.down) {
+        const cpFloat lr = static_cast<cpFloat>(aInput.right) - static_cast<cpFloat>(aInput.left);
+        const cpFloat ud = static_cast<cpFloat>(aInput.down) - static_cast<cpFloat>(aInput.up);
 
         const auto currentRotationVec = cpBodyGetRotation(_unibody);
         const auto currentRotation =
@@ -227,7 +222,7 @@ void Shark::_execMovement(bool aLeft, bool aRight, bool aUp, bool aDown) {
     // Propulsion
     static constexpr cpFloat PROPULSION_FORCE_DELTA =
         (PHYS_PROPULSION_FORCE_MAX - PHYS_PROPULSION_FORCE_MIN) / PHYS_PROPULSION_FORCE_STEPS;
-    if (aLeft || aRight || aUp || aDown) {
+    if (aInput.left || aInput.right || aInput.up || aInput.down) {
         if (_propulsionForce < PHYS_PROPULSION_FORCE_MAX) {
             _propulsionForce += PROPULSION_FORCE_DELTA;
         }

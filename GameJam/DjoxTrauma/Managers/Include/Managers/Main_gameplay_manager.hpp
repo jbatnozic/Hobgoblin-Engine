@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine.hpp"
+#include "Player_controls.hpp"
 #include "Managers/Main_gameplay_manager_interface.hpp"
 
 #include <Hobgoblin/Alvin.hpp>
@@ -26,6 +27,8 @@ public:
 
     void startGame() override;
 
+    const PlayerInput& getPlayerInput(hg::PZInteger aPlayerIndex) const override;
+
     void addAnnouncement(const std::string& aString, hg::gr::Color aColor) override;
 
     int getCurrentGameStage() const override;
@@ -41,7 +44,7 @@ private:
     GameStageController* _gameStageController = nullptr;
 
     // hg::PZInteger stateBufferingLength = 0;
-    hg::PZInteger _playerCount;
+    hg::PZInteger _playerCount = 0;
 
     class Announcements;
     std::unique_ptr<Announcements> _announcements;
@@ -52,12 +55,15 @@ private:
     };
     std::vector<PendingAnnouncement> _pendingAnnouncements;
 
+    std::vector<PlayerInput> _playerInputs;
+
     std::vector<cpVect> _playerPositions;
 
     void _startGame(hg::PZInteger aPlayerCount);
     void _restartGame();
     void _backToMainMenu();
 
+    void _eventBeginUpdate() override;
     void _eventUpdate1() override;
     void _eventPostUpdate() override;
     void _eventDrawGUI() override;
