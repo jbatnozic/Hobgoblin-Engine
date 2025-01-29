@@ -49,18 +49,16 @@ std::unique_ptr<spe::GameContext> CreateServerContext(const ServerGameParams& aP
     auto winMgr = QAO_UPCreate<spe::DefaultWindowManager>(context->getQAORuntime().nonOwning(),
                                                           PRIORITY_WINDOWMGR);
     spe::WindowManagerInterface::TimingConfig timingConfig{
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__linux__)
         spe::FrameRate{FRAME_RATE},
         spe::PREVENT_BUSY_WAIT_ON,
-        spe::VSYNC_ON
-#elif defined(__APPLE__)
-        FRAME_RATE,
-        spe::PREVENT_BUSY_WAIT_OFF,
         spe::VSYNC_OFF
-#else // Linux
+#elif defined(__APPLE__)
         0,
         spe::PREVENT_BUSY_WAIT_OFF,
         spe::VSYNC_OFF
+#else // ?
+    #error "Unknown target OS configuration"
 #endif
     };
     winMgr->setToHeadlessMode(timingConfig);
@@ -188,14 +186,16 @@ std::unique_ptr<spe::GameContext> CreateBasicClientContext() {
         spe::FrameRate{FRAME_RATE},
         spe::PREVENT_BUSY_WAIT_ON,
         spe::VSYNC_ON
+#elif defined(__linux__)
+        spe::FrameRate{FRAME_RATE},
+        spe::PREVENT_BUSY_WAIT_ON,
+        spe::VSYNC_OFF
 #elif defined(__APPLE__)
         FRAME_RATE * 2,
         spe::PREVENT_BUSY_WAIT_OFF,
         spe::VSYNC_OFF
-#else // Linux
-        0,
-        spe::PREVENT_BUSY_WAIT_OFF,
-        spe::VSYNC_OFF
+#else // ?
+    #error "Unknown target OS configuration"
 #endif
     };
 
