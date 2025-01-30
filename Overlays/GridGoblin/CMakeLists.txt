@@ -9,6 +9,7 @@ find_package(RapidJSON CONFIG REQUIRED)
 add_library(${PROJECT_NAME}
     # Model
     "Source/Model/Chunk.cpp"
+    "Source/Model/Shape.cpp"
 
     # Private
     "Source/Private/Cell_model_ext.cpp"
