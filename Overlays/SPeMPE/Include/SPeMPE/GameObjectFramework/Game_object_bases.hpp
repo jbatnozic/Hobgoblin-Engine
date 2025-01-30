@@ -35,8 +35,9 @@ public:
 
     //! Shorthand to get the GameContext in which this object lives.
     GameContext& ctx() const {
-        // TODO Temporary implementation
-        return *(getRuntime()->getUserData<GameContext>());
+        auto* ctxPointer = getRuntime()->getUserData<GameContext>();
+        assert(ctxPointer != nullptr);
+        return *ctxPointer;
     }
 
     //! Shorthand to get one of the context components of the context 
