@@ -62,12 +62,18 @@ private:
 
     hg::PZInteger _bubbleSpawnCooldown = BUBBLE_SPAWN_COOLDOWN;
 
+    float _prevX = INFINITY;
+    float _prevY = INFINITY;
+
+    // ===== Methods =====
+
     hg::alvin::CollisionDelegate _initColDelegate();
 
     void _execMovement(const PlayerInput& aInput);
 
     void _adjustView();
 
+    void _eventBeginUpdate(spe::IfDummy) override;
     void _eventUpdate1(spe::IfMaster) override;
     void _eventUpdate1(spe::IfDummy) override;
     void _eventPostUpdate(spe::IfMaster) override;

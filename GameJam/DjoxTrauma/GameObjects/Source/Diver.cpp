@@ -24,7 +24,7 @@ static constexpr cpFloat PHYS_WIDTH            = 32.0;
 static constexpr cpFloat PHYS_HEIGHT           = 64.0;
 static constexpr cpFloat PHYS_DAMPING          = 0.9;
 static constexpr cpFloat PHYS_ROTATIONAL_FORCE = 80'000.0;
-static constexpr cpFloat PHYS_PROPULSION_FORCE = 200'000.0;
+static constexpr cpFloat PHYS_PROPULSION_FORCE = 150'000.0;
 
 #define NUM_COLORS 12
 static const hg::gr::Color COLORS[NUM_COLORS] = {hg::gr::COLOR_BLACK,
@@ -110,6 +110,16 @@ void Diver::kill() {
 
 // MARK: QAO Events
 
+void Diver::_eventBeginUpdate(spe::IfDummy) {
+    if (this->isDeactivated() || ctx().getGameState().isPaused) {
+        return;
+    }
+
+    const auto& self = _getCurrentState();
+    _prevX = self.x;
+    _prevY = self.y;
+}
+
 void Diver::_eventUpdate1(spe::IfMaster) {
     if (ctx().getGameState().isPaused) {
         return;
@@ -120,6 +130,11 @@ void Diver::_eventUpdate1(spe::IfMaster) {
 
     auto& self = _getCurrentState();
     HG_HARD_ASSERT(self.owningPlayerIndex >= 0);
+
+    if (_prevX == INFINITY || _prevY == INFINITY) {
+        _prevX = self.x;
+        _prevY = self.y;
+    }
 
     bool  holdingBreath = false;
     auto& lobbyBackend  = ccomp<MLobbyBackend>();
@@ -402,32 +417,21 @@ hg::alvin::CollisionDelegate Diver::_initColDelegate() {
     return builder.finalize();
 }
 
-namespace {
-hg::math::AngleF PointDirection2(hg::math::Vector2f aFrom, hg::math::Vector2f aTo) {
-    return hg::math::PointDirection(aFrom.x, aFrom.y, aTo.x, aTo.y);
-}
-} // namespace
-
 void Diver::_adjustView() {
-    auto& self = _getCurrentState();
-    auto& view = ccomp<MWindow>().getView(0);
-#if 1
+    using hg::math::EuclideanDist;
+    using hg::math::PointDirection;
+
+    auto& windowMgr = ccomp<MWindow>();
+    auto& view      = windowMgr.getView(0);
+
+    const auto  mousePos = windowMgr.getInput().getViewRelativeMousePos(0);
+    const auto& self     = _getCurrentState();
+
+    view.move(self.x - _prevX, self.y - _prevY);
+
     auto targetPos = sf::Vector2f{self.x, self.y};
-    targetPos +=
-        hg::math::AngleF::fromRadians(self.directionInRad + hg::math::PI_F / 2.f).asNormalizedVector() *
-        300.f;
-    // if (self.direction & DIRECTION_RIGHT) {
-    //     targetPos.x += CAMERA_OFFSET;
-    // }
-    // if (self.direction & DIRECTION_LEFT) {
-    //     targetPos.x -= CAMERA_OFFSET;
-    // }
-    // if (self.direction & DIRECTION_DOWN) {
-    //     targetPos.y += CAMERA_OFFSET;
-    // }
-    // if (self.direction & DIRECTION_UP) {
-    //     targetPos.y -= CAMERA_OFFSET;
-    // }
+    targetPos += PointDirection(targetPos, mousePos).asNormalizedVector() *
+                 std::min(EuclideanDist(targetPos, mousePos) / 2.f, 150.f);
 
     {
         // auto gameOver = ccomp<MVarmap>().getInt64(VARMAP_ID_GAME_OVER);
@@ -440,13 +444,13 @@ void Diver::_adjustView() {
 
     const auto viewCenter = view.getCenter();
     const auto dist =
-        hg::math::EuclideanDist<float>(viewCenter.x, viewCenter.y, targetPos.x, targetPos.y);
-    const auto theta = PointDirection2(view.getCenter(), targetPos).asRadians();
+        EuclideanDist<float>(viewCenter.x, viewCenter.y, targetPos.x, targetPos.y);
+    const auto theta = PointDirection(view.getCenter(), targetPos).asRadians();
 
     if (dist >= 1000.0 || dist < 2.f) {
         view.setCenter(targetPos);
     } else if (dist >= 2.f) {
-        view.move(+std::cosf(theta) * dist * 0.045f, -std::sinf(theta) * dist * 0.045f);
+        view.move(+std::cosf(theta) * dist * 0.055f, -std::sinf(theta) * dist * 0.055f);
     }
 
     {
@@ -469,9 +473,6 @@ void Diver::_adjustView() {
         }
         view.setCenter(pos);
     }
-#else
-    view.setCenter({100.f, 100.f});
-#endif
 
     // Round
     const auto center = view.getCenter();
