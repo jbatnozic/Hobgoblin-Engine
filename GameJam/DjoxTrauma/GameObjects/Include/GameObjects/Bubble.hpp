@@ -15,8 +15,7 @@ SPEMPE_DEFINE_AUTODIFF_STATE(Bubble_VisibleState,
 
 class Bubble
     : public spe::SynchronizedObject<Bubble_VisibleState>
-    , public LootInterface
-{
+    , public LootInterface {
 public:
     Bubble(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSyncId);
 
@@ -38,7 +37,7 @@ private:
     void _eventUpdate1(spe::IfMaster) override;
     void _eventPostUpdate(spe::IfMaster) override;
     void _eventDraw1() override;
-    
+
     void _syncCreateImpl(spe::SyncControlDelegate& aSyncCtrl) const override;
     void _syncUpdateImpl(spe::SyncControlDelegate& aSyncCtrl) const override;
     void _syncDestroyImpl(spe::SyncControlDelegate& aSyncCtrl) const override;

@@ -43,7 +43,7 @@ public:
     static constexpr cpBitmask ENTITY_DEFAULT_MASK     = CAT_CHARACTER | CAT_TERRAIN | CAT_LOOT;
 
     virtual void addOxygen(float aOxygen) = 0;
-    virtual void kill() = 0;
+    virtual void kill()                   = 0;
 };
 
 class SharkInterface : public hg::alvin::EntityBase {

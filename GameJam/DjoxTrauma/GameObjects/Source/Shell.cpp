@@ -1,9 +1,9 @@
 #include "GameObjects/Shell.hpp"
 
 #include "GameObjects/Bubble.hpp"
+#include "GameObjects/Pearl.hpp"
 #include "Managers/Environment_manager_interface.hpp"
 #include "Managers/Main_gameplay_manager_interface.hpp"
-#include "GameObjects/Pearl.hpp"
 #include "Managers/Resource_manager_interface.hpp"
 #include "Sprite_manifest.hpp"
 

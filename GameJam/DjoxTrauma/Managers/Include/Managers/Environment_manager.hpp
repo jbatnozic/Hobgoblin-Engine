@@ -15,7 +15,7 @@
 #include <unordered_map>
 
 #include <Hobgoblin/Utility/File_io.hpp>
-#include<filesystem>
+#include <filesystem>
 
 struct ShapeHasher {
     std::size_t operator()(const cpShape* aShape) const {
@@ -39,7 +39,6 @@ public:
     void generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHeight);
 
     hg::alvin::Space& getSpace() override;
-
 
     hg::math::Vector2pz getGridSize() const override;
     hg::math::Vector2pz getScalesGridPosition() const override {
@@ -75,9 +74,9 @@ private:
 
     void loadTerrainText();
 
-    friend void SetTerrainImpl(EnvironmentManager& aEnvMgr,
-                               hg::PZInteger       aWidth,
-                               hg::PZInteger       aHeight,
-                               hg::PZInteger       aRowIdx,
-                               hg::util::BufferStream&  aCellData);
+    friend void SetTerrainImpl(EnvironmentManager&     aEnvMgr,
+                               hg::PZInteger           aWidth,
+                               hg::PZInteger           aHeight,
+                               hg::PZInteger           aRowIdx,
+                               hg::util::BufferStream& aCellData);
 };

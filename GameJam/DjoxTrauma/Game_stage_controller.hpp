@@ -12,8 +12,7 @@ SPEMPE_DEFINE_AUTODIFF_STATE(GameStageController_VisibleState,
 };
 // clang-format on
 
-class GameStageController
-    : public spe::SynchronizedObject<GameStageController_VisibleState> {
+class GameStageController : public spe::SynchronizedObject<GameStageController_VisibleState> {
 public:
     GameStageController(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSyncId);
 
@@ -21,7 +20,7 @@ public:
 
     void init();
 
-    int getCurrentGameStage() const;
+    int  getCurrentGameStage() const;
     void setCurrentGameStage(int aGameStage);
 
 private:

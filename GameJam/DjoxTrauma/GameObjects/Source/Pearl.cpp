@@ -25,7 +25,7 @@ Pearl::Pearl(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSy
         _getCurrentState().initMirror();
     } else {
         auto& resMgr = ccomp<ResourceManagerInterface>();
-        _sprite = resMgr.getSpriteLoader().getMultiBlueprint(SPR_PEARL).multispr();
+        _sprite      = resMgr.getSpriteLoader().getMultiBlueprint(SPR_PEARL).multispr();
     }
     _enableAlternatingUpdates();
 
@@ -80,7 +80,7 @@ hg::alvin::CollisionDelegate Pearl::_initColDelegate() {
             auto* diver = static_cast<Diver*>(&aDiver);
             if (!_deposited && diver->isAlive() && diver->_pearl == nullptr) {
                 diver->_pearl = this;
-                _holder = diver;
+                _holder       = diver;
             }
             return hg::alvin::Decision::REJECT_COLLISION;
         });
@@ -108,7 +108,7 @@ void Pearl::_eventUpdate1(spe::IfMaster) {
         _deposited = true;
         if (_holder != nullptr) {
             _holder->_pearl = nullptr;
-            _holder = nullptr;
+            _holder         = nullptr;
         }
         ccomp<MainGameplayManagerInterface>().depositPearl();
     }

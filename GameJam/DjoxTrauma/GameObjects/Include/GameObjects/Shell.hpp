@@ -12,9 +12,7 @@ SPEMPE_DEFINE_AUTODIFF_STATE(Shell_VisibleState,
 ) {};
 // clang-format on
 
-class Shell
-    : public spe::SynchronizedObject<Shell_VisibleState>
-{
+class Shell : public spe::SynchronizedObject<Shell_VisibleState> {
 public:
     Shell(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId aSyncId);
 
@@ -30,7 +28,7 @@ private:
     void _eventUpdate1(spe::IfMaster) override;
     void _eventPostUpdate(spe::IfMaster) override;
     void _eventDraw1() override;
-    
+
     void _syncCreateImpl(spe::SyncControlDelegate& aSyncCtrl) const override;
     void _syncUpdateImpl(spe::SyncControlDelegate& aSyncCtrl) const override;
     void _syncDestroyImpl(spe::SyncControlDelegate& aSyncCtrl) const override;

@@ -32,99 +32,93 @@ enum class CellShape {
     //
     EMPTY,
 
-    //0-0
-    // X X X X X
-    // X X X X X
-    // X X X X X
-    // X X X X X
-    // X X X X X
+    // 0-0
+    //  X X X X X
+    //  X X X X X
+    //  X X X X X
+    //  X X X X X
+    //  X X X X X
     FULL_SQUARE,
 
-
-    //3-2,2-2
-    // X X X X X
-    // X X X X X
-    // X X X X X
+    // 3-2,2-2
+    //  X X X X X
+    //  X X X X X
+    //  X X X X X
     //
     //
     HALF_SQUARE_TOP,
 
-
-    //3-0,2-0
+    // 3-0,2-0
     //
     //
-    // X X X X X
-    // X X X X X
-    // X X X X X
+    //  X X X X X
+    //  X X X X X
+    //  X X X X X
     HALF_SQUARE_BOTTOM,
 
-
-    //4-3
-    // X X X X X
-    // X X X X
-    // X X X
-    // X X
-    // X
+    // 4-3
+    //  X X X X X
+    //  X X X X
+    //  X X X
+    //  X X
+    //  X
     LARGE_TRIANGLE_TL,
 
-    //4-2
-    // X X X X X
-    //   X X X X
-    //     X X X
-    //       X X
-    //         X
+    // 4-2
+    //  X X X X X
+    //    X X X X
+    //      X X X
+    //        X X
+    //          X
     LARGE_TRIANGLE_TR,
 
-    //4-1
-    // X
-    // X X
-    // X X X
-    // X X X X
-    // X X X X X
+    // 4-1
+    //  X
+    //  X X
+    //  X X X
+    //  X X X X
+    //  X X X X X
     LARGE_TRIANGLE_BL,
 
-    //4-0
-    //         X
-    //       X X
-    //     X X X
-    //   X X X X
-    // X X X X X
+    // 4-0
+    //          X
+    //        X X
+    //      X X X
+    //    X X X X
+    //  X X X X X
     LARGE_TRIANGLE_BR,
 
-
-    //1-3
-    // X X X X X
-    // X X X
-    // X
+    // 1-3
+    //  X X X X X
+    //  X X X
+    //  X
     //
     //
     SMALL_TRIANGLE_TL,
 
-    //1-2
-    // X X X X X
-    //     X X X
-    //         X
+    // 1-2
+    //  X X X X X
+    //      X X X
+    //          X
     //
     //
     SMALL_TRIANGLE_TR,
 
-    //1-1
+    // 1-1
     //
     //
-    // X
-    // X X X
-    // X X X X X
+    //  X
+    //  X X X
+    //  X X X X X
     SMALL_TRIANGLE_BL,
 
-
-    //1-0
+    // 1-0
     //
     //
-    //         X
-    //     X X X
-    // X X X X X
+    //          X
+    //      X X X
+    //  X X X X X
     SMALL_TRIANGLE_BR,
-
 
     // 12-0
     // X
@@ -150,29 +144,28 @@ enum class CellShape {
     // X
     HIGH_SMALL_TRIANGLE_TL,
 
-    //8-2,7,8,9
-    // X X X X X
-    // X X X X X
-    // X X X X X
-    //     X X X
-    //         X
+    // 8-2,7,8,9
+    //  X X X X X
+    //  X X X X X
+    //  X X X X X
+    //      X X X
+    //          X
     HIGH_SMALL_TRIANGLE_TR,
 
-
-    //8-1,7,9
-    // X
-    // X X X
-    // X X X X X
-    // X X X X X
-    // X X X X X
+    // 8-1,7,9
+    //  X
+    //  X X X
+    //  X X X X X
+    //  X X X X X
+    //  X X X X X
     HIGH_SMALL_TRIANGLE_BL,
-    
-    //8-0,7,9
-    //         X
-    //     X X X
-    // X X X X X
-    // X X X X X
-    // X X X X X
+
+    // 8-0,7,9
+    //          X
+    //      X X X
+    //  X X X X X
+    //  X X X X X
+    //  X X X X X
     HIGH_SMALL_TRIANGLE_BR,
 };
 
@@ -442,15 +435,14 @@ RN_DEFINE_RPC(SetTerrain,
 }
 } // namespace
 
-void SetTerrainImpl(EnvironmentManager& aEnvMgr,
-                    hg::PZInteger       aWidth,
-                    hg::PZInteger       aHeight,
-                    hg::PZInteger       aRowIdx,
-                    hg::util::BufferStream&  aCellData) {
+void SetTerrainImpl(EnvironmentManager&     aEnvMgr,
+                    hg::PZInteger           aWidth,
+                    hg::PZInteger           aHeight,
+                    hg::PZInteger           aRowIdx,
+                    hg::util::BufferStream& aCellData) {
     if (aEnvMgr._cells.getWidth() != aWidth || aEnvMgr._cells.getHeight() != aHeight) {
         aEnvMgr._cells.reset(aWidth, aHeight);
     }
-
 
     std::size_t idx = 0;
     for (hg::PZInteger x = 0; x < aWidth; x += 1) {
@@ -466,7 +458,7 @@ EnvironmentManager::EnvironmentManager(QAO_RuntimeRef aRuntimeRef, int aExecutio
     if (ccomp<MResource>().getMode() == ResourceManagerInterface::Mode::CLIENT) {
         const auto& sprLoader = ccomp<MResource>().getSpriteLoader();
 
-        _spr       = sprLoader.getMultiBlueprint(SPR_TERRAIN).multispr();
+        _spr = sprLoader.getMultiBlueprint(SPR_TERRAIN).multispr();
     }
 }
 
@@ -509,8 +501,8 @@ std::vector<std::string> Split(std::string str, char split_char) {
 
 void EnvironmentManager::_createSpongeAt(hg::math::Vector2f aPosition) {
     auto* p = QAO_PCreate<Sponge>(ctx().getQAORuntime(),
-                                 ccomp<MNetworking>().getRegistryId(),
-                                 spe::SYNC_ID_NEW);
+                                  ccomp<MNetworking>().getRegistryId(),
+                                  spe::SYNC_ID_NEW);
     p->init(aPosition.x, aPosition.y);
 }
 
@@ -546,7 +538,7 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                 CellShape                shape        = CellShape::EMPTY;
                 if (spr_index == 100) {
                     shape = CellShape::EMPTY;
-                }else if (spr_index == 0 || spr_index == 6 || spr_index == 5 || spr_index == 10 ||
+                } else if (spr_index == 0 || spr_index == 6 || spr_index == 5 || spr_index == 10 ||
                            spr_index == 11 || spr_index == 13) {
                     shape = CellShape::FULL_SQUARE;
                 } else if ((spr_index == 3 || spr_index == 2) && spr_rotation == 2) {
@@ -569,17 +561,13 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                     shape = CellShape::SMALL_TRIANGLE_BL;
                 } else if (spr_index == 1 && spr_rotation == 0) {
                     shape = CellShape::SMALL_TRIANGLE_BR;
-                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9 ) &&
-                           spr_rotation == 3) {
+                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9) && spr_rotation == 3) {
                     shape = CellShape::HIGH_SMALL_TRIANGLE_TL;
-                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9 ) &&
-                           spr_rotation == 2) {
+                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9) && spr_rotation == 2) {
                     shape = CellShape::HIGH_SMALL_TRIANGLE_TR;
-                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9 ) &&
-                           spr_rotation == 1) {
+                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9) && spr_rotation == 1) {
                     shape = CellShape::HIGH_SMALL_TRIANGLE_BL;
-                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9 ) &&
-                           spr_rotation == 0) {
+                } else if ((spr_index == 7 || spr_index == 8 || spr_index == 9) && spr_rotation == 0) {
                     shape = CellShape::HIGH_SMALL_TRIANGLE_BR;
                 } else if ((spr_index == 12) && spr_rotation == 0) {
                     shape = CellShape::SMALL_TRIANGLE_FLIP_BR;
@@ -612,11 +600,9 @@ void EnvironmentManager::generateTerrain(hg::PZInteger aWidth, hg::PZInteger aHe
                     _collisionDelegate->bind(*this, *_shapes[y][x]);
                     _space->add(*_shapes[y][x]);
                 }
-
-            } 
+            }
         }
     }
-
 }
 
 hg::alvin::Space& EnvironmentManager::getSpace() {
@@ -624,22 +610,17 @@ hg::alvin::Space& EnvironmentManager::getSpace() {
     return *_space;
 }
 
-
-
 hg::math::Vector2pz EnvironmentManager::getGridSize() const {
     return {_cells.getWidth(), _cells.getHeight()};
 }
 
-void EnvironmentManager::generatePearls() {
-
-}
+void EnvironmentManager::generatePearls() {}
 
 void EnvironmentManager::_eventUpdate1() {
     if (_space.has_value() && !ctx().getGameState().isPaused) {
         _space->step(1.0 / 60.0);
     }
 }
-
 
 void EnvironmentManager::_eventDraw1() {
     auto& winMgr = ccomp<MWindow>();
@@ -651,7 +632,7 @@ void EnvironmentManager::_eventDraw1() {
         auto spr = ccomp<MResource>().getSpriteLoader().getMultiBlueprint(SPR_BACKGROUND).multispr();
         spr.selectSubsprite(0);
 
-        //spr.setRotation(hg::math::AngleF::fromDeg(60));
+        // spr.setRotation(hg::math::AngleF::fromDeg(60));
 
         const auto bounds    = spr.getLocalBounds();
         const auto worldSize = getGridSize();
@@ -659,11 +640,9 @@ void EnvironmentManager::_eventDraw1() {
 
         sf::Vector2f camera_pos = view.getCenter();
 
-                spr.setPosition(camera_pos.x, camera_pos.y);
+        spr.setPosition(camera_pos.x, camera_pos.y);
 
         canvas.draw(spr);
-
-
 
         hg::gr::RectangleShape rect{
             {4000.f, 4000.f}
@@ -696,16 +675,15 @@ void EnvironmentManager::_eventDraw1() {
     for (hg::PZInteger y = startY; y < endY; y += 1) {
         for (hg::PZInteger x = startX; x < endX; x += 1) {
 
-            std::vector<std::string> cell_value  = Split(_cells[y][x][0], '-');
-            int                      spr_index   = std::stoi(cell_value[0]);
+            std::vector<std::string> cell_value   = Split(_cells[y][x][0], '-');
+            int                      spr_index    = std::stoi(cell_value[0]);
             int                      spr_rotation = std::stoi(cell_value[1]);
 
             if (spr_index < 14) {
                 _spr.selectSubsprite(spr_index);
                 if (spr_rotation == 0) {
                     _spr.setScale(1, 1);
-                }
-                else if (spr_rotation == 1) {
+                } else if (spr_rotation == 1) {
                     _spr.setScale(-1, 1);
                 } else if (spr_rotation == 2) {
                     _spr.setScale(1, -1);
@@ -718,7 +696,6 @@ void EnvironmentManager::_eventDraw1() {
                                  (float)CELL_RESOLUTION * (y + 0.5f));
                 canvas.draw(_spr);
             }
-
         }
     }
 
@@ -735,7 +712,6 @@ void EnvironmentManager::_eventDraw1() {
     // }
 }
 
-
 void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {
     if (!ctx().isPrivileged()) {
         return;
@@ -750,8 +726,8 @@ void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {
             hg::util::BufferStream stream;
 
             for (hg::PZInteger x = 0; x < _cells.getWidth(); x += 1) {
-                //TODO
-                stream<< _cells[y][x][0];
+                // TODO
+                stream << _cells[y][x][0];
             }
 
             Compose_SetTerrain(ccomp<MNetworking>().getNode(),
@@ -764,8 +740,6 @@ void EnvironmentManager::onNetworkingEvent(const RN_Event& aEvent) {
     });
 }
 
-
-
 void EnvironmentManager::loadTerrainText() {
 
     std::filesystem::path root = std::filesystem::current_path();
@@ -776,26 +750,23 @@ void EnvironmentManager::loadTerrainText() {
         root = root.parent_path();
     }
 
-    std::string mapText = hg::util::SlurpFileBytes(root/map_path);
-    std::vector<std::string> lines     = Split(mapText, '\n');
-    std::vector<std::vector<std::string>> locations   = {};
+    std::string                           mapText            = hg::util::SlurpFileBytes(root / map_path);
+    std::vector<std::string>              lines              = Split(mapText, '\n');
+    std::vector<std::vector<std::string>> locations          = {};
     std::vector<std::vector<std::vector<std::string>>> cells = {};
 
     for (auto l : lines) {
         locations.push_back(Split(l, ','));
         std::vector<std::vector<std::string>> cell{};
         for (auto c : locations.back()) {
-            cell.push_back(Split(c,':'));
+            cell.push_back(Split(c, ':'));
         }
         cells.push_back(cell);
     }
 
-
-
-    
     HG_LOG_FATAL(LOG_ID, "sosilica --------------------------------------------");
 
-   // std::stringstream oss;
+    // std::stringstream oss;
     /* for (auto l : cells) {
         oss << "\n ";
         for (auto ll : l) {
@@ -812,16 +783,13 @@ void EnvironmentManager::loadTerrainText() {
 
     _cells.reset(aWidth, aHeight);
     std::stringstream oss;
-        for (hg::PZInteger y = 0; y < aHeight; y += 1) {
+    for (hg::PZInteger y = 0; y < aHeight; y += 1) {
         oss << "\n ";
-            for (hg::PZInteger x = 0; x < cells[y].size(); x += 1) {
-                _cells[y][x] = cells[y][x];
-                oss << _cells[y][x][0] << ';';
+        for (hg::PZInteger x = 0; x < cells[y].size(); x += 1) {
+            _cells[y][x] = cells[y][x];
+            oss << _cells[y][x][0] << ';';
         }
     }
 
-
-
-        
     HG_LOG_FATAL(LOG_ID, oss.str());
 }

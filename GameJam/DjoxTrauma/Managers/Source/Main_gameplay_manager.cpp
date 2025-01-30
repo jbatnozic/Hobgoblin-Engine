@@ -1,20 +1,20 @@
 #include "Managers/Main_gameplay_manager.hpp"
 
-#include "GameObjects/Bubble.hpp"
 #include "Config.hpp"
+#include "GameObjects/Bubble.hpp"
 #include "GameObjects/Diver.hpp"
-#include "Managers/Environment_manager_interface.hpp"
+#include "GameObjects/Pearl.hpp"
+#include "GameObjects/Shark.hpp"
+#include "GameObjects/Shell.hpp"
+#include "GameObjects/Sponge.hpp"
 #include "Game_stage.hpp"
 #include "Game_stage_controller.hpp"
+#include "Managers/Environment_manager_interface.hpp"
 #include "Managers/Host_menu_manager.hpp"
 #include "Managers/Join_menu_manager.hpp"
 #include "Managers/Lobby_frontend_manager_interface.hpp"
 #include "Managers/Main_menu_manager.hpp"
-#include "GameObjects/Shell.hpp"
-#include "GameObjects/Pearl.hpp"
 #include "Player_controls.hpp"
-#include "GameObjects/Shark.hpp"
-#include "GameObjects/Sponge.hpp"
 #include "Varmap_ids.hpp"
 
 #include <Hobgoblin/Format.hpp>
@@ -264,7 +264,7 @@ void MainGameplayManager::_startGame(hg::PZInteger aPlayerCount) {
 
     auto& lobbyMgr = ccomp<spe::LobbyBackendManagerInterface>();
 
-    //const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
+    // const auto sharkPlayerIdx = SelectRandomPlayer(lobbyMgr);
     auto sharkPlayerIdx = 123;
     for (hg::PZInteger i = 1; i < lobbyMgr.getSize(); i += 1) {
         /* if (lobbyMgr.getLockedInPlayerInfo(i).isEmpty()) {
@@ -390,8 +390,8 @@ void MainGameplayManager::_backToMainMenu() {
 
 void MainGameplayManager::_eventBeginUpdate() {
     if (ctx().isPrivileged()) {
-        auto& inputSync = ccomp<MInput>();
-        auto& lobbyBackend  = ccomp<MLobbyBackend>();
+        auto& inputSync    = ccomp<MInput>();
+        auto& lobbyBackend = ccomp<MLobbyBackend>();
 
         for (hg::PZInteger i = 0; i < _playerCount; i += 1) {
             const auto clientIdx = lobbyBackend.playerIdxToClientIdx(i);

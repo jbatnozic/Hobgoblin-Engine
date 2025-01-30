@@ -116,8 +116,8 @@ void Diver::_eventBeginUpdate(spe::IfDummy) {
     }
 
     const auto& self = _getCurrentState();
-    _prevX = self.x;
-    _prevY = self.y;
+    _prevX           = self.x;
+    _prevY           = self.y;
 }
 
 void Diver::_eventUpdate1(spe::IfMaster) {
@@ -443,9 +443,8 @@ void Diver::_adjustView() {
     }
 
     const auto viewCenter = view.getCenter();
-    const auto dist =
-        EuclideanDist<float>(viewCenter.x, viewCenter.y, targetPos.x, targetPos.y);
-    const auto theta = PointDirection(view.getCenter(), targetPos).asRadians();
+    const auto dist       = EuclideanDist<float>(viewCenter.x, viewCenter.y, targetPos.x, targetPos.y);
+    const auto theta      = PointDirection(view.getCenter(), targetPos).asRadians();
 
     if (dist >= 1000.0 || dist < 2.f) {
         view.setCenter(targetPos);

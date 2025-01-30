@@ -39,7 +39,7 @@ void Bubble::init(float                        aOxygen,
     assert(isMasterObject());
 
     _oxygen = aOxygen;
-    _owner = aOwner;
+    _owner  = aOwner;
 
     auto& self  = _getCurrentState();
     self.x      = aX;

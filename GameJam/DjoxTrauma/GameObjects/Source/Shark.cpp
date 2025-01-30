@@ -3,8 +3,8 @@
 #include "Config.hpp"
 #include "Managers/Environment_manager.hpp"
 #include "Managers/Main_gameplay_manager_interface.hpp"
-#include "Player_controls.hpp"
 #include "Managers/Resource_manager_interface.hpp"
+#include "Player_controls.hpp"
 #include "Sprite_manifest.hpp"
 #include "Varmap_ids.hpp"
 
@@ -115,15 +115,16 @@ void Shark::_eventUpdate1(spe::IfDummy) {
 
     auto& self = _getCurrentState();
 
-    auto& lobbyBackend = ccomp<MLobbyBackend>();
+    auto&      lobbyBackend     = ccomp<MLobbyBackend>();
     const auto localPlayerIndex = lobbyBackend.getLocalPlayerIndex();
     if (localPlayerIndex == self.owningPlayerIndex) {
         _adjustView();
 
-        auto& varmap = ccomp<spe::SyncedVarmapManagerInterface>();
-        const auto cs = varmap.getString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex));
+        auto&      varmap = ccomp<spe::SyncedVarmapManagerInterface>();
+        const auto cs     = varmap.getString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex));
         if (cs != "(Kraken)") {
-            varmap.requestToSetString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex), "(Kraken)");
+            varmap.requestToSetString(VARMAP_ID_PLAYER_STATUS + std::to_string(localPlayerIndex),
+                                      "(Kraken)");
         }
     }
 }
@@ -144,13 +145,15 @@ void Shark::_eventDraw1() {
 
     _bodySprite.selectSubsprite(0);
     _bodySprite.setPosition({self.x, self.y});
-    _bodySprite.setRotation(hg::math::AngleF::fromRad(self.directionInRad + hg::math::Pi<float>() / 2.f));
+    _bodySprite.setRotation(
+        hg::math::AngleF::fromRad(self.directionInRad + hg::math::Pi<float>() / 2.f));
     canvas.draw(_bodySprite);
 
     //_finsSprite.selectSubsprite(0);
     _finsSprite.advanceSubsprite(0.2f);
     _finsSprite.setPosition({self.x, self.y});
-    _finsSprite.setRotation(hg::math::AngleF::fromRad(self.directionInRad + hg::math::Pi<float>() / 2.f));
+    _finsSprite.setRotation(
+        hg::math::AngleF::fromRad(self.directionInRad + hg::math::Pi<float>() / 2.f));
     canvas.draw(_finsSprite);
 
     if (false) {

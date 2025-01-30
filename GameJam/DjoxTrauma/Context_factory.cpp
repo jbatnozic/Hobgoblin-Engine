@@ -9,8 +9,8 @@
 #include "Managers/Environment_manager.hpp"
 #include "Managers/Lobby_frontend_manager.hpp"
 #include "Managers/Main_gameplay_manager.hpp"
-#include "Player_controls.hpp"
 #include "Managers/Resource_manager.hpp"
+#include "Player_controls.hpp"
 
 #include "Managers/Host_menu_manager.hpp"
 #include "Managers/Join_menu_manager.hpp"
@@ -58,7 +58,7 @@ std::unique_ptr<spe::GameContext> CreateServerContext(const ServerGameParams& aP
         spe::PREVENT_BUSY_WAIT_OFF,
         spe::VSYNC_OFF
 #else // ?
-    #error "Unknown target OS configuration"
+#error "Unknown target OS configuration"
 #endif
     };
     winMgr->setToHeadlessMode(timingConfig);
@@ -195,7 +195,7 @@ std::unique_ptr<spe::GameContext> CreateBasicClientContext() {
         spe::PREVENT_BUSY_WAIT_OFF,
         spe::VSYNC_OFF
 #else // ?
-    #error "Unknown target OS configuration"
+#error "Unknown target OS configuration"
 #endif
     };
 

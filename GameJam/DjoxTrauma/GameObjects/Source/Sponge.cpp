@@ -17,7 +17,7 @@ Sponge::Sponge(QAO_RuntimeRef aRuntimeRef, spe::RegistryId aRegId, spe::SyncId a
         _getCurrentState().initMirror();
     } else {
         auto& resMgr = ccomp<ResourceManagerInterface>();
-        _sprite = resMgr.getSpriteLoader().getMultiBlueprint(SPR_SPONGE).multispr();
+        _sprite      = resMgr.getSpriteLoader().getMultiBlueprint(SPR_SPONGE).multispr();
     }
 
     _gameContext = &ctx();
