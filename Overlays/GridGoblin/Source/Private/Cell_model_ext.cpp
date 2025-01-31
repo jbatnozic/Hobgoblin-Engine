@@ -301,16 +301,23 @@ void CellModelExt::ExtensionData::refresh(const CellModelExt* aNorthNeighbour,
     CellModelExt* cell = reinterpret_cast<CellModelExt*>(reinterpret_cast<char*>(this) -
                                                          offsetof(CellModelExt, mutableExtensionData));
 
-    static constexpr auto OBSTRUCTION_FLAGS_MASK =
-        CellModelExt::RIGHT_EDGE_OBSTRUCTED | CellModelExt::TOP_EDGE_OBSTRUCTED |
-        CellModelExt::LEFT_EDGE_OBSTRUCTED | CellModelExt::BOTTOM_EDGE_OBSTRUCTED;
+    // clang-format off
+    static constexpr auto FLAG_MASK =
+        (CellModelExt::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR |
+         CellModelExt::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR  |
+         CellModelExt::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR  |
+         CellModelExt::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR ) &
+        ~(CellModelExt::OBSTRUCTED_BY_NORTH_NEIGHBOR | 
+          CellModelExt::OBSTRUCTED_BY_WEST_NEIGHBOR  |
+          CellModelExt::OBSTRUCTED_BY_EAST_NEIGHBOR  |
+          CellModelExt::OBSTRUCTED_BY_SOUTH_NEIGHBOR );
+    // clang-format on
 
-    static constexpr int FLAGS_SHIFT = 8;
+    static constexpr int FLAG_SHIFT = 12;
 
-    static_assert(0x01 << FLAGS_SHIFT == CellModelExt::RIGHT_EDGE_OBSTRUCTED);
+    static_assert(0xF << FLAG_SHIFT == FLAG_MASK);
 
-    const auto selector =
-        static_cast<std::size_t>((cell->getFlags() & OBSTRUCTION_FLAGS_MASK) >> FLAGS_SHIFT);
+    const auto selector = static_cast<std::size_t>((cell->getFlags() & FLAG_MASK) >> FLAG_SHIFT);
 
     HG_ASSERT(selector < predicate::SELECTION_TABLE.size());
 

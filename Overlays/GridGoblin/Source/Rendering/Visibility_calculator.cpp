@@ -37,22 +37,22 @@ std::size_t GetUnobstructedVertices(const CellModel&         aCell,
 
     static constexpr float OFFSET = 0.25;
 
-    if (aAllEdgesOverride || (flags & CellModel::RIGHT_EDGE_OBSTRUCTED) == 0) {
+    if (aAllEdgesOverride || (flags & CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR) == 0) {
         aVertices[cnt + 0] = {(aCellCoords.x + 1) * cr, (aCellCoords.y + 1) * cr + OFFSET};
         aVertices[cnt + 1] = {(aCellCoords.x + 1) * cr, (aCellCoords.y + 0) * cr - OFFSET};
         cnt += 2;
     }
-    if (aAllEdgesOverride || (flags & CellModel::TOP_EDGE_OBSTRUCTED) == 0) {
+    if (aAllEdgesOverride || (flags & CellModel::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR) == 0) {
         aVertices[cnt + 0] = {(aCellCoords.x + 1) * cr + OFFSET, (aCellCoords.y + 0) * cr};
         aVertices[cnt + 1] = {(aCellCoords.x + 0) * cr - OFFSET, (aCellCoords.y + 0) * cr};
         cnt += 2;
     }
-    if (aAllEdgesOverride || (flags & CellModel::LEFT_EDGE_OBSTRUCTED) == 0) {
+    if (aAllEdgesOverride || (flags & CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR) == 0) {
         aVertices[cnt + 0] = {(aCellCoords.x + 0) * cr, (aCellCoords.y + 0) * cr - OFFSET};
         aVertices[cnt + 1] = {(aCellCoords.x + 0) * cr, (aCellCoords.y + 1) * cr + OFFSET};
         cnt += 2;
     }
-    if (aAllEdgesOverride || (flags & CellModel::BOTTOM_EDGE_OBSTRUCTED) == 0) {
+    if (aAllEdgesOverride || (flags & CellModel::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR) == 0) {
         aVertices[cnt + 0] = {(aCellCoords.x + 0) * cr - OFFSET, (aCellCoords.y + 1) * cr};
         aVertices[cnt + 1] = {(aCellCoords.x + 1) * cr + OFFSET, (aCellCoords.y + 1) * cr};
         cnt += 2;
@@ -184,25 +184,25 @@ void VisibilityCalculator::_setInitialCalculationContext(PositionInWorld    aVie
 
 std::uint16_t VisibilityCalculator::_calcEdgesOfInterest(Vector2pz aCell) const {
     static constexpr CellFlags ALL_EDGES =
-        CellModel::RIGHT_EDGE_OBSTRUCTED | CellModel::TOP_EDGE_OBSTRUCTED |
-        CellModel::LEFT_EDGE_OBSTRUCTED | CellModel::BOTTOM_EDGE_OBSTRUCTED;
+        CellModel::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR | CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR |
+        CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR | CellModel::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR;
 
     CellFlags edgesOfInterest = ALL_EDGES;
 
     switch (Sign(aCell.x - _lineOfSightOriginCell.x)) {
     case -1:
-        edgesOfInterest ^= CellModel::RIGHT_EDGE_OBSTRUCTED;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR;
         break;
     case +1:
-        edgesOfInterest ^= CellModel::LEFT_EDGE_OBSTRUCTED;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR;
         break;
     }
     switch (Sign(aCell.y - _lineOfSightOriginCell.y)) {
     case -1:
-        edgesOfInterest ^= CellModel::BOTTOM_EDGE_OBSTRUCTED;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR;
         break;
     case 1:
-        edgesOfInterest ^= CellModel::TOP_EDGE_OBSTRUCTED;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR;
         break;
     }
 

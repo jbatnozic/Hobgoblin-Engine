@@ -64,80 +64,82 @@ inline constexpr Shape& operator&=(Shape& aLhs, Shape aRhs) {
 
 #undef TO_UNDERLYING
 
-// MARK: Blockage
+// MARK: Obstruction
 
-using BlockageFlags = std::uint8_t;
+using ObstructionFlags = std::uint8_t;
 
-enum BlockageFlagsEnum : BlockageFlags {
-    BLOCKS_NORTH       = 0x01,
-    BLOCKS_NORTH_FULLY = 0x03,
-    BLOCKS_WEST        = 0x04,
-    BLOCKS_WEST_FULLY  = 0x0C,
-    BLOCKS_EAST        = 0x10,
-    BLOCKS_EAST_FULLY  = 0x30,
-    BLOCKS_SOUTH       = 0x40,
-    BLOCKS_SOUTH_FULLY = 0xC0,
+// Note: north-south and east-west is swapped in regards to CellModel obstructed-by flags
+enum ObstructionFlagsEnum : ObstructionFlags {
+    OBSTRUCTS_NORTH       = (1 << 3),
+    OBSTRUCTS_NORTH_FULLY = (1 << 7) | OBSTRUCTS_NORTH,
+    OBSTRUCTS_WEST        = (1 << 2),
+    OBSTRUCTS_WEST_FULLY  = (1 << 6) | OBSTRUCTS_WEST,
+    OBSTRUCTS_EAST        = (1 << 1),
+    OBSTRUCTS_EAST_FULLY  = (1 << 5) | OBSTRUCTS_EAST,
+    OBSTRUCTS_SOUTH       = (1 << 0),
+    OBSTRUCTS_SOUTH_FULLY = (1 << 4) | OBSTRUCTS_SOUTH,
 
-    BLOCKS_ALL       = 0xAA,
-    BLOCKS_ALL_FULLY = 0xFF
+    OBSTRUCTS_ALL       = OBSTRUCTS_NORTH | OBSTRUCTS_WEST | OBSTRUCTS_EAST | OBSTRUCTS_SOUTH,
+    OBSTRUCTS_ALL_FULLY = 0xFF
 };
 
-inline constexpr std::array<BlockageFlags, 8 * 4> GetBlockageFlagsForAllShapes() {
-    std::array<BlockageFlags, 8 * 4> arr;
+inline constexpr std::array<ObstructionFlags, 8 * 4> GetObstructionFlagsForAllShapes() {
+    std::array<ObstructionFlags, 8 * 4> arr;
 
     using hobgoblin::ToSz;
 
     // clang-format off
-    arr[ToSz(Shape::FULL_SQUARE)]                 = BLOCKS_ALL_FULLY;
-    arr[ToSz(Shape::FULL_SQUARE | Shape::HFLIP)]  = BLOCKS_ALL_FULLY;
-    arr[ToSz(Shape::FULL_SQUARE | Shape::VFLIP)]  = BLOCKS_ALL_FULLY;
-    arr[ToSz(Shape::FULL_SQUARE | Shape::HVFLIP)] = BLOCKS_ALL_FULLY;
+    arr[ToSz(Shape::FULL_SQUARE)]                 = OBSTRUCTS_ALL_FULLY;
+    arr[ToSz(Shape::FULL_SQUARE | Shape::HFLIP)]  = OBSTRUCTS_ALL_FULLY;
+    arr[ToSz(Shape::FULL_SQUARE | Shape::VFLIP)]  = OBSTRUCTS_ALL_FULLY;
+    arr[ToSz(Shape::FULL_SQUARE | Shape::HVFLIP)] = OBSTRUCTS_ALL_FULLY;
 
-    arr[ToSz(Shape::LARGE_TRIANGLE)]                 = BLOCKS_ALL | BLOCKS_NORTH_FULLY | BLOCKS_WEST_FULLY;
-    arr[ToSz(Shape::LARGE_TRIANGLE | Shape::HFLIP)]  = BLOCKS_ALL | BLOCKS_NORTH_FULLY | BLOCKS_EAST_FULLY;
-    arr[ToSz(Shape::LARGE_TRIANGLE | Shape::VFLIP)]  = BLOCKS_ALL | BLOCKS_SOUTH_FULLY | BLOCKS_WEST_FULLY;
-    arr[ToSz(Shape::LARGE_TRIANGLE | Shape::HVFLIP)] = BLOCKS_ALL | BLOCKS_SOUTH_FULLY | BLOCKS_EAST_FULLY;
+    arr[ToSz(Shape::LARGE_TRIANGLE)]                 = OBSTRUCTS_ALL | OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_WEST_FULLY;
+    arr[ToSz(Shape::LARGE_TRIANGLE | Shape::HFLIP)]  = OBSTRUCTS_ALL | OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_EAST_FULLY;
+    arr[ToSz(Shape::LARGE_TRIANGLE | Shape::VFLIP)]  = OBSTRUCTS_ALL | OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_WEST_FULLY;
+    arr[ToSz(Shape::LARGE_TRIANGLE | Shape::HVFLIP)] = OBSTRUCTS_ALL | OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_EAST_FULLY;
 
-    arr[ToSz(Shape::SMALL_TRIANGLE_HOR)]                 = BLOCKS_NORTH_FULLY | BLOCKS_SOUTH;
-    arr[ToSz(Shape::SMALL_TRIANGLE_HOR | Shape::HFLIP)]  = BLOCKS_NORTH_FULLY | BLOCKS_SOUTH;
-    arr[ToSz(Shape::SMALL_TRIANGLE_HOR | Shape::VFLIP)]  = BLOCKS_SOUTH_FULLY | BLOCKS_NORTH;
-    arr[ToSz(Shape::SMALL_TRIANGLE_HOR | Shape::HVFLIP)] = BLOCKS_SOUTH_FULLY | BLOCKS_NORTH;
+    arr[ToSz(Shape::SMALL_TRIANGLE_HOR)]                 = OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_SOUTH;
+    arr[ToSz(Shape::SMALL_TRIANGLE_HOR | Shape::HFLIP)]  = OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_SOUTH;
+    arr[ToSz(Shape::SMALL_TRIANGLE_HOR | Shape::VFLIP)]  = OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_NORTH;
+    arr[ToSz(Shape::SMALL_TRIANGLE_HOR | Shape::HVFLIP)] = OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_NORTH;
 
-    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_HOR)]                 = BLOCKS_ALL | BLOCKS_NORTH_FULLY | BLOCKS_WEST_FULLY;
-    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HFLIP)]  = BLOCKS_ALL | BLOCKS_NORTH_FULLY | BLOCKS_EAST_FULLY;
-    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_HOR | Shape::VFLIP)]  = BLOCKS_ALL | BLOCKS_SOUTH_FULLY | BLOCKS_WEST_FULLY;
-    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HVFLIP)] = BLOCKS_ALL | BLOCKS_SOUTH_FULLY | BLOCKS_EAST_FULLY;
+    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_HOR)]                 = OBSTRUCTS_ALL | OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_WEST_FULLY;
+    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HFLIP)]  = OBSTRUCTS_ALL | OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_EAST_FULLY;
+    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_HOR | Shape::VFLIP)]  = OBSTRUCTS_ALL | OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_WEST_FULLY;
+    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HVFLIP)] = OBSTRUCTS_ALL | OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_EAST_FULLY;
 
-    arr[ToSz(Shape::HALF_SQUARE_HOR)]                 = BLOCKS_NORTH_FULLY | BLOCKS_SOUTH;
-    arr[ToSz(Shape::HALF_SQUARE_HOR | Shape::HFLIP)]  = BLOCKS_NORTH_FULLY | BLOCKS_SOUTH;
-    arr[ToSz(Shape::HALF_SQUARE_HOR | Shape::VFLIP)]  = BLOCKS_SOUTH_FULLY | BLOCKS_NORTH;
-    arr[ToSz(Shape::HALF_SQUARE_HOR | Shape::HVFLIP)] = BLOCKS_SOUTH_FULLY | BLOCKS_NORTH;
+    arr[ToSz(Shape::HALF_SQUARE_HOR)]                 = OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_SOUTH;
+    arr[ToSz(Shape::HALF_SQUARE_HOR | Shape::HFLIP)]  = OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_SOUTH;
+    arr[ToSz(Shape::HALF_SQUARE_HOR | Shape::VFLIP)]  = OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_NORTH;
+    arr[ToSz(Shape::HALF_SQUARE_HOR | Shape::HVFLIP)] = OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_NORTH;
 
-    arr[ToSz(Shape::SMALL_TRIANGLE_VER)]                 = BLOCKS_WEST_FULLY | BLOCKS_EAST;
-    arr[ToSz(Shape::SMALL_TRIANGLE_VER | Shape::HFLIP)]  = BLOCKS_EAST_FULLY | BLOCKS_WEST;
-    arr[ToSz(Shape::SMALL_TRIANGLE_VER | Shape::VFLIP)]  = BLOCKS_WEST_FULLY | BLOCKS_EAST;
-    arr[ToSz(Shape::SMALL_TRIANGLE_VER | Shape::HVFLIP)] = BLOCKS_EAST_FULLY | BLOCKS_WEST;
+    arr[ToSz(Shape::SMALL_TRIANGLE_VER)]                 = OBSTRUCTS_WEST_FULLY | OBSTRUCTS_EAST;
+    arr[ToSz(Shape::SMALL_TRIANGLE_VER | Shape::HFLIP)]  = OBSTRUCTS_EAST_FULLY | OBSTRUCTS_WEST;
+    arr[ToSz(Shape::SMALL_TRIANGLE_VER | Shape::VFLIP)]  = OBSTRUCTS_WEST_FULLY | OBSTRUCTS_EAST;
+    arr[ToSz(Shape::SMALL_TRIANGLE_VER | Shape::HVFLIP)] = OBSTRUCTS_EAST_FULLY | OBSTRUCTS_WEST;
 
-    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_VER)]                 = BLOCKS_ALL | BLOCKS_NORTH_FULLY | BLOCKS_WEST_FULLY;
-    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_VER | Shape::HFLIP)]  = BLOCKS_ALL | BLOCKS_NORTH_FULLY | BLOCKS_EAST_FULLY;
-    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_VER | Shape::VFLIP)]  = BLOCKS_ALL | BLOCKS_SOUTH_FULLY | BLOCKS_WEST_FULLY;
-    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_VER | Shape::HVFLIP)] = BLOCKS_ALL | BLOCKS_SOUTH_FULLY | BLOCKS_EAST_FULLY;
+    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_VER)]                 = OBSTRUCTS_ALL | OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_WEST_FULLY;
+    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_VER | Shape::HFLIP)]  = OBSTRUCTS_ALL | OBSTRUCTS_NORTH_FULLY | OBSTRUCTS_EAST_FULLY;
+    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_VER | Shape::VFLIP)]  = OBSTRUCTS_ALL | OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_WEST_FULLY;
+    arr[ToSz(Shape::TALL_SMALL_TRIANGLE_VER | Shape::HVFLIP)] = OBSTRUCTS_ALL | OBSTRUCTS_SOUTH_FULLY | OBSTRUCTS_EAST_FULLY;
 
-    arr[ToSz(Shape::HALF_SQUARE_VER)]                 = BLOCKS_WEST_FULLY | BLOCKS_EAST;
-    arr[ToSz(Shape::HALF_SQUARE_VER | Shape::HFLIP)]  = BLOCKS_EAST_FULLY | BLOCKS_WEST;
-    arr[ToSz(Shape::HALF_SQUARE_VER | Shape::VFLIP)]  = BLOCKS_WEST_FULLY | BLOCKS_EAST;
-    arr[ToSz(Shape::HALF_SQUARE_VER | Shape::HVFLIP)] = BLOCKS_EAST_FULLY | BLOCKS_WEST;
+    arr[ToSz(Shape::HALF_SQUARE_VER)]                 = OBSTRUCTS_WEST_FULLY | OBSTRUCTS_EAST;
+    arr[ToSz(Shape::HALF_SQUARE_VER | Shape::HFLIP)]  = OBSTRUCTS_EAST_FULLY | OBSTRUCTS_WEST;
+    arr[ToSz(Shape::HALF_SQUARE_VER | Shape::VFLIP)]  = OBSTRUCTS_WEST_FULLY | OBSTRUCTS_EAST;
+    arr[ToSz(Shape::HALF_SQUARE_VER | Shape::HVFLIP)] = OBSTRUCTS_EAST_FULLY | OBSTRUCTS_WEST;
     // clang-format on
 
     return arr;
 }
 
 // Fast lookup table
-inline constexpr auto SHAPE_BLOCKAGE_FLAGS = GetBlockageFlagsForAllShapes();
+inline constexpr auto SHAPE_OBSTRUCTION_FLAGS = GetObstructionFlagsForAllShapes();
 
 // MARK: String conversions
 
 const std::string& ShapeToString(Shape aShape);
+
 Shape StringToShape(std::string_view aString);
 
 } // namespace gridgoblin

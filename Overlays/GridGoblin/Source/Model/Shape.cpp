@@ -55,7 +55,7 @@ const std::string& ShapeToString(Shape aShape) {
         { Shape::HALF_SQUARE_VER | Shape::HVFLIP,         "HALF_SQUARE_VER(HFLIP,VFLIP)" },
     };
     // clang-format on
- 
+
     if (const auto it = shapeToStringMap.find(aShape); it != shapeToStringMap.end()) {
         return it->second;
     }
