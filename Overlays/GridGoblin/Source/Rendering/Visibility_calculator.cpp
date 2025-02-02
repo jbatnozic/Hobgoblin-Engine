@@ -3,6 +3,8 @@
 
 #include <GridGoblin/Rendering/Visibility_calculator.hpp>
 
+#include <GridGoblin/Model/Shape_vertices.hpp>
+
 #include <Hobgoblin/Common.hpp>
 #include <Hobgoblin/Logging.hpp>
 
@@ -29,36 +31,21 @@ std::size_t GetUnobstructedVertices(const CellModel&         aCell,
                                     bool                     aAllEdgesOverride,
                                     float                    aCellResolution,
                                     std::array<Vector2f, 8>& aVertices) {
-    std::size_t cnt = 0;
-
-    const auto flags = aCell.getFlags() | aEdgesOfInterest;
-
-#define cr aCellResolution
-
     static constexpr float OFFSET = 0.25;
 
-    if (aAllEdgesOverride || (flags & CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR) == 0) {
-        aVertices[cnt + 0] = {(aCellCoords.x + 1) * cr, (aCellCoords.y + 1) * cr + OFFSET};
-        aVertices[cnt + 1] = {(aCellCoords.x + 1) * cr, (aCellCoords.y + 0) * cr - OFFSET};
-        cnt += 2;
-    }
-    if (aAllEdgesOverride || (flags & CellModel::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR) == 0) {
-        aVertices[cnt + 0] = {(aCellCoords.x + 1) * cr + OFFSET, (aCellCoords.y + 0) * cr};
-        aVertices[cnt + 1] = {(aCellCoords.x + 0) * cr - OFFSET, (aCellCoords.y + 0) * cr};
-        cnt += 2;
-    }
-    if (aAllEdgesOverride || (flags & CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR) == 0) {
-        aVertices[cnt + 0] = {(aCellCoords.x + 0) * cr, (aCellCoords.y + 0) * cr - OFFSET};
-        aVertices[cnt + 1] = {(aCellCoords.x + 0) * cr, (aCellCoords.y + 1) * cr + OFFSET};
-        cnt += 2;
-    }
-    if (aAllEdgesOverride || (flags & CellModel::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR) == 0) {
-        aVertices[cnt + 0] = {(aCellCoords.x + 0) * cr - OFFSET, (aCellCoords.y + 1) * cr};
-        aVertices[cnt + 1] = {(aCellCoords.x + 1) * cr + OFFSET, (aCellCoords.y + 1) * cr};
-        cnt += 2;
-    }
+    const auto cnt = GetVisibilityVertices(aCell.getWall().shape,
+                                           aCell,
+                                           aEdgesOfInterest,
+                                           aAllEdgesOverride,
+                                           OFFSET,
+                                           aVertices);
 
-#undef cr
+    const auto tlCorner =
+        hg::math::Vector2f{aCellCoords.x * aCellResolution, aCellCoords.y * aCellResolution};
+
+    for (std::size_t i = 0; i < cnt; i += 1) {
+        aVertices[i] = tlCorner + (aVertices[i] * aCellResolution);
+    }
 
     return cnt;
 }

@@ -9,6 +9,7 @@
 #include <GridGoblin/Model/Chunk_id.hpp>
 #include <GridGoblin/Model/Layer.hpp>
 #include <GridGoblin/Model/Shape.hpp>
+#include <GridGoblin/Model/Shape_vertices.hpp>
 #include <GridGoblin/Model/Sprites.hpp>
 
 #include <GridGoblin/Rendering/Dimetric_renderer.hpp>

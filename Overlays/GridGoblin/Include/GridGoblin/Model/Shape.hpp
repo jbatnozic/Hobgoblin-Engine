@@ -40,7 +40,7 @@ enum class Shape : std::uint8_t {
 
     BIT_6 = 0x40, //!< Reserved for future use
     BIT_7 = 0x80  //!< Reserved for future use
-};
+} __attribute__((__flag_enum__));
 
 // MARK: Operators
 
