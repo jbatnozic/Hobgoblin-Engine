@@ -31,20 +31,20 @@ public:
     };
 
     enum Flags : std::uint16_t {
-        FLOOR_INITIALIZED = 1 << 1,
-        WALL_INITIALIZED  = 1 << 2,
+        FLOOR_INITIALIZED = 1 << 0,
+        WALL_INITIALIZED  = 1 << 1,
 
         // Obstructed-by flags
         //     bits  8..11 -> any
         //     bits 12..15 -> full
         OBSTRUCTED_BY_NORTH_NEIGHBOR       = (1 << 8),
-        OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR = (1 << 12) | OBSTRUCTED_BY_NORTH_NEIGHBOR,
+        OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR = (1 << 12),
         OBSTRUCTED_BY_WEST_NEIGHBOR        = (1 << 9),
-        OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR  = (1 << 13) | OBSTRUCTED_BY_WEST_NEIGHBOR,
+        OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR  = (1 << 13),
         OBSTRUCTED_BY_EAST_NEIGHBOR        = (1 << 10),
-        OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR  = (1 << 14) | OBSTRUCTED_BY_EAST_NEIGHBOR,
+        OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR  = (1 << 14),
         OBSTRUCTED_BY_SOUTH_NEIGHBOR       = (1 << 11),
-        OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR = (1 << 15) | OBSTRUCTED_BY_SOUTH_NEIGHBOR,
+        OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR = (1 << 15),
     };
 
     std::uint16_t getFlags() const;

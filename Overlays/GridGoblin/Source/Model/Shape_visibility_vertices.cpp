@@ -1,8 +1,6 @@
 // Copyright 2024 Jovan Batnozic. Released under MS-PL licence in Serbia.
 // See https://github.com/jbatnozic/Hobgoblin?tab=readme-ov-file#licence
 
-#pragma once
-
 #include <GridGoblin/Model/Cell_model.hpp>
 #include <GridGoblin/Model/Shape.hpp>
 #include <GridGoblin/Model/Shape_vertices.hpp>
@@ -197,7 +195,7 @@ std::size_t GetVisibilityVertices<Shape::LARGE_TRIANGLE | Shape::VFLIP>(
     }
     if (aAllEdgesOverride || _SOUTH(flags)) {
         aVertices[cnt + 0] = {0.f - aPaddingOffset, 1.f};
-        aVertices[cnt + 1] = {0.f + aPaddingOffset, 1.f};
+        aVertices[cnt + 1] = {1.f + aPaddingOffset, 1.f};
         cnt += 2;
     }
 
@@ -494,8 +492,8 @@ std::size_t GetVisibilityVertices<Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HVFLIP
         cnt += 2;
     }
     if (aAllEdgesOverride || _WEST(flags)) {
-        aVertices[cnt + 0] = {1.f, 0.5f - aPaddingOffset};
-        aVertices[cnt + 1] = {1.f, 1.0f + aPaddingOffset};
+        aVertices[cnt + 0] = {0.f, 0.5f - aPaddingOffset};
+        aVertices[cnt + 1] = {0.f, 1.0f + aPaddingOffset};
         cnt += 2;
     }
     if (aAllEdgesOverride || _SOUTH(flags)) {
@@ -536,7 +534,7 @@ std::size_t GetVisibilityVertices<Shape::HALF_SQUARE_HOR>(const CellModel& aCell
     }
     if (aAllEdgesOverride || _SOUTH(flags)) {
         aVertices[cnt + 0] = {0.f - aPaddingOffset, 0.5f};
-        aVertices[cnt + 1] = {0.f + aPaddingOffset, 0.5f};
+        aVertices[cnt + 1] = {1.f + aPaddingOffset, 0.5f};
         cnt += 2;
     }
 
@@ -587,7 +585,7 @@ std::size_t GetVisibilityVertices<Shape::HALF_SQUARE_HOR | Shape::VFLIP>(
     }
     if (aAllEdgesOverride || _SOUTH(flags)) {
         aVertices[cnt + 0] = {0.f - aPaddingOffset, 1.f};
-        aVertices[cnt + 1] = {0.f + aPaddingOffset, 1.f};
+        aVertices[cnt + 1] = {1.f + aPaddingOffset, 1.f};
         cnt += 2;
     }
 
@@ -683,7 +681,7 @@ std::size_t GetVisibilityVertices<Shape::SMALL_TRIANGLE_VER | Shape::VFLIP>(
     const auto flags = aCell.getFlags() | aEdgesOfInterest;
 
     if (aAllEdgesOverride || _EAST(flags) || _NORTH(flags)) {
-        aVertices[cnt + 0] = {0.5f + aPaddingOffset, 0.0f + aPaddingOffset};
+        aVertices[cnt + 0] = {0.5f + aPaddingOffset, 1.0f + aPaddingOffset};
         aVertices[cnt + 1] = {0.0f - aPaddingOffset, 0.0f - aPaddingOffset};
         cnt += 2;
     }

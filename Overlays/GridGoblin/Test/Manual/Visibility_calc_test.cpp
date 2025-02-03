@@ -26,7 +26,10 @@ namespace {
 namespace hg = jbatnozic::hobgoblin;
 
 namespace {
-void DrawChunk(hg::gr::Canvas& aCanvas, const World& aWorld, ChunkId aChunkId) {
+void DrawChunk(hg::gr::Canvas&             aCanvas,
+               const World&                aWorld,
+               ChunkId                     aChunkId,
+               const hg::gr::SpriteLoader& aSpriteLoader) {
     const auto  cellRes = aWorld.getCellResolution();
     const auto* chunk   = aWorld.getChunkAtId(aChunkId);
     if (chunk == nullptr) {
@@ -44,26 +47,58 @@ void DrawChunk(hg::gr::Canvas& aCanvas, const World& aWorld, ChunkId aChunkId) {
 
     for (hg::PZInteger y = 0; y < chunk->getCellCountY(); y += 1) {
         for (hg::PZInteger x = 0; x < chunk->getCellCountX(); x += 1) {
-            rect.setPosition(start.x + x * cellRes, start.y + y * cellRes);
             const auto& cell = chunk->getCellAtUnchecked(x, y);
+            const auto ext = static_cast<const gridgoblin::detail::CellModelExt&>(cell);
             if (cell.isWallInitialized()) {
-                rect.setFillColor(hg::gr::COLOR_BLACK);
+                const auto shape = cell.getWall().shape;
+                auto spr =
+                    aSpriteLoader.getMultiBlueprint(ShapeToString(shape & ~Shape::HVFLIP)).multispr();
+                spr.setPosition(start.x + x * cellRes, start.y + y * cellRes);
+                float xScale = 1.f;
+                float yScale = 1.f;
+                if ((shape & Shape::HFLIP) == Shape::HFLIP) {
+                    xScale = -1.f;
+                    spr.move(cellRes, 0.f);
+                }
+                if ((shape & Shape::VFLIP) == Shape::VFLIP) {
+                    yScale = -1.f;
+                    spr.move(0.f, cellRes);
+                }
+                spr.setScale(xScale, yScale);
+                aCanvas.draw(spr);
             } else {
+                rect.setPosition(start.x + x * cellRes, start.y + y * cellRes);
                 rect.setFillColor(hg::gr::COLOR_TRANSPARENT);
+                aCanvas.draw(rect);
             }
-            aCanvas.draw(rect);
         }
     }
 }
 } // namespace
 
-#define CELL_COUNT_X     120
-#define CELL_COUNT_Y     120
-#define CELLRES          24.f
-#define CELL_PROBABILITY 10
+#define CELL_COUNT_X     40
+#define CELL_COUNT_Y     40
+#define CELLRES          32.f
+#define CELL_PROBABILITY 15
 
 void RunVisibilityCalculatorTestImpl() {
     hg::log::SetMinimalLogSeverity(hg::log::Severity::Info);
+
+    const auto root = std::filesystem::path{HG_TEST_ASSET_DIR};
+
+    hg::gr::SpriteLoader loader;
+    // clang-format off
+    loader.startTexture(256, 256)
+        ->addSprite("FULL_SQUARE()",             root / "full-square.png")
+        ->addSprite("LARGE_TRIANGLE()",          root / "large-triangle.png")
+        ->addSprite("SMALL_TRIANGLE_HOR()",      root / "small-triangle-hor.png")
+        ->addSprite("TALL_SMALL_TRIANGLE_HOR()", root / "tall-small-triangle-hor.png")
+        ->addSprite("HALF_SQUARE_HOR()",         root / "half-square-hor.png")
+        ->addSprite("SMALL_TRIANGLE_VER()",      root / "small-triangle-ver.png")
+        ->addSprite("TALL_SMALL_TRIANGLE_VER()", root / "tall-small-triangle-ver.png")
+        ->addSprite("HALF_SQUARE_VER()",         root / "half-square-ver.png")
+        ->finalize(hg::gr::TexturePackingHeuristic::BestAreaFit);
+    // clang-format on
 
     WorldConfig config{.chunkCountX                 = 1,
                        .chunkCountY                 = 1,
@@ -99,7 +134,9 @@ void RunVisibilityCalculatorTestImpl() {
                     aEditor.setFloorAt({x, y}, CellModel::Floor{0});
                     if (hg::util::GetRandomNumber(0, 99) < CELL_PROBABILITY &&
                         x != CELL_COUNT_X / 2 - 1 && x != CELL_COUNT_X / 2) {
-                        aEditor.setWallAt({x, y}, CellModel::Wall{0, 0, Shape::FULL_SQUARE});
+                        aEditor.setWallAt(
+                            {x, y},
+                            CellModel::Wall{0, 0, (Shape)hg::util::GetRandomNumber(0, 30)});
                     }
                 }
             }
@@ -191,7 +228,7 @@ void RunVisibilityCalculatorTestImpl() {
         // }
 
         window.clear(hg::gr::Color{155, 155, 155});
-        DrawChunk(window, world, {0, 0});
+        DrawChunk(window, world, {0, 0}, loader);
         window.draw(spr);
 
         window.display();

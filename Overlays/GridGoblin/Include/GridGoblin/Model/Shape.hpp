@@ -42,6 +42,8 @@ enum class Shape : std::uint8_t {
     BIT_7 = 0x80  //!< Reserved for future use
 } __attribute__((__flag_enum__));
 
+// TODO: max shape number (and replace hardcoded values elsewhere)
+
 // MARK: Operators
 
 #define TO_UNDERLYING(_val_) static_cast<std::underlying_type<decltype(_val_)>::type>(_val_)
@@ -62,6 +64,10 @@ inline constexpr Shape& operator&=(Shape& aLhs, Shape aRhs) {
     return (aLhs = (aLhs & aRhs));
 }
 
+inline constexpr Shape operator~(Shape aShape) {
+    return static_cast<Shape>(~TO_UNDERLYING(aShape)); 
+}
+
 #undef TO_UNDERLYING
 
 // MARK: Obstruction
@@ -71,13 +77,13 @@ using ObstructionFlags = std::uint8_t;
 // Note: north-south and east-west is swapped in regards to CellModel obstructed-by flags
 enum ObstructionFlagsEnum : ObstructionFlags {
     OBSTRUCTS_NORTH       = (1 << 3),
-    OBSTRUCTS_NORTH_FULLY = (1 << 7) | OBSTRUCTS_NORTH,
+    OBSTRUCTS_NORTH_FULLY = (1 << 7),
     OBSTRUCTS_WEST        = (1 << 2),
-    OBSTRUCTS_WEST_FULLY  = (1 << 6) | OBSTRUCTS_WEST,
+    OBSTRUCTS_WEST_FULLY  = (1 << 6),
     OBSTRUCTS_EAST        = (1 << 1),
-    OBSTRUCTS_EAST_FULLY  = (1 << 5) | OBSTRUCTS_EAST,
+    OBSTRUCTS_EAST_FULLY  = (1 << 5),
     OBSTRUCTS_SOUTH       = (1 << 0),
-    OBSTRUCTS_SOUTH_FULLY = (1 << 4) | OBSTRUCTS_SOUTH,
+    OBSTRUCTS_SOUTH_FULLY = (1 << 4),
 
     OBSTRUCTS_ALL       = OBSTRUCTS_NORTH | OBSTRUCTS_WEST | OBSTRUCTS_EAST | OBSTRUCTS_SOUTH,
     OBSTRUCTS_ALL_FULLY = 0xFF

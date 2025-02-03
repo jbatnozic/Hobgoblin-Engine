@@ -31,7 +31,7 @@ std::size_t GetUnobstructedVertices(const CellModel&         aCell,
                                     bool                     aAllEdgesOverride,
                                     float                    aCellResolution,
                                     std::array<Vector2f, 8>& aVertices) {
-    static constexpr float OFFSET = 0.25;
+    const float OFFSET = 0.25 / aCellResolution;
 
     const auto cnt = GetVisibilityVertices(aCell.getWall().shape,
                                            aCell,
@@ -163,7 +163,7 @@ void VisibilityCalculator::_setInitialCalculationContext(PositionInWorld    aVie
                  std::max(std::abs(_lineOfSightOrigin.x - (_lineOfSightOriginCell.x + 0.5f) * _cr),
                           std::abs(_lineOfSightOrigin.y - (_lineOfSightOriginCell.y + 0.5f) * _cr));
 
-    // equal to o_triangleSideLength / (_cr / _rayPointsPerCell)
+    // equal to _triangleSideLength / (_cr / _rayPointsPerCell)
     _maxPointsPerRay = _triangleSideLength * _rayPointsPerCell / _cr;
 
     _rayCheckingEnabled = false;
@@ -178,10 +178,10 @@ std::uint16_t VisibilityCalculator::_calcEdgesOfInterest(Vector2pz aCell) const 
 
     switch (Sign(aCell.x - _lineOfSightOriginCell.x)) {
     case -1:
-        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR;
         break;
     case +1:
-        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR;
         break;
     }
     switch (Sign(aCell.y - _lineOfSightOriginCell.y)) {
