@@ -306,11 +306,7 @@ void CellModelExt::ExtensionData::refresh(const CellModelExt* aNorthNeighbour,
         (CellModelExt::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR |
          CellModelExt::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR  |
          CellModelExt::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR  |
-         CellModelExt::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR ) &
-        ~(CellModelExt::OBSTRUCTED_BY_NORTH_NEIGHBOR | 
-          CellModelExt::OBSTRUCTED_BY_WEST_NEIGHBOR  |
-          CellModelExt::OBSTRUCTED_BY_EAST_NEIGHBOR  |
-          CellModelExt::OBSTRUCTED_BY_SOUTH_NEIGHBOR );
+         CellModelExt::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR );
     // clang-format on
 
     static constexpr int FLAG_SHIFT = 12;

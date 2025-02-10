@@ -630,7 +630,7 @@ bool IsCellSolid(const CellModel* aCell) {
 
 std::uint16_t GetNeighborObstruction(const CellModel* aCell, ObstructionFlags aRelevantFlags) {
     static constexpr std::uint16_t FLAG_LS = 8; //!< Flags left shift value
-    
+
     static_assert((OBSTRUCTS_NORTH << FLAG_LS) == CellModel::OBSTRUCTED_BY_SOUTH_NEIGHBOR);
     static_assert((OBSTRUCTS_NORTH_FULLY << FLAG_LS) == CellModel::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR);
 

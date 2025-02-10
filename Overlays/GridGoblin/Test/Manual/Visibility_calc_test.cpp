@@ -48,10 +48,10 @@ void DrawChunk(hg::gr::Canvas&             aCanvas,
     for (hg::PZInteger y = 0; y < chunk->getCellCountY(); y += 1) {
         for (hg::PZInteger x = 0; x < chunk->getCellCountX(); x += 1) {
             const auto& cell = chunk->getCellAtUnchecked(x, y);
-            const auto ext = static_cast<const gridgoblin::detail::CellModelExt&>(cell);
+            const auto  ext  = static_cast<const gridgoblin::detail::CellModelExt&>(cell);
             if (cell.isWallInitialized()) {
                 const auto shape = cell.getWall().shape;
-                auto spr =
+                auto       spr =
                     aSpriteLoader.getMultiBlueprint(ShapeToString(shape & ~Shape::HVFLIP)).multispr();
                 spr.setPosition(start.x + x * cellRes, start.y + y * cellRes);
                 float xScale = 1.f;

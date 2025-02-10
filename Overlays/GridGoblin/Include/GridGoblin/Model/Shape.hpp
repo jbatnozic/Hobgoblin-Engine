@@ -14,6 +14,12 @@
 namespace jbatnozic {
 namespace gridgoblin {
 
+#if defined(__GNUC__)
+#define GRIDGOBLIN_FLAG_ENUM __attribute__((__flag_enum__));
+#else
+#define GRIDGOBLIN_FLAG_ENUM
+#endif
+
 // MARK: Enum definition
 
 enum class Shape : std::uint8_t {
@@ -40,9 +46,10 @@ enum class Shape : std::uint8_t {
 
     BIT_6 = 0x40, //!< Reserved for future use
     BIT_7 = 0x80  //!< Reserved for future use
-} __attribute__((__flag_enum__));
+} GRIDGOBLIN_FLAG_ENUM;
 
-// TODO: max shape number (and replace hardcoded values elsewhere)
+constexpr std::uint8_t MAX_SHAPE_NUMBER =
+    static_cast<std::uint8_t>(Shape::HALF_SQUARE_VER) | static_cast<std::uint8_t>(Shape::HVFLIP);
 
 // MARK: Operators
 
@@ -65,7 +72,7 @@ inline constexpr Shape& operator&=(Shape& aLhs, Shape aRhs) {
 }
 
 inline constexpr Shape operator~(Shape aShape) {
-    return static_cast<Shape>(~TO_UNDERLYING(aShape)); 
+    return static_cast<Shape>(~TO_UNDERLYING(aShape));
 }
 
 #undef TO_UNDERLYING
@@ -87,7 +94,9 @@ enum ObstructionFlagsEnum : ObstructionFlags {
 
     OBSTRUCTS_ALL       = OBSTRUCTS_NORTH | OBSTRUCTS_WEST | OBSTRUCTS_EAST | OBSTRUCTS_SOUTH,
     OBSTRUCTS_ALL_FULLY = 0xFF
-};
+} GRIDGOBLIN_FLAG_ENUM;
+
+#undef GRIDGOBLIN_FLAG_ENUM
 
 inline constexpr std::array<ObstructionFlags, 8 * 4> GetObstructionFlagsForAllShapes() {
     std::array<ObstructionFlags, 8 * 4> arr;
@@ -144,8 +153,18 @@ inline constexpr auto SHAPE_OBSTRUCTION_FLAGS = GetObstructionFlagsForAllShapes(
 
 // MARK: String conversions
 
+//! Convert a shape enum value into a string.
+//!
+//! Example returned strings: FULL_SQUARE(), SMALL_TRIANGLE_HOR(HFLIP), HALF_SQUARE_VER(HVFLIP)
+//!
+//! \throws hg::TracedLogicError on failure.
 const std::string& ShapeToString(Shape aShape);
 
+//! Convert a string (case-sensitive) into a shape enum value.
+//!
+//! Example strings to convert: FULL_SQUARE(), SMALL_TRIANGLE_HOR(HFLIP), HALF_SQUARE_VER(HVFLIP)
+//!
+//! \throws hg::TracedLogicError on failure.
 Shape StringToShape(std::string_view aString);
 
 } // namespace gridgoblin

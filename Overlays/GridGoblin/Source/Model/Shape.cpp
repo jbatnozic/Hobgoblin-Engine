@@ -17,42 +17,42 @@ const std::string& ShapeToString(Shape aShape) {
         { Shape::FULL_SQUARE,                             "FULL_SQUARE()" },
         { Shape::FULL_SQUARE | Shape::HFLIP,              "FULL_SQUARE(HFLIP)" },
         { Shape::FULL_SQUARE | Shape::VFLIP,              "FULL_SQUARE(VFLIP)" },
-        { Shape::FULL_SQUARE | Shape::HVFLIP,             "FULL_SQUARE(HFLIP,VFLIP)" },
+        { Shape::FULL_SQUARE | Shape::HVFLIP,             "FULL_SQUARE(HVFLIP)" },
         // Large triangle
         { Shape::LARGE_TRIANGLE,                          "LARGE_TRIANGLE()" },
         { Shape::LARGE_TRIANGLE | Shape::HFLIP,           "LARGE_TRIANGLE(HFLIP)" },
         { Shape::LARGE_TRIANGLE | Shape::VFLIP,           "LARGE_TRIANGLE(VFLIP)" },
-        { Shape::LARGE_TRIANGLE | Shape::HVFLIP,          "LARGE_TRIANGLE(HFLIP,VFLIP)" },
+        { Shape::LARGE_TRIANGLE | Shape::HVFLIP,          "LARGE_TRIANGLE(HVFLIP)" },
         // Small triangle (horizontal)
         { Shape::SMALL_TRIANGLE_HOR,                      "SMALL_TRIANGLE_HOR()" },
         { Shape::SMALL_TRIANGLE_HOR | Shape::HFLIP,       "SMALL_TRIANGLE_HOR(HFLIP)" },
         { Shape::SMALL_TRIANGLE_HOR | Shape::VFLIP,       "SMALL_TRIANGLE_HOR(VFLIP)" },
-        { Shape::SMALL_TRIANGLE_HOR | Shape::HVFLIP,      "SMALL_TRIANGLE_HOR(HFLIP,VFLIP)" },
+        { Shape::SMALL_TRIANGLE_HOR | Shape::HVFLIP,      "SMALL_TRIANGLE_HOR(HVFLIP)" },
         // Tall small triangle (horizontal)
         { Shape::TALL_SMALL_TRIANGLE_HOR,                 "TALL_SMALL_TRIANGLE_HOR()" },
         { Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HFLIP,  "TALL_SMALL_TRIANGLE_HOR(HFLIP)" },
         { Shape::TALL_SMALL_TRIANGLE_HOR | Shape::VFLIP,  "TALL_SMALL_TRIANGLE_HOR(VFLIP)" },
-        { Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HVFLIP, "TALL_SMALL_TRIANGLE_HOR(HFLIP,VFLIP)" },
+        { Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HVFLIP, "TALL_SMALL_TRIANGLE_HOR(HVFLIP)" },
         // Half square (horizontal)
         { Shape::HALF_SQUARE_HOR,                         "HALF_SQUARE_HOR()" },
         { Shape::HALF_SQUARE_HOR | Shape::HFLIP,          "HALF_SQUARE_HOR(HFLIP)" },
         { Shape::HALF_SQUARE_HOR | Shape::VFLIP,          "HALF_SQUARE_HOR(VFLIP)" },
-        { Shape::HALF_SQUARE_HOR | Shape::HVFLIP,         "HALF_SQUARE_HOR(HFLIP,VFLIP)" },
+        { Shape::HALF_SQUARE_HOR | Shape::HVFLIP,         "HALF_SQUARE_HOR(HVFLIP)" },
         // Small triangle (vertical)
         { Shape::SMALL_TRIANGLE_VER,                      "SMALL_TRIANGLE_VER()" },
         { Shape::SMALL_TRIANGLE_VER | Shape::HFLIP,       "SMALL_TRIANGLE_VER(HFLIP)" },
         { Shape::SMALL_TRIANGLE_VER | Shape::VFLIP,       "SMALL_TRIANGLE_VER(VFLIP)" },
-        { Shape::SMALL_TRIANGLE_VER | Shape::HVFLIP,      "SMALL_TRIANGLE_VER(HFLIP,VFLIP)" },
+        { Shape::SMALL_TRIANGLE_VER | Shape::HVFLIP,      "SMALL_TRIANGLE_VER(HVFLIP)" },
         // Tall small triangle (vertical)
         { Shape::TALL_SMALL_TRIANGLE_VER,                 "TALL_SMALL_TRIANGLE_VER()" },
         { Shape::TALL_SMALL_TRIANGLE_VER | Shape::HFLIP,  "TALL_SMALL_TRIANGLE_VER(HFLIP)" },
         { Shape::TALL_SMALL_TRIANGLE_VER | Shape::VFLIP,  "TALL_SMALL_TRIANGLE_VER(VFLIP)" },
-        { Shape::TALL_SMALL_TRIANGLE_VER | Shape::HVFLIP, "TALL_SMALL_TRIANGLE_VER(HFLIP,VFLIP)" },
+        { Shape::TALL_SMALL_TRIANGLE_VER | Shape::HVFLIP, "TALL_SMALL_TRIANGLE_VER(HVFLIP)" },
         // Half square (vertical)
         { Shape::HALF_SQUARE_VER,                         "HALF_SQUARE_VER()" },
         { Shape::HALF_SQUARE_VER | Shape::HFLIP,          "HALF_SQUARE_VER(HFLIP)" },
         { Shape::HALF_SQUARE_VER | Shape::VFLIP,          "HALF_SQUARE_VER(VFLIP)" },
-        { Shape::HALF_SQUARE_VER | Shape::HVFLIP,         "HALF_SQUARE_VER(HFLIP,VFLIP)" },
+        { Shape::HALF_SQUARE_VER | Shape::HVFLIP,         "HALF_SQUARE_VER(HVFLIP)" },
     };
     // clang-format on
 
@@ -71,42 +71,42 @@ Shape StringToShape(std::string_view aString) {
         { "FULL_SQUARE()",                        Shape::FULL_SQUARE },
         { "FULL_SQUARE(HFLIP)",                   Shape::FULL_SQUARE | Shape::HFLIP },
         { "FULL_SQUARE(VFLIP)",                   Shape::FULL_SQUARE | Shape::VFLIP },
-        { "FULL_SQUARE(HFLIP,VFLIP)",             Shape::FULL_SQUARE | Shape::HVFLIP },
+        { "FULL_SQUARE(HVFLIP)",                  Shape::FULL_SQUARE | Shape::HVFLIP },
         // Large triangle
         { "LARGE_TRIANGLE()",                     Shape::LARGE_TRIANGLE },
         { "LARGE_TRIANGLE(HFLIP)",                Shape::LARGE_TRIANGLE | Shape::HFLIP },
         { "LARGE_TRIANGLE(VFLIP)",                Shape::LARGE_TRIANGLE | Shape::VFLIP },
-        { "LARGE_TRIANGLE(HFLIP,VFLIP)",          Shape::LARGE_TRIANGLE | Shape::HVFLIP },
+        { "LARGE_TRIANGLE(HVFLIP)",               Shape::LARGE_TRIANGLE | Shape::HVFLIP },
         // Small triangle (horizontal)
         { "SMALL_TRIANGLE_HOR()",                 Shape::SMALL_TRIANGLE_HOR },
         { "SMALL_TRIANGLE_HOR(HFLIP)",            Shape::SMALL_TRIANGLE_HOR | Shape::HFLIP },
         { "SMALL_TRIANGLE_HOR(VFLIP)",            Shape::SMALL_TRIANGLE_HOR | Shape::VFLIP },
-        { "SMALL_TRIANGLE_HOR(HFLIP,VFLIP)",      Shape::SMALL_TRIANGLE_HOR | Shape::HVFLIP },
+        { "SMALL_TRIANGLE_HOR(HVFLIP)",           Shape::SMALL_TRIANGLE_HOR | Shape::HVFLIP },
         // Tall small triangle (horizontal)
         { "TALL_SMALL_TRIANGLE_HOR()",            Shape::TALL_SMALL_TRIANGLE_HOR },
         { "TALL_SMALL_TRIANGLE_HOR(HFLIP)",       Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HFLIP },
         { "TALL_SMALL_TRIANGLE_HOR(VFLIP)",       Shape::TALL_SMALL_TRIANGLE_HOR | Shape::VFLIP },
-        { "TALL_SMALL_TRIANGLE_HOR(HFLIP,VFLIP)", Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HVFLIP },
+        { "TALL_SMALL_TRIANGLE_HOR(HVFLIP)",      Shape::TALL_SMALL_TRIANGLE_HOR | Shape::HVFLIP },
         // Half square (horizontal)
         { "HALF_SQUARE_HOR()",                    Shape::HALF_SQUARE_HOR },
         { "HALF_SQUARE_HOR(HFLIP)",               Shape::HALF_SQUARE_HOR | Shape::HFLIP },
         { "HALF_SQUARE_HOR(VFLIP)",               Shape::HALF_SQUARE_HOR | Shape::VFLIP },
-        { "HALF_SQUARE_HOR(HFLIP,VFLIP)",         Shape::HALF_SQUARE_HOR | Shape::HVFLIP },
+        { "HALF_SQUARE_HOR(HVFLIP)",              Shape::HALF_SQUARE_HOR | Shape::HVFLIP },
         // Small triangle (vertical)
         { "SMALL_TRIANGLE_VER()",                 Shape::SMALL_TRIANGLE_VER },
         { "SMALL_TRIANGLE_VER(HFLIP)",            Shape::SMALL_TRIANGLE_VER | Shape::HFLIP },
         { "SMALL_TRIANGLE_VER(VFLIP)",            Shape::SMALL_TRIANGLE_VER | Shape::VFLIP },
-        { "SMALL_TRIANGLE_VER(HFLIP,VFLIP)",      Shape::SMALL_TRIANGLE_VER | Shape::HVFLIP },
+        { "SMALL_TRIANGLE_VER(HVFLIP)",           Shape::SMALL_TRIANGLE_VER | Shape::HVFLIP },
         // Tall small triangle (vertical)
         { "TALL_SMALL_TRIANGLE_VER()",            Shape::TALL_SMALL_TRIANGLE_VER },
         { "TALL_SMALL_TRIANGLE_VER(HFLIP)",       Shape::TALL_SMALL_TRIANGLE_VER | Shape::HFLIP },
         { "TALL_SMALL_TRIANGLE_VER(VFLIP)",       Shape::TALL_SMALL_TRIANGLE_VER | Shape::VFLIP },
-        { "TALL_SMALL_TRIANGLE_VER(HFLIP,VFLIP)", Shape::TALL_SMALL_TRIANGLE_VER | Shape::HVFLIP },
+        { "TALL_SMALL_TRIANGLE_VER(HVFLIP)",      Shape::TALL_SMALL_TRIANGLE_VER | Shape::HVFLIP },
         // Half square (vertical)
         { "HALF_SQUARE_VER()",                    Shape::HALF_SQUARE_VER },
         { "HALF_SQUARE_VER(HFLIP)",               Shape::HALF_SQUARE_VER | Shape::HFLIP },
         { "HALF_SQUARE_VER(VFLIP)",               Shape::HALF_SQUARE_VER | Shape::VFLIP },
-        { "HALF_SQUARE_VER(HFLIP,VFLIP)",         Shape::HALF_SQUARE_VER | Shape::HVFLIP },
+        { "HALF_SQUARE_VER(HVFLIP)",              Shape::HALF_SQUARE_VER | Shape::HVFLIP },
     };
     // clang-format on
 
