@@ -31,21 +31,27 @@ public:
     };
 
     enum Flags : std::uint16_t {
-        FLOOR_INITIALIZED = 0x01,
-        WALL_INITIALIZED  = 0x02,
+        FLOOR_INITIALIZED = 1 << 0,
+        WALL_INITIALIZED  = 1 << 1,
 
-        RIGHT_EDGE_OBSTRUCTED  = 0x100,
-        TOP_EDGE_OBSTRUCTED    = 0x200,
-        LEFT_EDGE_OBSTRUCTED   = 0x400,
-        BOTTOM_EDGE_OBSTRUCTED = 0x800,
+        // Obstructed-by flags
+        //     bits  8..11 -> any
+        //     bits 12..15 -> full
+        OBSTRUCTED_BY_NORTH_NEIGHBOR       = (1 << 8),
+        OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR = (1 << 12),
+        OBSTRUCTED_BY_WEST_NEIGHBOR        = (1 << 9),
+        OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR  = (1 << 13),
+        OBSTRUCTED_BY_EAST_NEIGHBOR        = (1 << 10),
+        OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR  = (1 << 14),
+        OBSTRUCTED_BY_SOUTH_NEIGHBOR       = (1 << 11),
+        OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR = (1 << 15),
     };
 
     std::uint16_t getFlags() const;
 
-    //! Sets the flags RIGHT_EDGE_OBSTRUCTED, TOP_EDGE_OBSTRUCTED, LEFT_EDGE_OBSTRUCTED, and
-    //! BOTTOM_EDGE_OBSTRUCTED according to the provided bitmask. Other flags are guaranteed to
-    //! remain unchaged.
-    void setObstructionFlags(std::uint16_t aFlags);
+    //! Sets the any OBSTRUCTED_* flags according to the provided bitmask.
+    //! Other flags are guaranteed to remain unchaged.
+    void setObstructedByFlags(std::uint16_t aFlags);
 
     //! Returns true if the Floor structure of this Cell is initialized.
     //! \note equivalent to `(getFlags() & FLOOR_INITIALIZED) != 0`.
@@ -141,9 +147,19 @@ inline std::uint16_t CellModel::getFlags() const {
     return _flags;
 }
 
-inline void CellModel::setObstructionFlags(std::uint16_t aFlags) {
+inline void CellModel::setObstructedByFlags(std::uint16_t aFlags) {
+    // clang-format off
     static constexpr auto RELEVANT_FLAGS =
-        RIGHT_EDGE_OBSTRUCTED | TOP_EDGE_OBSTRUCTED | LEFT_EDGE_OBSTRUCTED | BOTTOM_EDGE_OBSTRUCTED;
+        OBSTRUCTED_BY_NORTH_NEIGHBOR       |
+        OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR |
+        OBSTRUCTED_BY_WEST_NEIGHBOR        |
+        OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR  |
+        OBSTRUCTED_BY_EAST_NEIGHBOR        |
+        OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR  |
+        OBSTRUCTED_BY_SOUTH_NEIGHBOR       |
+        OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR ;
+    // clang-format on
+
     _flags &= ~RELEVANT_FLAGS;
     _flags |= (aFlags & RELEVANT_FLAGS);
 }

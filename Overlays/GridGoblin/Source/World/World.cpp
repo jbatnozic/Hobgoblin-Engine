@@ -627,37 +627,68 @@ namespace {
 bool IsCellSolid(const CellModel* aCell) {
     return (aCell == nullptr || aCell->isWallInitialized());
 }
+
+std::uint16_t GetNeighborObstruction(const CellModel* aCell, ObstructionFlags aRelevantFlags) {
+    static constexpr std::uint16_t FLAG_LS = 8; //!< Flags left shift value
+
+    static_assert((OBSTRUCTS_NORTH << FLAG_LS) == CellModel::OBSTRUCTED_BY_SOUTH_NEIGHBOR);
+    static_assert((OBSTRUCTS_NORTH_FULLY << FLAG_LS) == CellModel::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR);
+
+    static_assert((OBSTRUCTS_SOUTH << FLAG_LS) == CellModel::OBSTRUCTED_BY_NORTH_NEIGHBOR);
+    static_assert((OBSTRUCTS_SOUTH_FULLY << FLAG_LS) == CellModel::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR);
+
+    static_assert((OBSTRUCTS_EAST << FLAG_LS) == CellModel::OBSTRUCTED_BY_WEST_NEIGHBOR);
+    static_assert((OBSTRUCTS_EAST_FULLY << FLAG_LS) == CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR);
+
+    static_assert((OBSTRUCTS_WEST << FLAG_LS) == CellModel::OBSTRUCTED_BY_EAST_NEIGHBOR);
+    static_assert((OBSTRUCTS_WEST_FULLY << FLAG_LS) == CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR);
+
+    if (aCell == nullptr) {
+        return aRelevantFlags;
+    }
+
+    if (!aCell->isWallInitialized()) {
+        return 0;
+    }
+
+    return (static_cast<std::uint16_t>(SHAPE_OBSTRUCTION_FLAGS[hg::ToSz(aCell->getWall().shape)] &
+                                       aRelevantFlags)
+            << FLAG_LS);
+}
 } // namespace
 
 void World::_refreshCellAtUnchecked(hg::PZInteger aX, hg::PZInteger aY) {
     auto* cell = _chunkStorage.getCellAtUnchecked(aX, aY);
     if (cell) {
-        const auto openness = _calcOpennessAt<false>(aX, aY);
-        // TODO: process top, left, right, bottom - for better cache performance
-        const auto obstruction = [this, aX, aY, openness]() -> std::uint16_t {
+        const auto openness            = _calcOpennessAt<false>(aX, aY);
+        const auto neighborObstruction = [this, aX, aY, openness]() -> std::uint16_t {
             if (openness > 2) {
                 return 0;
             }
             std::uint16_t res = 0;
-            res |=
-                (aX >= getCellCountX() - 1 || IsCellSolid(_chunkStorage.getCellAtUnchecked(aX + 1, aY)))
-                    ? CellModel::RIGHT_EDGE_OBSTRUCTED
-                    : 0;
-            res |= (aY <= 0 || IsCellSolid(_chunkStorage.getCellAtUnchecked(aX, aY - 1)))
-                       ? CellModel::TOP_EDGE_OBSTRUCTED
-                       : 0;
-            res |= (aX <= 0 || IsCellSolid(_chunkStorage.getCellAtUnchecked(aX - 1, aY)))
-                       ? CellModel::LEFT_EDGE_OBSTRUCTED
-                       : 0;
-            res |=
-                (aY >= getCellCountY() - 1 || IsCellSolid(_chunkStorage.getCellAtUnchecked(aX, aY + 1)))
-                    ? CellModel::BOTTOM_EDGE_OBSTRUCTED
-                    : 0;
+            res |= (aY <= 0) ? CellModel::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR
+                             : GetNeighborObstruction(_chunkStorage.getCellAtUnchecked(aX, aY - 1),
+                                                      OBSTRUCTS_SOUTH | OBSTRUCTS_SOUTH_FULLY);
+
+            res |= (aX <= 0) ? CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR
+                             : GetNeighborObstruction(_chunkStorage.getCellAtUnchecked(aX - 1, aY),
+                                                      OBSTRUCTS_EAST | OBSTRUCTS_EAST_FULLY);
+
+            res |= (aX >= getCellCountX() - 1)
+                       ? CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR
+                       : GetNeighborObstruction(_chunkStorage.getCellAtUnchecked(aX + 1, aY),
+                                                OBSTRUCTS_WEST | OBSTRUCTS_WEST_FULLY);
+
+            res |= (aY >= getCellCountY() - 1)
+                       ? CellModel::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR
+                       : GetNeighborObstruction(_chunkStorage.getCellAtUnchecked(aX, aY + 1),
+                                                OBSTRUCTS_NORTH | OBSTRUCTS_NORTH_FULLY);
+
             return res;
         }();
 
         cell->setOpenness(openness);
-        cell->setObstructionFlags(obstruction);
+        cell->setObstructedByFlags(neighborObstruction);
 
         // GetMutableExtensionData(cell).refresh(
         //     (aY <= 0) ? nullptr : std::addressof(_grid[aY - 1][aX]),

@@ -3,6 +3,8 @@
 
 #include <GridGoblin/Rendering/Visibility_calculator.hpp>
 
+#include <GridGoblin/Model/Shape_vertices.hpp>
+
 #include <Hobgoblin/Common.hpp>
 #include <Hobgoblin/Logging.hpp>
 
@@ -29,36 +31,21 @@ std::size_t GetUnobstructedVertices(const CellModel&         aCell,
                                     bool                     aAllEdgesOverride,
                                     float                    aCellResolution,
                                     std::array<Vector2f, 8>& aVertices) {
-    std::size_t cnt = 0;
+    const float OFFSET = 0.25 / aCellResolution;
 
-    const auto flags = aCell.getFlags() | aEdgesOfInterest;
+    const auto cnt = GetVisibilityVertices(aCell.getWall().shape,
+                                           aCell,
+                                           aEdgesOfInterest,
+                                           aAllEdgesOverride,
+                                           OFFSET,
+                                           aVertices);
 
-#define cr aCellResolution
+    const auto tlCorner =
+        hg::math::Vector2f{aCellCoords.x * aCellResolution, aCellCoords.y * aCellResolution};
 
-    static constexpr float OFFSET = 0.25;
-
-    if (aAllEdgesOverride || (flags & CellModel::RIGHT_EDGE_OBSTRUCTED) == 0) {
-        aVertices[cnt + 0] = {(aCellCoords.x + 1) * cr, (aCellCoords.y + 1) * cr + OFFSET};
-        aVertices[cnt + 1] = {(aCellCoords.x + 1) * cr, (aCellCoords.y + 0) * cr - OFFSET};
-        cnt += 2;
+    for (std::size_t i = 0; i < cnt; i += 1) {
+        aVertices[i] = tlCorner + (aVertices[i] * aCellResolution);
     }
-    if (aAllEdgesOverride || (flags & CellModel::TOP_EDGE_OBSTRUCTED) == 0) {
-        aVertices[cnt + 0] = {(aCellCoords.x + 1) * cr + OFFSET, (aCellCoords.y + 0) * cr};
-        aVertices[cnt + 1] = {(aCellCoords.x + 0) * cr - OFFSET, (aCellCoords.y + 0) * cr};
-        cnt += 2;
-    }
-    if (aAllEdgesOverride || (flags & CellModel::LEFT_EDGE_OBSTRUCTED) == 0) {
-        aVertices[cnt + 0] = {(aCellCoords.x + 0) * cr, (aCellCoords.y + 0) * cr - OFFSET};
-        aVertices[cnt + 1] = {(aCellCoords.x + 0) * cr, (aCellCoords.y + 1) * cr + OFFSET};
-        cnt += 2;
-    }
-    if (aAllEdgesOverride || (flags & CellModel::BOTTOM_EDGE_OBSTRUCTED) == 0) {
-        aVertices[cnt + 0] = {(aCellCoords.x + 0) * cr - OFFSET, (aCellCoords.y + 1) * cr};
-        aVertices[cnt + 1] = {(aCellCoords.x + 1) * cr + OFFSET, (aCellCoords.y + 1) * cr};
-        cnt += 2;
-    }
-
-#undef cr
 
     return cnt;
 }
@@ -176,7 +163,7 @@ void VisibilityCalculator::_setInitialCalculationContext(PositionInWorld    aVie
                  std::max(std::abs(_lineOfSightOrigin.x - (_lineOfSightOriginCell.x + 0.5f) * _cr),
                           std::abs(_lineOfSightOrigin.y - (_lineOfSightOriginCell.y + 0.5f) * _cr));
 
-    // equal to o_triangleSideLength / (_cr / _rayPointsPerCell)
+    // equal to _triangleSideLength / (_cr / _rayPointsPerCell)
     _maxPointsPerRay = _triangleSideLength * _rayPointsPerCell / _cr;
 
     _rayCheckingEnabled = false;
@@ -184,25 +171,25 @@ void VisibilityCalculator::_setInitialCalculationContext(PositionInWorld    aVie
 
 std::uint16_t VisibilityCalculator::_calcEdgesOfInterest(Vector2pz aCell) const {
     static constexpr CellFlags ALL_EDGES =
-        CellModel::RIGHT_EDGE_OBSTRUCTED | CellModel::TOP_EDGE_OBSTRUCTED |
-        CellModel::LEFT_EDGE_OBSTRUCTED | CellModel::BOTTOM_EDGE_OBSTRUCTED;
+        CellModel::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR | CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR |
+        CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR | CellModel::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR;
 
     CellFlags edgesOfInterest = ALL_EDGES;
 
     switch (Sign(aCell.x - _lineOfSightOriginCell.x)) {
     case -1:
-        edgesOfInterest ^= CellModel::RIGHT_EDGE_OBSTRUCTED;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_EAST_NEIGHBOR;
         break;
     case +1:
-        edgesOfInterest ^= CellModel::LEFT_EDGE_OBSTRUCTED;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_WEST_NEIGHBOR;
         break;
     }
     switch (Sign(aCell.y - _lineOfSightOriginCell.y)) {
     case -1:
-        edgesOfInterest ^= CellModel::BOTTOM_EDGE_OBSTRUCTED;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_SOUTH_NEIGHBOR;
         break;
     case 1:
-        edgesOfInterest ^= CellModel::TOP_EDGE_OBSTRUCTED;
+        edgesOfInterest ^= CellModel::OBSTRUCTED_FULLY_BY_NORTH_NEIGHBOR;
         break;
     }
 

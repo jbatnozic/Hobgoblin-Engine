@@ -75,7 +75,7 @@ TEST_F(GridGoblinConversionsTest, CellWithFloorConversionToJsonAndBack) {
 
 TEST_F(GridGoblinConversionsTest, CellWithWallConversionToJsonAndBack) {
     CellModel cell;
-    cell.setWall({111, 222, Shape::CIRCLE});
+    cell.setWall({111, 222, Shape::FULL_SQUARE});
 
     EXPECT_EQ(cell, JsonToCell(CellToJson(cell, _document)));
 }
@@ -83,7 +83,7 @@ TEST_F(GridGoblinConversionsTest, CellWithWallConversionToJsonAndBack) {
 TEST_F(GridGoblinConversionsTest, CellWithFloorAndWallConversionToJsonAndBack) {
     CellModel cell;
     cell.setFloor({111});
-    cell.setWall({111, 222, Shape::CIRCLE});
+    cell.setWall({111, 222, Shape::SMALL_TRIANGLE_HOR | Shape::HVFLIP});
 
     EXPECT_EQ(cell, JsonToCell(CellToJson(cell, _document)));
 }
