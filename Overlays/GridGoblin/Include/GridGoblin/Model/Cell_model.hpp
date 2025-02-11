@@ -21,7 +21,7 @@ namespace hg = jbatnozic::hobgoblin;
 class CellModel {
 public:
     struct Floor {
-        SpriteId spriteId; // TBD: spriteId to 16 bit?
+        SpriteId spriteId;
     };
 
     struct Wall {
@@ -92,12 +92,22 @@ public:
     //! Set the openness value.
     void setOpenness(std::uint8_t aOpenness);
 
+    //! This field can be used by the user of the GridGoblin library for any use they see fit.
+    //! The library won't access it or change it. By default, the value is 0.
+    std::int64_t getUserData() const;
+
+    //! This field can be used by the user of the GridGoblin library for any use they see fit.
+    //! The library won't access it or change it.
+    void setUserData(std::int64_t aUserData);
+
 private:
-    // TODO(future): more efficient packed layout
+    std::int32_t  _udataLow  = 0;
+    std::int32_t  _udataHigh = 0;
     Floor         _floor;
     Wall          _wall;
     std::uint16_t _flags    = 0;
     std::uint8_t  _openness = 0;
+    std::uint8_t  _unused;
 };
 
 //! CellModel::Floor equality operator.
@@ -206,6 +216,16 @@ inline std::uint8_t CellModel::getOpenness() const {
 
 inline void CellModel::setOpenness(std::uint8_t aOpenness) {
     _openness = aOpenness;
+}
+
+inline std::int64_t CellModel::getUserData() const {
+    return (((static_cast<std::int64_t>(_udataHigh) << 32) & 0xFFFFFFFF00000000LL) |
+            (static_cast<std::int64_t>(_udataLow) & 0x00000000FFFFFFFFLL));
+}
+
+inline void CellModel::setUserData(std::int64_t aUserData) {
+    _udataLow  = static_cast<std::int32_t>((aUserData >> 00) & 0x00000000FFFFFFFFLL);
+    _udataHigh = static_cast<std::int32_t>((aUserData >> 32) & 0x00000000FFFFFFFFLL);
 }
 
 } // namespace gridgoblin
