@@ -41,7 +41,7 @@ std::optional<OriginOffset> LoadOriginOffset(const std::filesystem::path& aOrigi
     URegex        regex{pattern, URegex::CASE_INSENSITIVE};
     UMatchResults matchResults;
 
-    if (RegexMatch(contents, regex, matchResults)) {
+    if (MatchRegex(contents, regex, matchResults)) {
         HG_HARD_ASSERT(matchResults.getGroupCount() == 3);
 
         const auto tag = matchResults[1];

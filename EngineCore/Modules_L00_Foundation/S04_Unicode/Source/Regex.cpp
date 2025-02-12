@@ -81,7 +81,7 @@ URegex::URegex(const UnicodeString& aPattern, std::uint32_t aFlags)
 
 // MARK: Functions
 
-bool RegexMatch(const UnicodeString& aString, URegex& aRegex, UMatchResults& aResults) {
+bool MatchRegex(const UnicodeString& aString, URegex& aRegex, UMatchResults& aResults) {
     aRegex._matcher.reset(aString);
 
     UErrorCode status = U_ZERO_ERROR;
