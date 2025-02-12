@@ -10,6 +10,7 @@ add_library(${PROJECT_NAME}
 STATIC
     "Source/Charset_detection.cpp"
     "Source/File_io.cpp"
+    "Source/Regex.cpp"
     "Source/String_conversions.cpp"
 )
 
