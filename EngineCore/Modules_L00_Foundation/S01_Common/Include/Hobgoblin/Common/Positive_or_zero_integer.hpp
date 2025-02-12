@@ -29,12 +29,12 @@ std::size_t pztos(PZInteger value) {
 }
 
 template <class T>
-PZInteger ToPz(T&& value) {
+constexpr PZInteger ToPz(T&& value) {
     return static_cast<PZInteger>(std::forward<T>(value));
 }
 
 template <class T>
-std::size_t ToSz(T&& value) {
+constexpr std::size_t ToSz(T&& value) {
     return static_cast<std::size_t>(std::forward<T>(value));
 }
 

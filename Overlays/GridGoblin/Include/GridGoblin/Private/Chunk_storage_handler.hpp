@@ -32,6 +32,7 @@ namespace detail {
 HG_DECLARE_TAG_TYPE(LOAD_IF_MISSING);
 
 //! This class handles the storage of chunks both in RAM and in on-disk caches.
+//! TODO: rename to ChunkHolder
 class ChunkStorageHandler {
 private:
     using Self = ChunkStorageHandler;

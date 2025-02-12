@@ -7,7 +7,9 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME}
     "Active_area_test.cpp"
+    "Cell_user_data_test.cpp"
     "Model_conversions_test.cpp"
+    "Shape_conversions_test.cpp"
     "Spatial_info_test.cpp"
     "World_test.cpp"
 )

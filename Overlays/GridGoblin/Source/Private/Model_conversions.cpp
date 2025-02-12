@@ -156,40 +156,6 @@ void Base64Decode(
     }
 }
 
-const std::string SHAPE_EMPTY       = "empty";
-const std::string SHAPE_CIRCLE      = "circle";
-const std::string SHAPE_FULL_SQUARE = "full_square";
-
-const std::string& ShapeToString(Shape aShape) {
-    switch (aShape) {
-    case Shape::EMPTY:
-        return SHAPE_EMPTY;
-
-    case Shape::CIRCLE:
-        return SHAPE_CIRCLE;
-
-    case Shape::FULL_SQUARE:
-        return SHAPE_FULL_SQUARE;
-
-    default:
-        HG_UNREACHABLE("Invalid value for gridgoblin::Shape ({}).", (int)aShape);
-    }
-}
-
-Shape StringToShape(const char* aString) {
-    if (std::strcmp(aString, SHAPE_EMPTY.c_str()) == 0) {
-        return Shape::EMPTY;
-    }
-    if (std::strcmp(aString, SHAPE_CIRCLE.c_str()) == 0) {
-        return Shape::CIRCLE;
-    }
-    if (std::strcmp(aString, SHAPE_FULL_SQUARE.c_str()) == 0) {
-        return Shape::FULL_SQUARE;
-    }
-
-    HG_THROW_TRACED(hg::TracedRuntimeError, 0, "Invalid shape string ({}).", aString);
-}
-
 //! Named based on the 'elvis operator' (?:) from other languages
 #define ELVIS(_lhs_, _rhs_) ((_lhs_) ? (_lhs_) : (_rhs_))
 } // namespace
