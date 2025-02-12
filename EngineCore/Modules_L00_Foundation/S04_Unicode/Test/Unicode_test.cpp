@@ -513,10 +513,10 @@ TEST(HGUnicodeTest, ValidURegexTest) {
     hg::URegex        regex{HG_UNISTR("(([a-zA-Z])[a-zA-Z0-9]*)")};
     hg::UMatchResults results;
 
-    ASSERT_FALSE(hg::RegexMatch(HG_UNISTR("5ChunkNorris0123"), regex, results));
-    ASSERT_FALSE(hg::RegexMatch(HG_UNISTR("kChunkNorris_123"), regex, results));
+    ASSERT_FALSE(hg::MatchRegex(HG_UNISTR("5ChunkNorris0123"), regex, results));
+    ASSERT_FALSE(hg::MatchRegex(HG_UNISTR("kChunkNorris_123"), regex, results));
 
-    ASSERT_TRUE(hg::RegexMatch(HG_UNISTR("kChunkNorris0123"), regex, results));
+    ASSERT_TRUE(hg::MatchRegex(HG_UNISTR("kChunkNorris0123"), regex, results));
     EXPECT_EQ(results.getGroupCount(), 2);
     EXPECT_EQ(results[0], HG_UNISTR("kChunkNorris0123"));
     EXPECT_EQ(results[1], HG_UNISTR("kChunkNorris0123"));

@@ -38,7 +38,7 @@ public:
     UnicodeString operator[](PZInteger aGroup) const;
 
 private:
-    friend bool RegexMatch(const UnicodeString& aString, URegex& aRegex, UMatchResults& aResults);
+    friend bool MatchRegex(const UnicodeString& aString, URegex& aRegex, UMatchResults& aResults);
 
     URegex* _regex = nullptr;
 };
@@ -106,7 +106,7 @@ public:
     URegex(const UnicodeString& aPattern, std::uint32_t aFlags = 0);
 
 private:
-    friend bool RegexMatch(const UnicodeString& aString, URegex& aRegex, UMatchResults& aResults);
+    friend bool MatchRegex(const UnicodeString& aString, URegex& aRegex, UMatchResults& aResults);
     friend class UMatchResults;
 
     UErrorCode        _status;
@@ -116,7 +116,7 @@ private:
 // MARK: Functions
 
 //! Try to match the entire input string against a regex pattern.
-bool RegexMatch(const UnicodeString& aString, URegex& aRegex, UMatchResults& aResults);
+bool MatchRegex(const UnicodeString& aString, URegex& aRegex, UMatchResults& aResults);
 
 HOBGOBLIN_NAMESPACE_END
 
