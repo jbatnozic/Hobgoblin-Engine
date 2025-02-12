@@ -15,7 +15,7 @@ PZInteger UMatchResults::getGroupCount() const {
 }
 
 UnicodeString UMatchResults::operator[](PZInteger aGroup) const {
-    HG_VALIDATE_PRECONDITION(aGroup < getGroupCount());
+    HG_VALIDATE_PRECONDITION(_regex != nullptr);
 
     UErrorCode status = U_ZERO_ERROR;
     auto       result = _regex->_matcher.group(aGroup, status);

@@ -38,25 +38,18 @@ std::optional<OriginOffset> LoadOriginOffset(const std::filesystem::path& aOrigi
     const auto* pattern =
         uR"_(\s*([a-z]+)[\s]+x:[\s]*([+-]?[0-9]+[.]?[0-9]*)[\s]+y:[\s]*([+-]?[0-9]+[.]?[0-9]*)[\s]*)_";
 
-    UErrorCode status  = U_ZERO_ERROR;
-    auto       matcher = icu::RegexMatcher(pattern, UREGEX_CASE_INSENSITIVE, status);
-    HG_HARD_ASSERT(U_SUCCESS(status));
+    URegex        regex{pattern, URegex::CASE_INSENSITIVE};
+    UMatchResults matchResults;
 
-    matcher.reset(contents);
+    if (RegexMatch(contents, regex, matchResults)) {
+        HG_HARD_ASSERT(matchResults.getGroupCount() == 3);
 
-    if (matcher.matches(status)) {
-        HG_HARD_ASSERT(U_SUCCESS(status));
-        HG_HARD_ASSERT(matcher.groupCount() == 3);
+        const auto tag = matchResults[1];
 
-        const auto tag = matcher.group(1, status);
-        HG_HARD_ASSERT(U_SUCCESS(status));
-
-        const auto x = matcher.group(2, status);
-        HG_HARD_ASSERT(U_SUCCESS(status));
+        const auto x    = matchResults[2];
         const auto xnum = std::stof(UniStrConv(TO_ASCII_STD_STRING, x));
 
-        const auto y = matcher.group(3, status);
-        HG_HARD_ASSERT(U_SUCCESS(status));
+        const auto y    = matchResults[3];
         const auto ynum = std::stof(UniStrConv(TO_ASCII_STD_STRING, y));
 
         const auto offset = math::Vector2f{xnum, ynum};

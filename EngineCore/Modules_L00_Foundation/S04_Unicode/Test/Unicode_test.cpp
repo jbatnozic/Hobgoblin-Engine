@@ -510,7 +510,7 @@ TEST(HGUnicodeTest, SfStringConversionTest_EmptyString) {
 // clang-format on
 
 TEST(HGUnicodeTest, ValidURegexTest) {
-    hg::URegex        regex{HG_UNISTR("(([a-zA-Z]+)[a-zA-Z0-9]*)")};
+    hg::URegex        regex{HG_UNISTR("(([a-zA-Z])[a-zA-Z0-9]*)")};
     hg::UMatchResults results;
 
     ASSERT_FALSE(hg::RegexMatch(HG_UNISTR("5ChunkNorris0123"), regex, results));
@@ -519,9 +519,10 @@ TEST(HGUnicodeTest, ValidURegexTest) {
     ASSERT_TRUE(hg::RegexMatch(HG_UNISTR("kChunkNorris0123"), regex, results));
     EXPECT_EQ(results.getGroupCount(), 2);
     EXPECT_EQ(results[0], HG_UNISTR("kChunkNorris0123"));
-    EXPECT_EQ(results[1], HG_UNISTR("k"));
+    EXPECT_EQ(results[1], HG_UNISTR("kChunkNorris0123"));
+    EXPECT_EQ(results[2], HG_UNISTR("k"));
 
-    EXPECT_THROW(results[2], hg::PreconditionNotMetError);
+    EXPECT_THROW(results[3], hg::URegexError);
 }
 
 TEST(HGUnicodeTest, InvalidURegexTest) {
